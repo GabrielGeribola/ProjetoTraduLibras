@@ -1,8 +1,10 @@
 const express = require('express');
 const app = express();
 
+const db = require('./src/models/db')
+
 app.get("/", async (req, res) => {
-  res.send("Página Inicial")
+  res.send("Página Inicial- database")
 });
 
 app.listen(3001, () => {
