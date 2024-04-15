@@ -23,9 +23,12 @@
     "editorconfig": "^2.0.0",
     "eslint": "^9.0.0",
     "express": "^4.19.2",
+    "mysql": "^2.18.1",
+    "mysql2": "^3.9.4",
     "oracledb": "^6.4.0",
     "prettier": "^3.2.5",
     "sequelize": "^6.37.3",
-    "sqlite3": "^5.1.7"
+    "sqlite3": "^5.1.7",
+    "tedious": "^18.1.0"
   }
 }

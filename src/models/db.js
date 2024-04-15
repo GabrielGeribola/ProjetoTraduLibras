@@ -2,7 +2,7 @@ const Sequelize = require('sequelize');
 
 const sequelize = new Sequelize('inserir database', 'inserir usuario', 'inserir senha', {
   host: 'localhost',
-  dialect:  'oracle'
+  dialect:  'mssql'
 });
 
 
