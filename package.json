@@ -29,6 +29,7 @@
     "mysql2": "^3.9.4",
     "oracledb": "^6.4.0",
     "prettier": "^3.2.5",
+    "react": "^18.2.0",
     "sequelize": "^6.37.3",
     "sqlite3": "^5.1.7",
     "tedious": "^18.1.0"
