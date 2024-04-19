@@ -4,7 +4,7 @@ const db = require('./db');
 const User = db.define('users', {
     id: {
         type: Sequelize.INTEGER,
-        autoIncrement: true, 
+        autoIncrement: true,
         allowNull: false,
         primaryKey: true,
     },
@@ -12,14 +12,14 @@ const User = db.define('users', {
         type: Sequelize.STRING,
         allowNull: false,
     },
-    email: {
+   email: {
         type: Sequelize.STRING,
         allowNull: false,
     }
 });
 
 //criar a tabela
-User.sync();
+//User.sync();
 
 //verificase ha alguma diferenca na tebela, realiza a alteracao
 //User.sunc({alter: true})
