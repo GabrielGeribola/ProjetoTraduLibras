@@ -1,6 +1,6 @@
 const Sequelize = require('sequelize');
 
-const sequelize = new Sequelize('inserir database', 'tradulibras_adm', 'Jv337299', {
+const sequelize = new Sequelize('tradulibras', 'tradulibras_adm', 'Jv337299', {
   host: 'localhost',
   dialect:  'mysql'
 });
