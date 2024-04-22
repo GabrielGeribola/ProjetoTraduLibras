@@ -16,7 +16,7 @@ body, html  {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-image: url("https://images.unsplash.com/photo-1697395017285-c4d1caeaff31?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&h=900&ixid=MnwxfDB8MXxyYW5kb218MHx8bGFuZHNhY3BlfHx8fHx8MTcxMzQ4MjAxNQ&ixlib=rb-4.0.3&q=80&utm_campaign=api-credit&utm_medium=referral&utm_source=unsplash_source&w=1600");
+  background-image: linear-gradient(to top, #A4EA4F, #3A6604);
   border-radius: 20px;
 }
 
@@ -60,14 +60,18 @@ i#menu:hover {
   border-radius: 20px;
 }
 
-.image {
-  margin-left: 130px;
-  margin-bottom: 200px;
-  border-radius: 20px;
+
+.imagem {
+  display: block;
+  background:  url(../imgs/avatar_teste2.png) no-repeat;
+  background-size: contain;
+  background-position: top;
+  height: 200px;
 }
 
 .input-1 {
   padding: 10px;
+  margin-left: 15px;
 
 }
 
