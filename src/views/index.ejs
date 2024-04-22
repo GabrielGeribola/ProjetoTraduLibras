@@ -1,70 +1,27 @@
 <!DOCTYPE html>
-<html lang="pt-br">
-
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap"
-        rel="stylesheet">
-    <title>Tradulibras</title>
-<style>
-*{
-    box-sizing: border-box;
-}
-
-body{
-    width: 100%;
-    height: 100%;
-
-}
-
-form{
-width: 300px;
-margin: 200px auto;
-text-align: center;
-
-}
-
-input{
-
-    display: block;
-    margin: 10px auto;
-    width: 250px;
-    height: 30px;
-}
-
-
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tradulibras</title>
+  <link rel="stylesheet" href="/css/styleLogin.css">
+  <link rel="stylesheet" href="/css/media-query.css">
 </head>
-
 <body>
-    <form>
-        <h3>Login</h3>
-        <input type="text" placeholder="Login" id="login">
-        <input type="password" placeholder="Senha" id="senha">
-        <input type="submit" onclick="logar(); return false">
+  <main>
+      <section id="login">
+        <div id=imagem>
 
-    <form>
+        </div>
+        <div id="formulario">
+            <h1>login</h1>
+            <p>Seja bem vindo(a) novamente. Faça login para acessar sua conta e poder fazer as configurações no seu ambiente</p>
+            <form action="login" method="post">
 
-
-    <script>
-function logar(){
-var login = document.getElementById('login').value;
-var senha = document.getElementById('senha').value;
-
-if(login == "admin" && senha == "admin" ){
-    alert('Sucesso!');
-    location.href = "home.ejs ";
-
-}else{
-    alert('Usuario ou senha incorretos');
-}
-}
-</script>
-
-
+            </form>
+        </div>
+      </section>
+  </main>
+<script src="login.js"></script>
 </body>
-
 </html>

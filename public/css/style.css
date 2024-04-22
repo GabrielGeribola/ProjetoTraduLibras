@@ -1,15 +1,15 @@
 * {
+  font-family:  -apple-system, system-ui,  BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif ;
   background-color: white;
   height: auto;
   width: auto;
-  margin: 0;
-  padding: 0;
+  margin: 0px;
+  padding: 0px;
   box-sizing: border-box;
-  font-family: 'Open Sans', sans-serif;
   border-radius: 20px;
 }
 
-body {
+body, html  {
 
   height: 100vh;
   width: 100vw;
@@ -31,6 +31,19 @@ body {
   margin: 0, 50, 50, 0;
   border-radius: none;
 
+
+}
+
+i#menu {
+  color: black;
+  text-align: left;
+  padding: 5px;
+  cursor: pointer;
+}
+
+i#menu:hover {
+  background-color: black;
+  color: white;
 
 }
 
@@ -62,3 +75,5 @@ body {
   width: 500px;
   height: 500px;
 }
+
+
