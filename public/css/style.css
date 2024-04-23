@@ -20,6 +20,19 @@ body, html  {
   border-radius: 20px;
 }
 
+.login {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  overflow: hidden;
+  background-color: white;
+  width: 280px;
+  height: 600px;
+  border-radius: 20px;
+  box-shadow: 0px, 0px, 10px  rgba(0, 0, 0, 0.553);
+}
+
 .translate {
   text-decoration-color: #74ff73;
   background-color: #74ff73;
@@ -42,14 +55,12 @@ i#menu {
 }
 
 i#menu:hover {
-  background-color: black;
-  color: white;
-
+  background-color: #b1f065;
 }
 
 .button-1 {
   margin-bottom: 320px;
-  margin-left: 0px;
+  margin-left: 10px;
   border-radius: 20px;
   image-rendering: auto;
 }
@@ -60,6 +71,20 @@ i#menu:hover {
   border-radius: 20px;
 }
 
+.button-copy {
+  cursor: pointer;
+  padding: 2px;
+  margin: 5px;
+}
+
+
+.button-mic {
+  cursor: pointer;
+  padding: 2px;
+  margin: 5px;
+}
+
+
 
 .imagem {
   display: block;
@@ -68,6 +93,7 @@ i#menu:hover {
   background-position: top;
   height: 200px;
 }
+
 
 .input-1 {
   padding: 10px;
