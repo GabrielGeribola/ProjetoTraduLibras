@@ -2,24 +2,33 @@
 const express = require('express');
 const app = express();
 const path = require('path');
+const session = require('express-session')
 const routes = require('./src/routes/routes');
 const User = require('./src/models/user');
-
+const csrf = require('csurf')
+const {middlewareGlobal, checkCsrfError, csrfMiddleware} = require('./src/middlewares/middleware');
 //const db = require('./src/models/db')
+
+app.use(express.urlencoded({extended: true}));
+app.use(express.json());
+app.use(express.static(path.resolve(__dirname, 'public')));
+
 
 app.set('views', path.resolve(__dirname, 'src', 'views'))
 app.set('view engine', 'ejs')
-app.use(express.static(path.resolve(__dirname, 'public')));
+
 
 app.use(routes);
+app.use(csrf());
 
-app.get("/teste", async (req, res) => {
-  res.send('Database')
-});
+//Nossos proprios middlewares
 
-app.get("/cadastrar", async (req, res) => {
-  res.send('Pagina cadastrar')
-});
+app.use(middlewareGlobal);
+app.use(csrfMiddleware);
+app.use(checkCsrfError);
+
+
+
 
 
 app.listen(3306, () => {
