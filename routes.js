@@ -5,7 +5,7 @@ const loginController = require('./src/controllers/loginController');
 
 //Rotas da home
 route.get('/', homeController.index);
-//route.get('/home.ejs', homeController.paginaHome);
+route.get('/home', homeController.home);
 
 //rotas de login
 route.get('/login/index', loginController.index);
