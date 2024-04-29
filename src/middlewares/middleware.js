@@ -9,14 +9,14 @@ exports.outroMiddleware = (req, res, next) => {
 
 exports.checkCsrfError = (err, req, res, next) => {
   if(err) {
-     console.log(err)
+     res.render('404')
+    console.log(err);
   }
 
   next();
 };
 
 exports.csrfMiddleware = (req, res, next) => {
-  res.locals.csrfToken = req.csrfToken()
+  res.locals.csrfToken = req.csrfToken();
   next();
-}
-
+};

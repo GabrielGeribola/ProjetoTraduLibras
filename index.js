@@ -6,8 +6,10 @@ const session = require('express-session')
 const flash = require('connect-flash');
 const routes = require('./routes');
 const User = require('./src/models/user');
-const csrf = require('csurf')
-const {middlewareGlobal, checkCsrfError, csrfMiddleware } = require('./src/middlewares/middleware');
+const csrf = require('csurf');
+const cookieParser = require('cookie-parser');
+const bodyParser = require('body-parser')
+const {middlewareGlobal, csrfMiddleware, checkCsrfError} = require('./src/middlewares/middleware');
 //const db = require('./src/models/db')
 
 app.use(express.urlencoded({extended: true}));
