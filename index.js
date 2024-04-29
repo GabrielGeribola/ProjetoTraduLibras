@@ -20,11 +20,11 @@ app.set('views', path.resolve(__dirname, 'src', 'views'));
 app.set('view engine', 'ejs');
 
 
-app.use(csrf());
+//app.use(csrf());
 //Nossos proprios middlewares
-app.use(middlewareGlobal);
-app.use(checkCsrfError);
-app.use(csrfMiddleware);
+//app.use(middlewareGlobal);
+//app.use(checkCsrfError);
+//app.use(csrfMiddleware);
 
 app.use(routes);
 
