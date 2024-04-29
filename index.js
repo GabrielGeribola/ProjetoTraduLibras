@@ -1,14 +1,12 @@
 
 const express = require('express');
 const app = express();
-const path = require('path');
 const session = require('express-session')
 const flash = require('connect-flash');
 const routes = require('./routes');
-const User = require('./src/models/user');
+const path = require('path');
 const csrf = require('csurf');
-const cookieParser = require('cookie-parser');
-const bodyParser = require('body-parser')
+const User = require('./src/models/user');
 const {middlewareGlobal, csrfMiddleware, checkCsrfError} = require('./src/middlewares/middleware');
 //const db = require('./src/models/db')
 
@@ -18,16 +16,16 @@ app.use(express.static(path.resolve(__dirname, 'public')));
 
 app.use(flash());
 
-app.set('views', path.resolve(__dirname, 'src', 'views'))
-app.set('view engine', 'ejs')
+app.set('views', path.resolve(__dirname, 'src', 'views'));
+app.set('view engine', 'ejs');
 
 
 app.use(csrf());
-
 //Nossos proprios middlewares
 app.use(middlewareGlobal);
 app.use(checkCsrfError);
 app.use(csrfMiddleware);
+
 app.use(routes);
 
 
