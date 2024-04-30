@@ -7,14 +7,14 @@ exports.outroMiddleware = (req, res, next) => {
   next();
 }
 
-//exports.checkCsrfError = (err, req, res, next) => {
-//  if(err) {
-//     res.render('404')
-//    console.log(err);
-//  }
+exports.checkCsrfError = (err, req, res, next) => {
+  if(err) {
+     res.render('404')
+    console.log(err);
+  }
 
-//  next();
-//};
+ next();
+};
 
 //exports.csrfMiddleware = (req, res, next) => {
 //  res.locals.csrfToken = req.csrfToken();

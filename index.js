@@ -23,7 +23,7 @@ app.set('view engine', 'ejs');
 //app.use(csrf());
 //Nossos proprios middlewares
 //app.use(middlewareGlobal);
-//app.use(checkCsrfError);
+app.use(checkCsrfError);
 //app.use(csrfMiddleware);
 
 app.use(routes);
