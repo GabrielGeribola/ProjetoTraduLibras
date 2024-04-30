@@ -1,20 +1,44 @@
 
 const express = require('express');
 const app = express();
-const session = require('express-session')
+const session = require('express-session');
+const SequelizeStore = require('connect-session-sequelize') (session.Store);
+const sequelize = require('./src/models/database'); // Importe a instância do Sequelize criada anteriormente
 const flash = require('connect-flash');
 const routes = require('./routes');
 const path = require('path');
 const csrf = require('csurf');
-const User = require('./src/models/user');
+const User = require('./src/models/UserModel');
 const {middlewareGlobal, csrfMiddleware, checkCsrfError} = require('./src/middlewares/middleware');
-//const db = require('./src/models/db')
+
 
 app.use(express.urlencoded({extended: true}));
 app.use(express.json());
 app.use(express.static(path.resolve(__dirname, 'public')));
 
+const sessionStore = new SequelizeStore ({
+  db: sequelize,
+  tableName: 'sessions'
+});
+
+const sessionOptions = session({
+  secret:'teste_de_chave_secreta',
+  store: sessionStore,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    maxAge: 1000 * 60 * 60 * 24 & 7, //1 semana
+    httpOnly: true
+  }
+});
+
+// Inicializa o armazenamento da sessão antes de usar no aplicativo
+sessionStore.sync();
+
+app.use(sessionOptions);
+
 app.use(flash());
+
 
 app.set('views', path.resolve(__dirname, 'src', 'views'));
 app.set('view engine', 'ejs');
@@ -22,7 +46,7 @@ app.set('view engine', 'ejs');
 
 //app.use(csrf());
 //Nossos proprios middlewares
-//app.use(middlewareGlobal);
+app.use(middlewareGlobal);
 app.use(checkCsrfError);
 //app.use(csrfMiddleware);
 
