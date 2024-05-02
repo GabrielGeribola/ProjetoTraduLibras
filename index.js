@@ -33,6 +33,7 @@ const sessionOptions = session({
 });
 
 // Inicializa o armazenamento da sessão antes de usar no aplicativo
+
 sessionStore.sync();
 
 app.use(sessionOptions);
