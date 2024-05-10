@@ -1,3 +1,4 @@
+/*
 const Login = require('../models/LoginModel');
 
 exports.index = (req, res) => {
@@ -59,3 +60,4 @@ exports.logout = function (req,res) {
   req.session.destroy();
   res.redirect('/')
 }
+*/
