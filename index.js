@@ -1,9 +1,9 @@
-
+require('dotenv').config();
 const express = require('express');
 const app = express();
 const session = require('express-session');
 const SequelizeStore = require('connect-session-sequelize') (session.Store);
-const sequelize = require('./src/models/database'); // Importe a instância do Sequelize criada anteriormente
+const sequelize = require('./src/config/database'); // Importe a instância do Sequelize criada anteriormente
 const flash = require('connect-flash');
 const routes = require('./routes');
 const path = require('path');
@@ -33,6 +33,7 @@ const sessionOptions = session({
 });
 
 // Inicializa o armazenamento da sessão antes de usar no aplicativo
+
 sessionStore.sync();
 
 app.use(sessionOptions);

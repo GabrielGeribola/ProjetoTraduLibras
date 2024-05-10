@@ -1,6 +1,7 @@
 const { Model, DataTypes} = require('sequelize');
 const validator = require('validator');
-const sequelize = require('./database');
+const bcryptjs = require('bcryptjs');
+const sequelize = require('../config/database');
 
 class Login extends Model {
   constructor(body) {
@@ -10,21 +11,48 @@ class Login extends Model {
     this.user = null;
   }
 
+  async login() {
+    this.valida();
+    if(this.errors.length > 0) return;
+    this.user = await LoginModel.findOne({ email: this.body.email });
+
+    if(!this.user) {
+      this.errors.push('Usuário não existe.');
+      return;
+    }
+
+    if(!bcryptjs.compareSync(this.body.password, this.user.password)) {
+      this.error.push('Senha inválida');
+      this.user = null;
+      return;
+    }
+  }
+
   async register() {
     this.valida();
     if(this.errors.length > 0) return;
 
-    try {
-    this.user = await LoginModel.create(this.body);
-    } catch(e) {
-      console.log(e);
-    }
+    await this.userExists();
+
+    if(this.errors.length > 0) return;
+
+    const salt = bcryptjs.genSaltSync();
+    this.body.password = bcryptjs.hashSync(this.body.password, salt);
+
+
+      this.user = await LoginModel.create(this.body);
+  }
+    //Valição pra conferir se o usuário já existe
+   async userExists() {
+    this.user = await LoginModel.findOne({ email: this.body.email });
+    if (this.user) this.errors.push('Usuário já existe.')
+
   }
 
   valida() {
     this.cleanUp();
 
-    // Validação de campos
+    // **Validação de campos**
     // O email precisa ser válido
     if(!validator.isEmail(this.body.email)) this.errors.push('E-mail Inválido');
     // A senha precisa ter entre 5 a 15 caracteres
