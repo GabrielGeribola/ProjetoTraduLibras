@@ -3,6 +3,7 @@ const validator = require('validator');
 const bcryptjs = require('bcryptjs');
 const sequelize = require('../config/database');
 
+
 class Login extends Model {
   constructor(body) {
     super();
@@ -14,7 +15,9 @@ class Login extends Model {
   async login() {
     this.valida();
     if(this.errors.length > 0) return;
-    this.user = await LoginModel.findOne({ email: this.body.email });
+    this.user = await Login.findOne({ where: { email: this.body.email } });
+
+
 
     if(!this.user) {
       this.errors.push('Usuário não existe.');
@@ -40,11 +43,11 @@ class Login extends Model {
     this.body.password = bcryptjs.hashSync(this.body.password, salt);
 
 
-      this.user = await LoginModel.create(this.body);
+    this.user = await Login.create(this.body);
   }
     //Valição pra conferir se o usuário já existe
    async userExists() {
-    this.user = await LoginModel.findOne({ email: this.body.email });
+    this.user = await Login.findOne({ where: { email: this.body.email } });
     if (this.user) this.errors.push('Usuário já existe.')
 
   }
@@ -76,11 +79,17 @@ class Login extends Model {
 }
 
 Login.init({
-  email: { type: DataTypes.STRING, allowNull: false},
-  password: { type: DataTypes.STRING, allowNull: false}
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true
+  },
+  Email: { type: DataTypes.STRING, allowNull: true},
+  pass: { type: DataTypes.STRING, allowNull: true}
 }, {
   sequelize,
-  modelName: 'Login'
+  modelName: 'Login',
+  tableName: 'Usuarios'
 });
 
 module.exports = Login;
