@@ -20,7 +20,7 @@ const sessionStore = new SequelizeStore ({
   db: sequelize,
   tableName: 'sessions'
 });
-/* CONFIGURAÇÃO DE CONEXÃO BD (NÃO CONFIGURAÇÃO DE DADOS)
+//CONFIGURAÇÃO DE CONEXÃO BD (NÃO CONFIGURAÇÃO DE DADOS)
 const sessionOptions = session({
   secret:'teste_de_chave_secreta',
   store: sessionStore,
@@ -39,7 +39,7 @@ sessionStore.sync();
 app.use(sessionOptions);
 
 app.use(flash());
-*/
+
 
 app.set('views', path.resolve(__dirname, 'src', 'views'));
 app.set('view engine', 'ejs');
