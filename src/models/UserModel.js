@@ -21,7 +21,7 @@ const User = db.define('users', {
 //criar a tabela
 //User.sync();
 
-//verificase ha alguma diferenca na tebela, realiza a alteracao
+//verificase ha alguma diferenca na tabela, realiza a alteracao
 //User.sunc({alter: true})
 
 module.exports = User;

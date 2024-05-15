@@ -18,18 +18,15 @@ app.use(express.static(path.resolve(__dirname, 'public')));
 
 const sessionStore = new SequelizeStore ({
   db: sequelize,
-  tableName: 'sessions'
+  tableName: 'session'
 });
-//CONFIGURAÇÃO DE CONEXÃO BD (NÃO CONFIGURAÇÃO DE DADOS)
+
+// CONFIGURAÇÃO DE CONEXÃO BD (NÃO CONFIGURAÇÃO DE DADOS)
 const sessionOptions = session({
   secret:'teste_de_chave_secreta',
   store: sessionStore,
   resave: false,
   saveUninitialized: false,
-  cookie: {
-    maxAge: 1000 * 60 * 60 * 24 & 7, //1 semana
-    httpOnly: true
-  }
 });
 
 // Inicializa o armazenamento da sessão antes de usar no aplicativo
