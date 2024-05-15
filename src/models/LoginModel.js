@@ -84,13 +84,22 @@ Login.init({
     primaryKey: true,
     autoIncrement: true
   },
-  Email: { type: DataTypes.STRING, allowNull: true},
-  pass: { type: DataTypes.STRING, allowNull: true}
+  email: { type: DataTypes.STRING, allowNull: true},
+  password: { type: DataTypes.STRING, allowNull: true}
 }, {
   sequelize,
   modelName: 'Login',
-  tableName: 'Usuarios'
+  tableName: 'Usuarios_teste'
 });
+
+(async () => {
+  try {
+    await sequelize.sync();
+    console.log("Modelo sincronizado com o banco de dados.");
+  } catch (e) {
+    console.error("Erro ao sincronizar o modelo com o banco de dados.", e);
+  }
+})();
 
 module.exports = Login;
 
