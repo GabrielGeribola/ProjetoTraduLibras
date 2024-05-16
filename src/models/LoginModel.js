@@ -39,11 +39,21 @@ class Login extends Model {
 
     if(this.errors.length > 0) return;
 
+    if(this.user) return;
+
     const salt = bcryptjs.genSaltSync();
     this.body.password = bcryptjs.hashSync(this.body.password, salt);
 
 
-    this.user = await Login.create(this.body);
+  try {
+    this.user = await Login.create({
+      email: this.body.email,
+      password: this.body.password
+    });
+  } catch (e) {
+    console.error("Erro ao criar novo usuário: ", error);
+    this.errors.push("Erro ao criar novo usuário.")
+  }
   }
     //Valição pra conferir se o usuário já existe
    async userExists() {
@@ -84,13 +94,24 @@ Login.init({
     primaryKey: true,
     autoIncrement: true
   },
-  Email: { type: DataTypes.STRING, allowNull: true},
-  pass: { type: DataTypes.STRING, allowNull: true}
+  email: { type: DataTypes.STRING, allowNull: true},
+  password: { type: DataTypes.STRING, allowNull: true}
 }, {
   sequelize,
   modelName: 'Login',
-  tableName: 'Usuarios'
+  tableName: 'Usuarios_teste'
 });
+
+//Cria o novo usuário apenas se ele não existir.
+(async () => {
+  try {
+    await sequelize.sync();
+    console.log("Modelo sincronizado com o banco de dados.");
+  } catch (e) {
+  console.error("Erro ao sincronizar o modelo com o banco de dados: ", e);
+  }
+
+})();
 
 module.exports = Login;
 
