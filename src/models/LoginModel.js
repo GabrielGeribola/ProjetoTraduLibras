@@ -102,6 +102,7 @@ Login.init({
   tableName: 'Usuarios_teste'
 });
 
+
 //Cria o novo usuário apenas se ele não existir.
 (async () => {
   try {
@@ -110,6 +111,7 @@ Login.init({
   } catch (e) {
   console.error("Erro ao sincronizar o modelo com o banco de dados: ", e);
   }
+
 
 })();
 
