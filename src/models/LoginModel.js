@@ -11,34 +11,43 @@ class Login extends Model {
     super();
     this.body = body;
     this.errors = [];
-    this.user = null;
+    this.User = null;
   }
 
-  async login() {
+  async login(req, res) {
     this.valida();
+
+    const user = await User.findOne({
+      atributes: ['id', 'email', 'password'],
+      where: {
+        email: this.body.email
+      }
+    });
+
+
     if(this.errors.length > 0) return;
-    this.user = await Login.findOne({ where: { email: this.body.email } });
+    //this.User = await User.findOne({ where: { email: this.body.email } });
 
 
 
-    if(!this.user) {
+    if(!this.User) {
       this.errors.push('Usuário não existe.');
       return;
     }
 
-    if(!bcryptjs.compareSync(this.body.password, this.user.password)) {
-      this.error.push('Senha inválida');
-      this.user = null;
+    if(!bcryptjs.compareSync(req.body.password, user.password)) {
+      this.errors.push('Senha inválida');
+      this.User = null;
       return;
     }
   }
 
   async register() {
-
+    this.valida();
     if(this.errors.length > 0) return;
     await this.userExists();
     if(this.errors.length > 0) return;
-    if(this.user) return;
+    if(this.User) return;
 
     const dados = this.body
     const salt = bcryptjs.genSaltSync();
@@ -46,19 +55,19 @@ class Login extends Model {
 
 
 
-      await User.create(dados)
+      this.User = await User.create(dados)
       .then(() => {
         console.log('Cadastro do usuario feito com sucesso')
       }).catch(() => {
         console.log("Erro ao criar novo usuário: ", e)
         this.errors.push("Erro ao criar novo usuário.")
     });
-    this.valida();
+
   }
     //Valição pra conferir se o usuário já existe
    async userExists() {
-    this.user = await Login.findOne({ where: { email: this.body.email } });
-    if (this.user) this.errors.push('Usuário já existe.')
+    this.User = await Login.findOne({ where: { email: this.body.email } });
+    if (this.User) this.errors.push('Usuário já existe.')
 
   }
 

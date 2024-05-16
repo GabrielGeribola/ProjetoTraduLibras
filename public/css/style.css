@@ -36,7 +36,7 @@ body, html  {
 
 .translate {
     color: white;
-  text-decoration-color: #74ff73;
+  text-decoration-color: rgb(7, 181, 245);
   background-color: rgb(36, 54, 61);
   height: 80px;
   width: 400px;
@@ -57,7 +57,7 @@ i#menu {
 }
 
 i#menu:hover {
-  background-color: #b1f065;
+  background-color: rgb(7, 181, 245);
 }
 
 .button-1 {
