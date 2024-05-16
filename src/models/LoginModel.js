@@ -1,7 +1,9 @@
-const { Model, DataTypes} = require('sequelize');
+const { Model, DataTypes,} = require('sequelize');
 const validator = require('validator');
 const bcryptjs = require('bcryptjs');
 const sequelize = require('../config/database');
+const User = require('./UserModel');
+
 
 
 class Login extends Model {
@@ -32,28 +34,26 @@ class Login extends Model {
   }
 
   async register() {
-    this.valida();
-    if(this.errors.length > 0) return;
 
+    if(this.errors.length > 0) return;
     await this.userExists();
-
     if(this.errors.length > 0) return;
-
     if(this.user) return;
 
+    const dados = this.body
     const salt = bcryptjs.genSaltSync();
     this.body.password = bcryptjs.hashSync(this.body.password, salt);
 
 
-  try {
-    this.user = await Login.create({
-      email: this.body.email,
-      password: this.body.password
+
+      await User.create(dados)
+      .then(() => {
+        console.log('Cadastro do usuario feito com sucesso')
+      }).catch(() => {
+        console.log("Erro ao criar novo usuário: ", e)
+        this.errors.push("Erro ao criar novo usuário.")
     });
-  } catch (e) {
-    console.error("Erro ao criar novo usuário: ", error);
-    this.errors.push("Erro ao criar novo usuário.")
-  }
+    this.valida();
   }
     //Valição pra conferir se o usuário já existe
    async userExists() {
@@ -88,6 +88,8 @@ class Login extends Model {
   }
 }
 
+
+
 Login.init({
   id: {
     type: DataTypes.INTEGER,
@@ -111,7 +113,6 @@ Login.init({
   } catch (e) {
   console.error("Erro ao sincronizar o modelo com o banco de dados: ", e);
   }
-
 
 })();
 
