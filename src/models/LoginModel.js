@@ -18,7 +18,7 @@ class Login extends Model {
     this.valida();
 
     const user = await User.findOne({
-      atributes: ['id', 'email', 'password'],
+      attributes: ['id', 'email', 'password'],
       where: {
         email: this.body.email
       }
@@ -30,12 +30,13 @@ class Login extends Model {
 
 
 
-    if(!this.User) {
-      this.errors.push('Usuário não existe.');
+
+    if(user === null) {
+      this.errors.push('Erro: Usuário ou senha incorreta!');
       return;
     }
 
-    if(!bcryptjs.compareSync(req.body.password, user.password)) {
+    if(!bcryptjs.compareSync(this.body.password, user.password)) {
       this.errors.push('Senha inválida');
       this.User = null;
       return;
@@ -66,8 +67,14 @@ class Login extends Model {
   }
     //Valição pra conferir se o usuário já existe
    async userExists() {
-    this.User = await Login.findOne({ where: { email: this.body.email } });
-    if (this.User) this.errors.push('Usuário já existe.')
+    const user = await User.findOne({
+      attributes: ['email', 'password'],
+      where: {
+        email: this.body.email
+      }
+    });
+
+    if (user) this.errors.push('Usuário já existe.')
 
   }
 
