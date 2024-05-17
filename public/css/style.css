@@ -37,7 +37,7 @@ body, html  {
 .translate {
     color: white;
   text-decoration-color: rgb(7, 181, 245);
-  background-color: rgb(36, 54, 61);
+  background-color: #24363d;
   height: 80px;
   width: 400px;
   display: flex;

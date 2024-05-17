@@ -68,11 +68,12 @@ class Login extends Model {
     //Valição pra conferir se o usuário já existe
    async userExists() {
     const user = await User.findOne({
-      attributes: ['email', 'password'],
+      attributes: [  'email', 'password'],
       where: {
         email: this.body.email
       }
     });
+
 
     if (user) this.errors.push('Usuário já existe.')
 
