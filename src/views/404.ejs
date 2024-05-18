@@ -1,17 +1,22 @@
 <%- include('includes/head'); %>
 <%- include('includes/nav'); %>
 
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-2"></div>
+<div class="container">
+  <div class="row">
+    <div class="col-lg-2"></div>
 
-        <div class="col-lg-8 my-5">
-              <h1 class="display-1 text-center">Error 404!</h1>
-              <p class="text-center lead">A página que você procura não existe</p>
-        </div>
-
-        <div class="col-lg-2"></div>
-      </div>
+    <div class="header">
+      <header>Tradulibras</header>
     </div>
+    <div class="col-lg-8 my-5, home">
+          <h1 class="display-1 text-center, erro">Error 404!</h1>
+          <p class="text-center lead, erro">A página que você procura não existe ou está em manutenção</p>
+          <img src="/public/imgs/Spinner@1x-2.6s-200px-200px.gif" alt="">
+
+    </div>
+
+    <div class="col-lg-2"></div>
+  </div>
+</div>
 
 <%- include('includes/footer'); %>
