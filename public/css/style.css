@@ -98,7 +98,7 @@ i#menu:hover {
 }
 
 .imagem p {
-  background-color: rgb(181, 240, 255);
+  background-color: rgba(181, 240, 255, 0.412);
   border-radius: none;
 }
 
