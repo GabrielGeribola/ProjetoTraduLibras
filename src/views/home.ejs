@@ -29,22 +29,26 @@
           <i id="menu" class="material-icons">lista</i>
         </div>
 
-    <div class="imagem">
+        <div class="imagem">
+          <% if (translatedText) { %>
+            <p><%= translatedText %></p>
+          <% } else { %>
+            <img src="/images/person-icon.png" alt="Pessoa">
+          <% } %>
+        </div>
 
-    </div>
-
-
-
-        <input class="input-1" placeholder="Digite seu texto" id="texto">
-
-        <button class="button-mic">
-          <i id="mic" class="material-icons">mic</i>
-
-        </button>
-        <button class="button-copy">
+        <form action="/translate" method="POST">
+          <input class="input-1" placeholder="Digite seu texto" name="text" id="texto" required>
+          <input type="hidden" name="sourceLanguage" value="pt">
+          <input type="hidden" name="targetLanguage" value="en">
+          <button type="submit" class="button-mic">
+            <i id="mic" class="material-icons">mic</i>
+          </button>
+          <button type="button" class="button-copy">
             <i id="copy" class="material-icons">content_copy</i>
-        </button>
-    </div>
-      </main>
-    </body>
+          </button>
+        </form>
+      </div>s
+    </main>
+  </body>
 

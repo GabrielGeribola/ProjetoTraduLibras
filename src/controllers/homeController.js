@@ -3,8 +3,8 @@ exports.index = (req, res) => {
 };
 
 exports.home = (req, res) => {
-  res.render('home');
-}
+  res.render('home', {originalText: '', translatedText: ''});
+};
 
 
 
