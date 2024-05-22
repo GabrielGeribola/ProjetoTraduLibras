@@ -22,6 +22,8 @@ body, html  {
 }
 
 .login {
+
+
   position: absolute;
   top: 50%;
   left: 50%;
@@ -35,7 +37,7 @@ body, html  {
 }
 
 .translate {
-    color: white;
+  color: white;
   text-decoration-color: rgb(7, 181, 245);
   background-color: #24363d;
   height: 80px;
@@ -46,12 +48,14 @@ body, html  {
   margin: 0, 50, 50, 0;
   border-radius: none;
 
-
 }
+
+
 
 i#menu {
   color: black;
   text-align: left;
+  font-size: 40px;
   padding: 5px;
   cursor: pointer;
 }
@@ -76,28 +80,31 @@ i#menu:hover {
 .button-copy {
   cursor: pointer;
   padding: 2px;
+  width: 40px;
+  height: 40px;
   margin: 5px;
 }
 
 
-.button-mic {
+.button-submit {
   cursor: pointer;
   padding: 2px;
+  width: 40px;
+  height: 40px;
   margin: 5px;
 }
-
 
 
 .imagem {
   font-size: 2.4em;
   display: flex;
-
   justify-content: center;
   align-items: center;
   height: 400px;
 }
 
 .imagem p {
+
   background-color: rgba(181, 240, 255, 0.412);
   border-radius: none;
 }
@@ -105,8 +112,11 @@ i#menu:hover {
 
 
 .input-1 {
+  width: 200px;
+  height: 50px;
   padding: 10px;
   margin-left: 15px;
+  margin-bottom: 10px;
 
 }
 
@@ -116,11 +126,13 @@ i#menu:hover {
 }
 
 .button-logout {
+
   display: flex;
-  align-items: right;
-  justify-content: right;
+  align-items: left;
+  justify-content: left;
   padding: 10px;
-  height: 50px;
+  height: 55px;
+
 
   color: white;
   text-decoration: none;
@@ -129,6 +141,13 @@ i#menu:hover {
 }
 
 .button-logout i {
+  font-size: 30px;
   margin-right: 5px;
   background-color: #f44336; /* Cor do botão de logout */
+}
+
+
+.button-logout i:hover {
+  background-color: #940f05; /* Cor do botão de logout */
+
 }
