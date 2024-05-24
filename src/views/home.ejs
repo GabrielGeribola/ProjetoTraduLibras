@@ -27,8 +27,18 @@
           </div>
 
 
-        </div>
-        <i id="menu" class="material-icons">lista</i>
+       <!-- Menu Hamburguer -->
+       <button class="hamburger-menu" id="hamburgerMenu">
+        <div></div>
+        <div></div>
+        <div></div>
+      </button>
+
+      <!-- Opções do Menu -->
+      <div class="menu-options" id="menuOptions">
+        <a href="#">Opção 1</a>
+        <a href="#">Opção 2</a>
+        <a href="#">Opção 3</a>
       </div>
 
         <div class="imagem">
@@ -52,5 +62,12 @@
         </form>
       </div>
     </main>
+
+    <script>
+      document.getElementById('hamburgerMenu').addEventListener('click', function () {
+        this.classList.toggle('active');
+        document.getElementById('menuOptions').classList.toggle('show');
+      });
+    </script>
   </body>
 
