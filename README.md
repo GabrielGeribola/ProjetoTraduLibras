@@ -3,33 +3,28 @@
 
 <h2>Tecnologias Utilizadas </h2>
 
-<h3 align="center">
+<h3 align="left">
     <a href="https://nodejs.org/en">🔗 NodeJs</a>
 </h3>
-<p align="center">🚀 Para o backend e gerenciamento de rotas.</p>
+<p align="left">🚀 Para o backend e gerenciamento de rotas.</p>
 
-<h3 align="center">
+<h3 align="left">
     <a href="https://expressjs.com">🔗 Express</a>
 </h3>
-<p align="center">🚀 Para o backend e gerenciamento de rotas.</p>
+<p align="left">🚀 Para o backend e gerenciamento de rotas.</p>
 
 
-<h3 align="center">
+<h3 align="left">
     <a href="https://ejs.co">🔗 EJS</a>
 </h3>
-<p align="center">🚀 Para a renderização de páginas HTML.</p>
+<p align="left">📄 Para a renderização de páginas HTML.</p>
 
 
-<h3 align="center">
+<h3 align="left">
     <a href="https://aws.amazon.com/pt/translate/">🔗 AWS Translate</a>
 </h3>
-<p align="center">🚀 Para os serviços de tradução de texto.</p>
+<p align="left">📝 Para os serviços de tradução de texto.</p>
 
-
-<h3 align="center">
-    <a href="https://nodejs.org/en">🔗 NodeJs</a>
-</h3>
-<p align="center">🚀 Para o backend e gerenciamento de rotas.</p>
 
 
 
