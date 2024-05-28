@@ -25,6 +25,32 @@
 </h3>
 <p align="left">📝 Para os serviços de tradução de texto.</p>
 
+
+<h2> 🛠 Configuração e Instalação </h2>
+
+<p> 1- Clone o repositório </p>
+```
+git clone https://github.com/GabrielGeribola/Tradulibras.git
+```
+<p>2- Instale as dependências: </p>
+```
+cd Tradulibras
+npm install
+```
+
+<p>3- Configure as variáveis de ambiente no arquivo '.env:'</p>
+```
+AWS_ACCESS_KEY_ID=your_access_key_id
+AWS_SECRET_ACCESS_KEY=your_secret_access_key
+AWS_REGION=your_aws_region
+```
+
+<p>4- Inicie a aplicação: </p>
+```
+npm run dev
+```
+
+
 <h2>💡 Como funciona</h3>
 <p>- O usuário acessa a aplicação e é direcionado para a página inicial.</p>
 <p>- Na página inicial, o usuário pode digitar um texto no campo designado e efetuar a tradução. </p>
