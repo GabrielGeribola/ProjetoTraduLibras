@@ -33,10 +33,9 @@
 ```
 git clone https://github.com/GabrielGeribola/Tradulibras.git
 ```
-<p>2- Instale as dependências: </p>
+<p>2- Instale as dependências, acesse a pasta do projeto e abra no vscode, no terminal dele faça: </p>
 
 ```
-cd Tradulibras
 npm install
 ```
 
