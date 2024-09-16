@@ -1,0 +1,267 @@
+Criar um model em 'models' = 'videoModel.js', "como /src/models/videoModel.js"
+
+Nele inserir:
+
+      const pool = require('../../config/db');
+
+      async function insertVideo(url) {
+        const [rows] = await pool.execute('INSERT INTO videos (url) VALUES (?)', [url]);
+        return rows.insertId;
+      }
+
+      async function getVideoByUrl(url) {
+        const [rows] = await pool.execute('SELECT id FROM videos WHERE url = ?', [url]);
+        return rows[0];
+      }
+
+      module.exports = {
+        insertVideo,
+        getVideoByUrl,
+      };
+
+
+
+
+
+Támbem em models, criar um arquivo significadoModel.js e colocar o seguinte script:
+
+    const pool = require('../../config/db');
+
+    async function insertSignificado(texto, videoId) {
+      await pool.execute('INSERT INTO significados (texto, video_id) VALUES (?, ?)', [texto, videoId]);
+    }
+
+    async function getSignificadoByTexto(texto) {
+      const [rows] = await pool.execute('SELECT * FROM significados WHERE texto = ?', [texto]);
+      return rows[0];
+    }
+
+    module.exports = {
+      insertSignificado,
+      getSignificadoByTexto,
+    };
+
+
+
+
+
+Em 'services', criar um arquivo 'databaseService.js' e inserir:
+
+    const videoModel = require('../models/videoModel');
+    const significadoModel = require('../models/significadoModel');
+
+    async function saveSignificado(texto, videoUrl) {
+      // Primeiro, verificar se o vídeo já existe
+      let video = await videoModel.getVideoByUrl(videoUrl);
+
+      if (!video) {
+        const videoId = await videoModel.insertVideo(videoUrl);
+        video = { id: videoId };
+      }
+
+      // Inserir o significado se ainda não existir
+      const existingSignificado = await significadoModel.getSignificadoByTexto(texto);
+
+      if (!existingSignificado) {
+        await significadoModel.insertSignificado(texto, video.id);
+      }
+    }
+
+    module.exports = {
+      saveSignificado,
+    };
+
+
+
+Em 'translateController.js' na pasta controllers, adapte o código para:
+
+      const translateService = require('../services/translateService');
+      const databaseService = require('../services/databaseService');
+
+      exports.translateAndSave = async (req, res) => {
+        const { text } = req.body;
+
+        try {
+          // Chame o serviço de tradução
+          const translatedText = await translateService.translateText(text, 'pt', 'en');
+
+          // Salve o texto traduzido e associe o vídeo
+          const videoUrl = 'https://example.com/video/' + translatedText;  // Aqui, você associaria a URL do vídeo correspondente
+          await databaseService.saveSignificado(text, videoUrl);
+
+          // Renderize o resultado na página
+          res.render('home', { translatedText });
+
+        } catch (error) {
+          console.error("Erro ao traduzir e salvar:", error);
+          res.status(500).send("Erro interno.");
+        }
+      };
+
+
+Em 'routes.js', adapte o caminho dos arquivos criados para lidar com a nova lógica implementada:
+
+      const express = require('express');
+      const route = express.Router();
+      const homeController = require('./src/controllers/homeController');
+      const translateController = require('./src/controllers/translateController');
+
+      // Rotas da home
+      route.get('/', homeController.index);
+      route.get('/home', homeController.home);
+
+      // Rota para tradução e salvar no banco de dados
+      route.post('/translate', translateController.translateAndSave);
+
+      module.exports = route;
+
+
+Em 'home.ejs' adapte o formulário de tradução para enviar a tradução correta.
+
+      <div class="imagem">
+        <% if (videoUrl) { %>
+          <video controls>
+            <source src="<%= videoUrl %>" type="video/mp4">
+            Seu navegador não suporta o vídeo.
+          </video>
+        <% } else { %>
+          <img src="public/imgs/avatar_teste2.png" alt="Avatar">
+        <% } %>
+      </div>
+
+
+
+
+PARA CRIAR AS TABELAS 'VIDEOS' E 'PALAVRAS':
+
+Vá e crie um arquivo em 'models', como Video.js, e nele insira:
+
+      const { Model, DataTypes } = require('sequelize');
+      const sequelize = require('../config/database'); // Caminho para a configuração do banco de dados
+
+      class Video extends Model {}
+
+      Video.init({
+        id: {
+          type: DataTypes.INTEGER,
+          primaryKey: true,
+          autoIncrement: true
+        },
+        url: {
+          type: DataTypes.STRING,
+          allowNull: false
+        }
+      }, {
+        sequelize,
+        modelName: 'Video',
+        tableName: 'videos'
+      });
+
+      module.exports = Video;
+
+Criar tabela 'palavra', crie um arquivo 'Palavra.js' em models e insira:
+
+      const { Model, DataTypes } = require('sequelize');
+      const sequelize = require('../config/database');
+      const Video = require('./Video'); // Referencia o modelo Video
+
+      class Palavra extends Model {}
+
+      Palavra.init({
+        id: {
+          type: DataTypes.INTEGER,
+          primaryKey: true,
+          autoIncrement: true
+        },
+        palavra: {
+          type: DataTypes.STRING,
+          allowNull: false
+        },
+        video_id: {
+          type: DataTypes.INTEGER,
+          allowNull: false,
+          references: {
+            model: Video,
+            key: 'id'
+          }
+        }
+      }, {
+        sequelize,
+        modelName: 'Palavra',
+        tableName: 'palavras'
+      });
+
+      // Definindo a relação entre Palavra e Video
+      Palavra.belongsTo(Video, { foreignKey: 'video_id' });
+
+      module.exports = Palavra;
+
+
+Em index.js (arquivo principal do projeto), sincronize os modelos com o banco de dados da seguinte forma:
+
+      const sequelize = require('./src/config/database');
+      const Video = require('./src/models/Video');
+      const Palavra = require('./src/models/Palavra');
+
+      // Sincronizar as tabelas com o banco de dados
+      sequelize.sync({ alter: true }) // `alter` faz ajustes necessários nas tabelas sem perder dados
+        .then(() => {
+          console.log("Banco de dados sincronizado com sucesso!");
+        })
+        .catch((error) => {
+          console.error("Erro ao sincronizar o banco de dados:", error);
+        });
+
+
+
+Adaptando o backend, você vai buscar o vídeo correspondente à palavra ou frase que o usário digitar.
+Se a palavra/frase exisitir no banco de dados, você retorna a URL do vídeo correspondente, como por exemplo em Controller > translateController.js:
+
+      const Palavra = require('../models/Palavra');
+      const Video = require('../models/Video');
+
+      exports.translate = async (req, res) => {
+        const { text } = req.body;
+
+        try {
+          // Busca a palavra no banco de dados
+          const palavra = await Palavra.findOne({
+            where: { palavra: text },
+            include: Video // Inclui o vídeo associado
+          });
+
+          if (!palavra) {
+            return res.status(404).send('Palavra não encontrada.');
+          }
+
+          // Retorna a URL do vídeo associado à palavra
+          return res.render('home', { videoUrl: palavra.Video.url });
+        } catch (error) {
+          console.error("Erro ao buscar palavra no banco de dados: ", error);
+          return res.status(500).send('Erro ao buscar palavra no banco de dados.');
+        }
+      };
+
+
+
+
+SCRIPT PARA EVITAR PALAVRAS REPETIDAS
+
+No python, podemos usar a biblioteca 'Panda' para processar os dados e criar uma tabela sem palavras repetidas, como por exemplo:
+
+
+      import pandas as pd
+
+      # Carregar o CSV contendo as palavras e frases
+      df = pd.read_csv('palavras.csv')
+
+      # Remover palavras duplicadas, mantendo apenas a primeira ocorrência
+      df_unique = df.drop_duplicates(subset=['palavra'])
+
+      # Salvar a nova tabela sem duplicatas
+      df_unique.to_csv('palavras_unicas.csv', index=False)
+
+      print("Tabela sem palavras repetidas criada com sucesso!")
+
+
+!!!  PESQUISAR COMO INTEGRAR O SCRIPT EM PYTHON PARA O PROJETO EM JAVASCRIPT !!!
