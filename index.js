@@ -5,6 +5,10 @@ const session = require('express-session');
 const SequelizeStore = require('connect-session-sequelize') (session.Store);
 const sequelize = require('./src/config/database'); // Importe a instância do Sequelize criada anteriormente
 const flash = require('connect-flash');
+const Video = require('./src/models/Video');
+const Palavra = require('./src/models/Palavra');
+
+
 const routes = require('./routes');
 const path = require('path');
 const csrf = require('csurf');
@@ -50,6 +54,10 @@ app.use(checkCsrfError);
 
 app.use(routes);
 
+
+sequelize.sync({ alter: true })
+  .then(() => console.log("Banco de dados sincronizado com sucesso!"))
+  .catch((error) => console.error("Erro ao sincronizar o banco de dados:", error));
 
 app.listen(3306, () => {
   console.log("Servidor iniciado na porta 3306: http://localhost:3306")
