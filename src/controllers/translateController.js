@@ -1,32 +1,55 @@
-const Palavra = require('../models/Palavra');
-const Video = require('../models/Video');
+const db = require('../config/database');
+const WordsSlBr = require('../models/WordsSlBr');
+const WordSplit = require('../models/WordSplit');
+const AnimationUrls = require('../models/AnimationUrls');
+
+
 
 exports.translate = async (req, res) => {
   const { text } = req.body;
 
-  try {
-    // Separar o texto em palavras
-    const palavras = text.split(' ');
+try {
+  // Verifica se a frase ou palavra já existe em words_sl_br
+  const wordEntry = await WordsSlBr.findOne ({
+    where: {description: text}
+  });
 
-    // Array para armazenar as URLs dos vídeos
-    let videoUrls = [];
 
-    // Buscar cada palavra no banco de dados
-    for (let palavra of palavras) {
-      const palavraEncontrada = await Palavra.findOne({
-        where: { palavra: palavra },
-        include: Video, // Inclui o vídeo associado
-      });
-
-      if (palavraEncontrada && palavraEncontrada.Video) {
-        videoUrls.push(palavraEncontrada.Video.url); // Adiciona a URL do vídeo
-      }
-    }
-
-    // Renderiza a página com os vídeos correspondentes
-    res.render('home', { videoUrls });
-  } catch (error) {
-    console.error("Erro ao buscar palavras no banco de dados: ", error);
-    return res.status(500).send('Erro ao buscar palavras no banco de dados.');
+  if (wordEntry) {
+    // Se a palavra ou frase já existe, buscar a URL correspondente
+    const video = await AnimationUrls.findOne({where: {id_animation: wordEntry.id_animation} });
+    return res.render('home', {videoUrl: video.url });
   }
+
+  const words = text.split(" ");
+  const videoUrls = [];
+
+  for (let word of words) {
+    const wordData = await WordSplit.findOne({where: {word_split: word} });
+    if (wordData) {
+      //Busca o video da palavra
+      const video = await AnimationUrls.findOne({ where: { id_animation: wordData.id_animation} });
+      if (video) {
+       videoUrls.push(video.url);
+       }
+    }
+  };
+
+
+  //Busca a URL da animação na tabela animation_sl_br
+  const [animationRow] = await db.execute (
+    'SELECT url FROM animation_sl_br WHERE id_animation = ?',
+    [idAnimation]
+  );
+
+  //Se encontrou URLs para todas as palavras
+  if (videoUrls.length > 0) {
+    return res.render('home', {videoUrl: videoUrls[0] }); //Exibe o primeiro video (adaptar conforme a quantidade de videos)
+  } else {
+    return res.status(404).send('Palavra não encontrada. ');
+  }
+ } catch(error) {
+  console.error("Erro ao buscar a tradução: ", error);
+  return res.status(500).send('Erro interno ');
+ }
 };

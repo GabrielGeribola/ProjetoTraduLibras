@@ -118,7 +118,7 @@ Login.init({
 }, {
   sequelize,
   modelName: 'Login',
-  tableName: 'Usuarios_teste'
+  tableName: 'Usuarios_testes'
 });
 
 
