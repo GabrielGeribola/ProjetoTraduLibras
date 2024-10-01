@@ -1,4 +1,4 @@
-const pool = require('../../config/db');
+const pool = require('../config/database');
 
 async function insertSignificado(texto, videoId) {
   await pool.execute('INSERT INTO significados (texto, video_id) VALUES (?, ?)', [texto, videoId]);

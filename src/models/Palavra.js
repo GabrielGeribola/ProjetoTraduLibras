@@ -1,4 +1,5 @@
-const { Model, DataTypes } = require('sequelize');
+
+/*const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 const Video = require('./Video');
 
@@ -18,3 +19,4 @@ Palavra.init({
 
 Palavra.belongsTo(Video, { foreignKey: 'video_id' });
 module.exports = Palavra;
+*/

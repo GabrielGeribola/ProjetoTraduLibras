@@ -1,13 +1,9 @@
-const pool = require('../../config/db');
+const pool = require('../config/database');
 
-async function insertVideo(url) {
-  const [rows] = await pool.execute('INSERT INTO videos (url) VALUES (?)', [url]);
-  return rows.insertId;
+// Função para buscar a URL do vídeo com base no significado (palavra ou frase)
+async function getVideoBySignificado(significado) {
+    const [rows] = await pool.execute('SELECT url FROM videos WHERE significado = ?', [significado]);
+    return rows[0]; // Retorna a primeira linha encontrada
 }
 
-async function getVideoByUrl(url) {
-  const [rows] = await pool.execute('SELECT id FROM videos WHERE url = ?', [url]);
-  return rows[0];
-}
-
-module.exports = { insertVideo, getVideoByUrl };
+module.exports = { getVideoBySignificado};

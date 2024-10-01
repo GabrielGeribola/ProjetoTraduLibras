@@ -41,13 +41,18 @@
         <a href="#">Opção 3</a>
       </div>
 
-        <div class="imagem">
-          <% if (translatedText) { %>
-            <p><%= translatedText %></p>
-          <% } else { %>
-            <img src="public\imgs\avatar_teste2.png" alt="">
-          <% } %>
-        </div>
+      <div class="videos">
+        <% if (videoUrls && videoUrls.length > 0) { %>
+          <% videoUrls.forEach(function(videoUrl) { %>
+            <video controls>
+              <source src="<%= videoUrl %>" type="video/mp4">
+              Seu navegador não suporta o vídeo.
+            </video>
+          <% }) %>
+        <% } else { %>
+          <p>Nenhum vídeo correspondente encontrado.</p>
+        <% } %>
+      </div>
 
         <form action="/translate" method="POST">
           <input class="input-1" placeholder="Digite seu texto" name="text" id="texto" required>
