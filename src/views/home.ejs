@@ -41,23 +41,10 @@
         <a href="#">Opção 3</a>
       </div>
 
-      <!--<div class="videos">
-        <% if (videoUrls && videoUrls.length > 0) { %>
-          <% videoUrls.forEach(function(videoUrl) { %>
-            <video controls>
-              <source src="<%= videoUrl %>" type="video/mp4">
-              Seu navegador não suporta o vídeo.
-            </video>
-          <% }) %>
-        <% } else { %>
-          <p>Nenhum vídeo correspondente encontrado.</p>
-        <% } %>
-      </div> -->
+
 
         <form action="/translate" method="POST">
           <input class="input-1" placeholder="Digite seu texto" name="text" id="texto" required>
-          <input type="hidden" name="sourceLanguage" value="pt">
-          <input type="hidden" name="targetLanguage" value="en">
           <button type="submit" class="button-submit">
             <i id="mic" class="material-icons">arrow_right_alt</i>
           </button>
@@ -65,6 +52,18 @@
             <i id="copy" class="material-icons">content_copy</i>
           </button>
         </form>
+      </div>
+
+      <% console.log('Video URL:', videoUrl); %>
+      <div class="video-container">
+        <% if (typeof videoUrl !== 'undefined' && videoUrl) { %>
+          <video controls>
+            <source src="<%= videoUrl %>" type="video/mp4">
+            Seu navegador não suporta vídeos.
+          </video>
+        <% } else { %>
+          <p>Nenhum vídeo encontrado para a frase inserida.</p>
+        <% } %>
       </div>
     </main>
 

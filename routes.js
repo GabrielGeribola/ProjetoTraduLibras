@@ -15,9 +15,11 @@ route.post('/login/login', loginController.login);
 route.get('/login/logout', loginController.logout);
 
 // Rotas de tradução
-route.get('/translate', (req, res) => res.render('home', { originalText: '', translatedText: '' }));
-//route.post('/translate', translateController.translateText);
+//route.get('/translate', (req, res) => res.render('home', { originalText: '', translatedText: '' }));
 //route.post('/translate' , translateController.transaleAndSave)
+
+route.post('/translate', translateController.translate);
+
 
 
 module.exports = route;

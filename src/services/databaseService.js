@@ -1,17 +1,19 @@
-const videoModel = require('../models/videoModel');
-const significadoModel = require('../models/significadoModel');
+const WordSlBr = require('../models/WordsSlBr');
+const WordSplit = require('../models/WordSplit');
+const AnimationUrls = require('../models/AnimationUrls');
 
+//Função pra salvar significado e associar vídeo
 async function saveSignificado(texto, videoUrl) {
-  let video = await videoModel.getVideoByUrl(videoUrl);
+  const video = await AnimationUrls.findOne({where: {url: videoUrl} });
   if (!video) {
-    const videoId = await videoModel.insertVideo(videoUrl);
-    video = { id: videoId };
+    throw new Error('Url de video não encontrada. ');
   }
 
-  const existingSignificado = await significadoModel.getSignificadoByTexto(texto);
-  if (!existingSignificado) {
-    await significadoModel.insertSignificado(texto, video.id);
-  }
-}
+  await WordSlBr.create({
+    description: texto,
+    id_animation: video.id_animation,
+    d_variable: null // Dummy variables a serem processadas
+  });
+};
 
-module.exports = { saveSignificado };
+module.exports = {saveSignificado};
