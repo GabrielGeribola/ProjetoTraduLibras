@@ -1,4 +1,4 @@
-const { Model, DataTypes } = require('sequelize');
+/*const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database'); // Configuração da conexão com o banco de dados
 
 class WordsSlBr extends Model {}
@@ -33,3 +33,4 @@ WordsSlBr.init({
 });
 
 module.exports = WordsSlBr;
+*/

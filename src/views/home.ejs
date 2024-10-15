@@ -43,8 +43,8 @@
 
 
 
-        <form action="/translate" method="POST">
-          <input class="input-1" placeholder="Digite seu texto" name="text" id="texto" required>
+        <form id="traduzirForm">
+          <input class="input-1" type="text" placeholder="Digite uma palavra ou expressão" name="palavra" id="palavra" required>
           <button type="submit" class="button-submit">
             <i id="mic" class="material-icons">arrow_right_alt</i>
           </button>
@@ -54,24 +54,50 @@
         </form>
       </div>
 
-      <% console.log('Video URL:', videoUrl); %>
-      <div class="video-container">
-        <% if (typeof videoUrl !== 'undefined' && videoUrl) { %>
-          <video controls>
-            <source src="<%= videoUrl %>" type="video/mp4">
-            Seu navegador não suporta vídeos.
-          </video>
-        <% } else { %>
-          <p>Nenhum vídeo encontrado para a frase inserida.</p>
-        <% } %>
-      </div>
-    </main>
+
+      <div class= "resultad" id= "resultado"></div>
+
 
     <script>
       document.getElementById('hamburgerMenu').addEventListener('click', function () {
         this.classList.toggle('active');
         document.getElementById('menuOptions').classList.toggle('show');
       });
+      document.getElementById('traduzirForm').addEventListener('submit', async function(e) {
+      e.preventDefault();  // Impede o envio padrão do formulário
+
+      const palavra = document.getElementById('palavra').value;
+
+      try {
+        const response = await fetch('http://127.0.0.1:5000/translate', {
+          method: 'POST',
+          headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ palavra }),
+      });
+
+
+
+      if (response.ok) {
+        const result = await response.json();
+        const formattedResult = `
+                Expressão Levenshtein: ${result.expressao_levenshtein}\n
+                Distância Levenshtein: ${result.distancia_levenshtein}\n
+                Expressão Cosseno: ${result.expressao_cosseno}\n
+                Similaridade Cosseno: ${result.similaridade_cosseno}\n
+                URL: ${result.url}
+            `;
+        document.getElementById('resultado').innerText = formattedResult;
+      } else {
+        document.getElementById('resultado').innerText= 'Erro ao traduzir a palavra'
+      }
+      } catch (error) {
+        console.error('Erro ao enviar a entrada:', error);
+        document.getElementById('resultado').innerText = "Erro ao processar a entrada.";
+      }
+    });
+
     </script>
   </body>
 

@@ -1,4 +1,4 @@
-const translate = require('../config/aws');
+/*const translate = require('../config/aws');
 
 const translateText = async (text, sourceLanguage, targetLanguage) => {
   const params = {
@@ -19,3 +19,4 @@ const translateText = async (text, sourceLanguage, targetLanguage) => {
 module.exports = {
   translateText
 };
+*/

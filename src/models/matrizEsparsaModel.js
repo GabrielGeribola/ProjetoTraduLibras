@@ -1,4 +1,4 @@
-const pool = require('../config/database');
+/*const pool = require('../config/database');
 
 //Função para buscar a matriz esparsa associada a uma palavra
 async function getMatrizEsparsaByPalavra(palavra) {
@@ -8,3 +8,4 @@ async function getMatrizEsparsaByPalavra(palavra) {
 }
 
 module.exports = {getMatrizEsparsaByPalavra};
+*/

@@ -1,4 +1,4 @@
-const { Model, DataTypes } = require('sequelize');
+/*const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
 class WordSplit extends Model {}
@@ -25,3 +25,4 @@ WordSplit.init({
 });
 
 module.exports = WordSplit;
+*/

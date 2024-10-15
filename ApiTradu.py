@@ -1,10 +1,13 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import mysql.connector
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from Levenshtein import distance as levenshtein_distance
 
 app = Flask(__name__)
+CORS(app, resources={r"/*": {"origins": "http://localhost:3306"}})
+
 
 # Script Matriz esparsa
 # Função para conectar ao banco de dados
@@ -17,14 +20,31 @@ def connect_to_db():
     )
 
 # Função para buscar as expressões e suas variáveis dummy
-def get_expressions_and_dummy_variables(cursor):
+def get_expressions_and_dummy_variables(cursor, expected_length=45):
     cursor.execute("SELECT description, d_variable FROM words_sl_br")
     data = cursor.fetchall()
 
-    expressions = [row[0] for row in data]
-    dummy_vars = [list(map(int, row[1])) for row in data]  # Convertendo a string binária em lista de inteiros
 
-    return expressions, np.array(dummy_vars)
+    dummy_vars = [list(map(int, row[1].strip())) for row in data if row[1].strip().isdigit()] # Convertendo a string binária em lista de inteiros
+    dummy_vars = []
+    for row in data:
+        dummy_string = row[1].strip()  # Remove espaços em branco
+        if dummy_string.isdigit():  # Verifica se a string contém apenas dígitos
+            # Converte a string para uma lista de inteiros
+            current_dummy_vars = list(map(int, dummy_string))
+            # Completa com 0's se a lista for menor que o tamanho esperado
+            if len(current_dummy_vars) < expected_length:
+                current_dummy_vars += [0] * (expected_length - len(current_dummy_vars))
+            dummy_vars.append(current_dummy_vars)
+        else:
+            # Se a string for inválida (não é dígito), preenche com 0's
+            dummy_vars.append([0] * expected_length)
+
+    expressions = [row[0] for row in data]
+
+    return expressions, dummy_vars
+
+
 
 # Função para calcular a similaridade de cosseno
 def find_most_similar_expression(user_input, expressions, dummy_vars):
@@ -59,7 +79,7 @@ def find_animation_url(cursor, expression):
 
     return None
 
-@app.route('/traduzir', methods=['POST'])
+@app.route('/translate', methods=['POST'])
 def traduzir():
     user_input = request.json.get('palavra')  # Recebe a palavra do corpo da requisição
     db = connect_to_db()
@@ -97,3 +117,7 @@ def traduzir():
 # Executa o script principal
 if __name__ == "__main__":
     app.run(debug=True)
+
+
+
+# CASO QUEIRA TESTAR, COLOQUE NO CMD:   curl -X POST http://127.0.0.1:5000/translate -H "Content-Type: application/json" -d "{\"palavra\": \"olá\"}"

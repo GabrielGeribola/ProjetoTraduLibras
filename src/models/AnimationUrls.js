@@ -1,4 +1,4 @@
-const { Model, DataTypes } = require('sequelize');
+/*const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
 class AnimationUrls extends Model {}
@@ -21,3 +21,4 @@ AnimationUrls.init({
 });
 
 module.exports = AnimationUrls;
+*/

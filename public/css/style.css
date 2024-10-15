@@ -215,3 +215,17 @@ i#menu:hover {
 .menu-options.show {
   display: flex;
 }
+
+.resultado {
+  color: rgb(0, 0, 0);
+  background-color: #ffffff;
+  width: 400px;
+  padding: 15px;
+  margin: 20px auto; /* Centraliza o div no eixo horizontal */
+  text-align: center; /* Centraliza o texto */
+  border-radius: 10px; /* Ajusta os cantos arredondados */
+  word-wrap: break-word; /* Quebra linhas longas */
+  font-family: Arial, sans-serif; /* Ajusta a fonte, se necessário */
+  font-size: 16px;
+}
+

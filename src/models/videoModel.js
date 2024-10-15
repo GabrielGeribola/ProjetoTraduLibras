@@ -1,4 +1,4 @@
-const pool = require('../config/database');
+/*const pool = require('../config/database');
 
 // Função para buscar a URL do vídeo com base no significado (palavra ou frase)
 async function getVideoBySignificado(significado) {
@@ -7,3 +7,4 @@ async function getVideoBySignificado(significado) {
 }
 
 module.exports = { getVideoBySignificado};
+*/
