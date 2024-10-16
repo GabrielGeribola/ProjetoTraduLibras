@@ -2,102 +2,86 @@
 <html lang="pt-br">
 
 <head>
-  <base href="/home">
+    <base href="/home">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
-      rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <title>Tradulibras</title>
     <link rel="stylesheet" href="/css/style.css">
-
-
 </head>
 
 <body>
-  <main>
-<div class="home">
-    <h2 class="translate">TRADUTOR</h2>
+    <main>
+        <div class="home">
+            <h2 class="translate">TRADUTOR</h2>
 
-    <div>
+            <div>
+                <!-- Botão de Logout -->
+                <a href="/login/logout" class="button-logout">
+                    <i class="material-icons">logout</i>
+                </a>
+            </div>
 
-            <!-- Botão de Logout -->
-            <a href="/login/logout" class="button-logout">
-              <i class="material-icons">logout</i>
-            </a>
-          </div>
+            <!-- Menu Hamburguer -->
+            <button class="hamburger-menu" id="hamburgerMenu">
+                <div></div>
+                <div></div>
+                <div></div>
+            </button>
 
+            <!-- Opções do Menu -->
+            <div class="menu-options" id="menuOptions">
+                <a href="#">Opção 1</a>
+                <a href="#">Opção 2</a>
+                <a href="#">Opção 3</a>
+            </div>
 
-       <!-- Menu Hamburguer -->
-       <button class="hamburger-menu" id="hamburgerMenu">
-        <div></div>
-        <div></div>
-        <div></div>
-      </button>
+            <form id="traduzirForm">
+                <input class="input-1" type="text" placeholder="Digite uma palavra ou expressão" name="palavra" id="palavra" required>
+                <button type="submit" class="button-submit">
+                    <i id="mic" class="material-icons">arrow_right_alt</i>
+                </button>
+                <button type="button" class="button-copy">
+                    <i id="copy" class="material-icons">content_copy</i>
+                </button>
+            </form>
+        </div>
 
-      <!-- Opções do Menu -->
-      <div class="menu-options" id="menuOptions">
-        <a href="#">Opção 1</a>
-        <a href="#">Opção 2</a>
-        <a href="#">Opção 3</a>
-      </div>
+        <div class="resultad" id="resultado"></div>
 
+        <script>
+            document.getElementById('traduzirForm').addEventListener('submit', async function (e) {
+                e.preventDefault();  // Impede o envio padrão do formulário
 
+                const palavra = document.getElementById('palavra').value;
 
-        <form id="traduzirForm">
-          <input class="input-1" type="text" placeholder="Digite uma palavra ou expressão" name="palavra" id="palavra" required>
-          <button type="submit" class="button-submit">
-            <i id="mic" class="material-icons">arrow_right_alt</i>
-          </button>
-          <button type="button" class="button-copy">
-            <i id="copy" class="material-icons">content_copy</i>
-          </button>
-        </form>
-      </div>
+                try {
+                    const response = await fetch('http://127.0.0.1:5000/translate', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ palavra }),
+                    });
 
-
-      <div class= "resultad" id= "resultado"></div>
-
-
-    <script>
-      document.getElementById('hamburgerMenu').addEventListener('click', function () {
-        this.classList.toggle('active');
-        document.getElementById('menuOptions').classList.toggle('show');
-      });
-      document.getElementById('traduzirForm').addEventListener('submit', async function(e) {
-      e.preventDefault();  // Impede o envio padrão do formulário
-
-      const palavra = document.getElementById('palavra').value;
-
-      try {
-        const response = await fetch('http://127.0.0.1:5000/translate', {
-          method: 'POST',
-          headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ palavra }),
-      });
-
-
-
-      if (response.ok) {
-        const result = await response.json();
-        const formattedResult = `
-                Expressão Levenshtein: ${result.expressao_levenshtein}\n
-                Distância Levenshtein: ${result.distancia_levenshtein}\n
-                Expressão Cosseno: ${result.expressao_cosseno}\n
-                Similaridade Cosseno: ${result.similaridade_cosseno}\n
-                URL: ${result.url}
-            `;
-        document.getElementById('resultado').innerText = formattedResult;
-      } else {
-        document.getElementById('resultado').innerText= 'Erro ao traduzir a palavra'
-      }
-      } catch (error) {
-        console.error('Erro ao enviar a entrada:', error);
-        document.getElementById('resultado').innerText = "Erro ao processar a entrada.";
-      }
-    });
-
-    </script>
-  </body>
-
+                    if (response.ok) {
+                        const result = await response.json();
+                        // Exibe apenas a palavra encontrada e o vídeo
+                        const formattedResult = `
+                            Palavra Encontrada: ${result.palavra_encontrada}
+                            <iframe width="560" height="315" src="${result.video_url}" frameborder="0" allowfullscreen></iframe>
+                        `;
+                        document.getElementById('resultado').innerHTML = formattedResult; // Usar innerHTML para inserir o iframe
+                    } else {
+                        const errorResult = await response.json(); // Tente obter a mensagem de erro
+                        document.getElementById('resultado').innerText = errorResult.mensagem || 'Erro ao traduzir a palavra';
+                    }
+                } catch (error) {
+                    console.error('Erro ao enviar a entrada:', error);
+                    document.getElementById('resultado').innerText = "Erro ao processar a entrada.";
+                }
+            });
+        </script>
+    </main>
+</body>
+</html>
