@@ -81,7 +81,7 @@
 
       if (response.ok) {
         const result = await response.json();
-        const formattedResult = `
+        const formattedResult = ` // IDÉIA: mudar a exibição do result de acordo com que está na API.
                 Expressão Levenshtein: ${result.expressao_levenshtein}\n
                 Distância Levenshtein: ${result.distancia_levenshtein}\n
                 Expressão Cosseno: ${result.expressao_cosseno}\n
