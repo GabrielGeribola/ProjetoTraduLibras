@@ -2,7 +2,6 @@ const express = require('express');
 const route = express.Router();
 const homeController = require('./src/controllers/homeController');
 const loginController = require('./src/controllers/loginController');
-const translateController = require('./src/controllers/translateController');
 
 //Rotas da home
 route.get('/', homeController.index);
@@ -18,7 +17,7 @@ route.get('/login/logout', loginController.logout);
 //route.get('/translate', (req, res) => res.render('home', { originalText: '', translatedText: '' }));
 //route.post('/translate' , translateController.transaleAndSave)
 
-route.post('/translate', translateController.translate);
+//route.post('/translate', translateController.translate);
 
 
 
