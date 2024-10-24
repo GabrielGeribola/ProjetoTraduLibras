@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tradulibras Search</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f4f8;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+
+        h1 {
+            color: #004aad; /* Azul escuro */
+            margin-bottom: 20px;
+        }
+
+        form {
+            background-color: #e0f7e9; /* Verde claro */
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        label, input {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #004aad; /* Azul escuro */
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #0073e6; /* Azul mais claro */
+        }
+
+        #result {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        #result p {
+            font-size: 18px;
+            color: #004aad; /* Azul escuro */
+        }
+
+        .video-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        video {
+            width: 320px;
+            height: 240px;
+            border: 2px solid #004aad; /* Azul escuro */
+            border-radius: 10px;
+        }
+
+        /* Responsividade */
+        @media (max-width: 600px) {
+            form {
+                width: 90%;
+            }
+
+            video {
+                width: 100%;
+                height: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Tradulibras</h1>
+    <form id="searchForm">
+        <label for="input_text">Digite uma palavra ou expressão:</label>
+        <input type="text" id="input_text" name="input_text">
+        <button type="submit">Buscar</button>
+    </form>
+
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('searchForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const inputText = document.getElementById('input_text').value;
+
+            const response = await fetch('/search', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({
+                    'input_text': inputText
+                })
+            });
+
+            const result = await response.json();
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '';
+
+            if (result.error) {
+                resultDiv.innerHTML = `<p>${result.error}</p>`;
+            } else {
+                resultDiv.innerHTML = `
+                    <p>Expressão: ${result.expression}</p>
+                    <div class="video-container">
+                        <video controls autoplay>
+                            <source src="${result.url}" type="video/mp4">
+                            Seu navegador não suporta o elemento de vídeo.
+                        </video>
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>
