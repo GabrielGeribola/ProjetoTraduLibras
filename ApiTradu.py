@@ -1,22 +1,18 @@
-from flask import Flask, request, jsonify
-from flask_cors import CORS
+from flask import Flask, jsonify, request, render_template
 import mysql.connector
 import numpy as np
 import json
 from sklearn.metrics.pairwise import cosine_similarity
 from Levenshtein import distance as levenshtein_distance
 from nltk.stem import WordNetLemmatizer
-import nltk
 from sentence_transformers import SentenceTransformer
-
-app = Flask(__name__)
-CORS(app, resources={r"/": {"origins": ""}})
-CORS(app)
+import nltk
 
 nltk.download('wordnet')
 nltk.download('punkt')
+
+app = Flask(__name__)
 lemmatizer = WordNetLemmatizer()
-model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
 
 def connect_to_db():
     return mysql.connector.connect(
@@ -26,6 +22,13 @@ def connect_to_db():
         database="tradulibras_v2"
     )
 
+# Função para gerar embeddings da entrada do usuário
+def gerar_embeddings(texto):
+    model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
+    embedding = model.encode(texto)
+    return embedding
+
+# Função para buscar expressões e embeddings
 def get_expressions_and_embeddings(cursor):
     cursor.execute("SELECT description, JSON_EXTRACT(embedding, '$') FROM words_sl_br")
     data = cursor.fetchall()
@@ -35,13 +38,13 @@ def get_expressions_and_embeddings(cursor):
 
     return expressions, np.array(embeddings)
 
+# Função para lematizar expressões
 def lemmatize_expression(expression):
-    if expression is not None:
-        words = expression.split()
-        lemmatized_words = [lemmatizer.lemmatize(word.lower()) for word in words]
-        return ' '.join(lemmatized_words)
-    return ""
+    words = expression.split()
+    lemmatized_words = [lemmatizer.lemmatize(word.lower()) for word in words]
+    return ' '.join(lemmatized_words)
 
+# Função para calcular a similaridade de cosseno
 def find_most_similar_expression(user_input_embedding, embeddings, expressions, limiar_similaridade=0.7):
     similarity_scores = cosine_similarity([user_input_embedding], embeddings)
     max_score_index = np.argmax(similarity_scores)
@@ -53,6 +56,7 @@ def find_most_similar_expression(user_input_embedding, embeddings, expressions, 
     else:
         return None, None
 
+# Função para calcular a distância de Levenshtein
 def find_closest_expression_levenshtein(user_input, expressions):
     lemmatized_input = lemmatize_expression(user_input)
     distances = [levenshtein_distance(lemmatized_input, lemmatize_expression(expression)) for expression in expressions]
@@ -60,6 +64,7 @@ def find_closest_expression_levenshtein(user_input, expressions):
     min_distance_index = np.argmin(distances)
     return expressions[min_distance_index], distances[min_distance_index]
 
+# Função para buscar o vídeo correspondente com base na expressão
 def find_animation_url(cursor, expression):
     cursor.execute("""
         SELECT a.url
@@ -73,80 +78,47 @@ def find_animation_url(cursor, expression):
         return result[0]
     return None
 
+@app.route('/')
+def index():
+    return render_template('index.html')
 
-def gerar_embeddings(texto):
-    embedding = model.encode(texto)
-    return embedding
+@app.route('/search', methods=['POST'])
+def search():
+    user_input = request.form['input_text']
 
-
-@app.route('/process_expression', methods=['POST'])
-def process_expression():
-    data = request.json
-    user_input = data.get('user_input', None)
-
-    if user_input is None or user_input == "":
-        return jsonify({"mensagem": "Entrada inválida!"}), 400
-
-    lemmatized_input = lemmatize_expression(user_input)
-
-    return jsonify({
-        "mensagem": "Processamento bem-sucedido!",
-        "lematizado": lemmatized_input
-    }), 200
-
-@app.route('/translate', methods=['POST'])
-def traduzir():
-    user_input = request.json.get('palavra')
     db = connect_to_db()
     cursor = db.cursor()
 
-    expressions, embeddings = get_expressions_and_embeddings(cursor)
+    try:
+        expressions, embeddings = get_expressions_and_embeddings(cursor)
 
+        closest_expression_lev, lev_distance = find_closest_expression_levenshtein(user_input, expressions)
 
-    closest_expression_lev, lev_distance = find_closest_expression_levenshtein(user_input, expressions)
+        if lev_distance <= 2:
+            url = find_animation_url(cursor, closest_expression_lev)
+            return jsonify({'expression': closest_expression_lev, 'url': url})
 
-    max_len = max(len(user_input), len(closest_expression_lev))
-    accuracy_lev = (1 - (lev_distance / max_len)) * 100
-
-
-    if lev_distance <= 6:
-        url = find_animation_url(cursor, closest_expression_lev)
-        if url:
-            response = {
-                "expressao_levenshtein": closest_expression_lev,
-                "distancia_levenshtein": lev_distance,
-                "acuracia_levenshtein": accuracy_lev,  # Adiciona a acurácia ao response
-                "url": url
-            }
-        else:
-            response = {
-                "mensagem": "Nenhum vídeo encontrado para essa expressão.",
-                "acuracia_levenshtein": accuracy_lev
-            }
-    else:
-        # Se a distância for muito grande, calcular a similaridade de cosseno
         embedding_input = gerar_embeddings(user_input)
         most_similar_expression, cosine_score = find_most_similar_expression(embedding_input, embeddings, expressions)
 
-        # Cálculo da acurácia com base na similaridade de cosseno
-        accuracy_cosine = cosine_score * 100
-
         if most_similar_expression:
             url = find_animation_url(cursor, most_similar_expression)
-            response = {
-                "expressao_cosseno": most_similar_expression,
-                "similaridade_cosseno": cosine_score,
-                "acuracia_cosseno": accuracy_cosine,  # Adiciona a acurácia ao response
-                "url": url if url else "Nenhum vídeo encontrado"
-            }
-        else:
-            response = {"mensagem": "Nenhuma correspondência encontrada com similaridade suficiente."}
+            return jsonify({'expression': most_similar_expression, 'url': url})
 
+    except Exception as e:
+        return jsonify({'error': str(e)})
+    finally:
+        cursor.close()
+        db.close()
 
-    cursor.close()
-    db.close()
+    return jsonify({'error': 'Nenhuma correspondência encontrada.'})
 
-    return jsonify(response)
+0
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     app.run(debug=True)
+
+
+
+
+
