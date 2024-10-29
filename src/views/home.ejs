@@ -43,62 +43,52 @@
 
 
 
-        <form id="traduzirForm">
-          <input class="input-1" type="text" placeholder="Digite uma palavra ou expressão" name="palavra" id="palavra" required>
-          <button type="submit" class="button-submit">
-            <i id="mic" class="material-icons">arrow_right_alt</i>
-          </button>
-          <button type="button" class="button-copy">
-            <i id="copy" class="material-icons">content_copy</i>
-          </button>
-        </form>
-      </div>
+      <form id="searchForm">
+        <label for="input_text">Digite uma palavra ou expressão:</label>
+        <input type="text" id="input_text" name="input_text">
+        <button type="submit">Buscar</button>
+    </form>
 
 
-      <div class= "resultad" id= "resultado"></div>
 
 
-    <script>
-        document.getElementById('hamburgerMenu').addEventListener('click', function () {
-        this.classList.toggle('active');
-        document.getElementById('menuOptions').classList.toggle('show');
-      });
-        document.getElementById('traduzirForm').addEventListener('submit', async function(e) {
-        e.preventDefault();  // Impede o envio padrão do formulário
+      <div class= "resultado" id= "result"></div>
 
-        const palavra = document.getElementById('palavra').value;
 
-        try {
-          const response = await fetch('http://127.0.0.1:5000/translate', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ palavra }),
-          });
+      <script>
+        document.getElementById('searchForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const inputText = document.getElementById('input_text').value;
 
-          if (response.ok) {
+            const response = await fetch('http://localhost:5000/search', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({
+                    'input_text': inputText
+                }),
+                mode:"cors"
+            });
+
             const result = await response.json();
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '';
 
-            // Formata o resultado baseado nos campos retornados pela API
-            if (result.mensagem) {
-              document.getElementById('resultado').innerText = result.mensagem;
+            if (result.error) {
+                resultDiv.innerHTML = `<p>${result.error}</p>`;
             } else {
-              const formattedResult = `
-                Expressão Cosseno: ${result.expressao_cosseno || 'N/A'}\n
-                Similaridade Cosseno: ${result.similaridade_cosseno || 'N/A'}\n
-                URL: ${result.url || 'N/A'}
-              `;
-              document.getElementById('resultado').innerText = formattedResult;
+                resultDiv.innerHTML = `
+                    <p>Expressão: ${result.expression}</p>
+                    <div class="video-container">
+                        <video controls autoplay>
+                            <source src="${result.url}" type="video/mp4">
+                            Seu navegador não suporta o elemento de vídeo.
+                        </video>
+                    </div>
+                `;
             }
-          } else {
-            document.getElementById('resultado').innerText = 'Erro ao traduzir a palavra';
-          }
-        } catch (error) {
-          console.error('Erro ao enviar a entrada:', error);
-          document.getElementById('resultado').innerText = "Erro ao processar a entrada.";
-        }
-      });
+        });
     </script>
   </body>
 

@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, request, render_template
+from flask_cors import CORS
 import mysql.connector
 import numpy as np
 import json
@@ -8,10 +9,12 @@ from nltk.stem import WordNetLemmatizer
 from sentence_transformers import SentenceTransformer
 import nltk
 
+
 nltk.download('wordnet')
 nltk.download('punkt')
 
 app = Flask(__name__)
+CORS(app, origins=["http://localhost:3306"])
 lemmatizer = WordNetLemmatizer()
 
 def connect_to_db():
