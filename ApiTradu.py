@@ -11,6 +11,7 @@ from sentence_transformers import SentenceTransformer
 
 app = Flask(__name__)
 CORS(app, resources={r"/": {"origins": ""}})
+CORS(app)
 
 nltk.download('wordnet')
 nltk.download('punkt')
@@ -104,30 +105,48 @@ def traduzir():
 
     closest_expression_lev, lev_distance = find_closest_expression_levenshtein(user_input, expressions)
 
+    max_len = max(len(user_input), len(closest_expression_lev))
+    accuracy_lev = (1 - (lev_distance / max_len)) * 100
+
+
     if lev_distance <= 6:
         url = find_animation_url(cursor, closest_expression_lev)
         if url:
-            response = {"mensagem": f"Vídeo correspondente: {url}"}
+            response = {
+                "expressao_levenshtein": closest_expression_lev,
+                "distancia_levenshtein": lev_distance,
+                "acuracia_levenshtein": accuracy_lev,  # Adiciona a acurácia ao response
+                "url": url
+            }
         else:
-            response = {"mensagem": "Nenhum vídeo encontrado para essa expressão."}
+            response = {
+                "mensagem": "Nenhum vídeo encontrado para essa expressão.",
+                "acuracia_levenshtein": accuracy_lev
+            }
     else:
+        # Se a distância for muito grande, calcular a similaridade de cosseno
         embedding_input = gerar_embeddings(user_input)
         most_similar_expression, cosine_score = find_most_similar_expression(embedding_input, embeddings, expressions)
+
+        # Cálculo da acurácia com base na similaridade de cosseno
+        accuracy_cosine = cosine_score * 100
 
         if most_similar_expression:
             url = find_animation_url(cursor, most_similar_expression)
             response = {
                 "expressao_cosseno": most_similar_expression,
                 "similaridade_cosseno": cosine_score,
+                "acuracia_cosseno": accuracy_cosine,  # Adiciona a acurácia ao response
                 "url": url if url else "Nenhum vídeo encontrado"
             }
         else:
             response = {"mensagem": "Nenhuma correspondência encontrada com similaridade suficiente."}
+
 
     cursor.close()
     db.close()
 
     return jsonify(response)
 
-if __name__ == "_main_":
+if __name__ == "__main__":
     app.run(debug=True)
