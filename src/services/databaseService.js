@@ -1,19 +1,7 @@
-const WordSlBr = require('../models/WordsSlBr');
-const WordSplit = require('../models/WordSplit');
-const AnimationUrls = require('../models/AnimationUrls');
+import sequelize from "../config/database";
 
-//Função pra salvar significado e associar vídeo
-async function saveSignificado(texto, videoUrl) {
-  const video = await AnimationUrls.findOne({where: {url: videoUrl} });
-  if (!video) {
-    throw new Error('Url de video não encontrada. ');
-  }
-
-  await WordSlBr.create({
-    description: texto,
-    id_animation: video.id_animation,
-    d_variable: null // Dummy variables a serem processadas
-  });
-};
-
-module.exports = {saveSignificado};
+export async function getAllUsers() {
+  const query = "SELECT * FROM users";
+  const [rows] = await sequelize.execute(query);
+  return rows;
+}
