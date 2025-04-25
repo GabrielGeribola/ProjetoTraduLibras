@@ -1,147 +1,241 @@
-:root{
-   --cor0: #004369; /* Cor do cabeçalho */
-   --cor1: #f3f3f3; /* Cor de alguns botões */
-   --cor2: #ecb189; /* Cor de algumas fontes (de algumas letras dentro das caixas de texto) */
-   --cor3: #3b3f46; /* Cor do botão criar cadastro*/
-   --cor4: #a3c8ff; /* Cor do botão acessar*/
-   --cor5: black; /* Cor botão Criar conta, Entrar */
-   --cor6: #fd8700; /* Cor para detalhes */
-   font-family:  -apple-system, system-ui,  BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif ;
- }
- 
- *{
-    margin: 0px;
-    padding: 0px;
-    height: auto;
-    width: auto;
-    font-family:  -apple-system, system-ui,  BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif ; 
- }
- 
- .col-lg-8-my-3, .home {
-    background-color: white;
+:root {
+  --cor0: #004369; /* Cor do cabeçalho */
+  --cor1: #f3f3f3; /* Cor de alguns botões */
+  --cor2: #ecb189; /* Cor de algumas fontes */
+  --cor3: #3b3f46; /* Cor do botão criar cadastro*/
+  --cor4: #a3c8ff; /* Cor do botão acessar*/
+  --cor5: black; /* Cor botão Criar conta, Entrar */
+  --cor6: #fd8700; /* Cor para detalhes */
+  font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans",
+    "Helvetica Neue", sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans",
+    "Helvetica Neue", sans-serif;
+}
+
+body,
+html {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-image: linear-gradient(to top, #ecb189, #f3f3f3);
+}
+
+.container {
+  background: white;
+  padding: 0 0 40px 0;
+  border-radius: 20px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+  width: 90%;
+  max-width: 500px;
+  margin: auto;
+  overflow: hidden;
+}
+
+.header {
+  background-color: var(--cor0);
+  width: 100%;
+  text-align: center;
+  padding: 20px 0;
+  border-radius: 20px 20px 0 0;
+}
+
+header {
+  font-size: 28px;
+  color: white;
+  font-weight: bold;
+}
+
+.content {
+  padding: 20px 30px;
+}
+
+h2 {
+  margin-top: 10px;
+  color: var(--cor0);
+}
+
+h4 {
+  margin-top: 20px;
+  margin-bottom: 15px;
+  color: var(--cor0);
+}
+
+p.lead {
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.form-container {
+  margin-top: 10px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.form-group:last-of-type {
+  margin-bottom: 30px; /* Maior espaço após o último grupo de formulário */
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee; /* Linha sutil de separação */
+}
+
+label.diminutivo {
+  font-size: 14px;
+  font-weight: bold;
+  display: block;
+  margin-bottom: 5px;
+  color: var(--cor3);
+  text-align: left;
+  width: 90%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.form-control {
+  width: 90%; /* Reduzido de 100% para 90% */
+  padding: 12px 12px 12px 35px; /* Reduzido de 15px para 12px */
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  transition: border-color 0.3s ease;
+  font-size: 14px; /* Reduzido de 16px para 14px */
+  margin-bottom: 10px;
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+}
+
+.form-control:focus {
+  border-color: var(--cor6);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(253, 135, 0, 0.2);
+}
+
+.password-container {
+  position: relative;
+  width: 100%;
+}
+
+.password-container input {
+  width: 100%;
+  padding-right: 40px;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--cor0);
+}
+
+.remember-forgot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.remember {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.remember input {
+  accent-color: var(--cor6);
+}
+
+.forgot {
+  color: var(--cor0);
+  text-decoration: none;
+}
+
+.forgot:hover {
+  text-decoration: underline;
+  color: var(--cor6);
+}
+
+.btn-btn-primary,
+.botaoacessar {
+  background-color: var(--cor6);
+  color: white;
+  border: none;
+  padding: 10px 20px; /* Reduzido de 12px 25px para 10px 20px */
+  border-radius: 8px; /* Reduzido de 10px para 8px */
+  font-size: 14px; /* Reduzido de 16px para 14px */
+  transition: background-color 0.3s ease;
+  cursor: pointer;
+  width: 80%; /* Reduzido de 100% para 80% */
+  margin-top: 20px;
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+}
+
+.btn-btn-primary:hover,
+.botaoacessar:hover {
+  background-color: var(--cor0);
+}
+
+.switch-form {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.link-button {
+  background: none;
+  border: none;
+  color: var(--cor6);
+  cursor: pointer;
+  font-weight: bold;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.link-button:hover {
+  color: var(--cor0);
+}
+
+/* Melhorar o espaçamento interno do formulário */
+form {
+  padding: 5px;
+  transition: transform 0.3s ease;
+}
+
+form:hover {
+  transform: scale(1.01);
+}
+
+.text-center {
+  text-align: center;
+}
+
+@media (max-width: 500px) {
+  .container {
+    width: 95%;
+  }
+
+  .content {
     padding: 15px;
-    box-sizing: border-box;
-    height: 89vh;
- }
- 
- h2, h4{
-    margin-top: 30px;
- }
- 
- 
-  body, html  {
-    height: 100vh;
-    width: 100vw;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-image: linear-gradient(to top, #07b5f5, #24363d);
-    border-radius: 20px;
   }
- 
- 
-  header{
-    color: white;
-    padding: 30px;
-    font-size: 30px;
-    text-align: center;
-    font-weight: bold;
-  }
- 
-  p.pespecial {
-    color: white;
-    font-weight: bold;
-    text-align: center;
-    margin-top: 15px;
-  }
- 
-  .header {
-    background-color: var(--cor0);
-    display: flex;
-    align-items: center;
-    width: 50vmax;
-    justify-content: center;
- }
- #menu {
-    justify-content: left;
-    align-items: normal;
- }
- 
-  .form-control, .input-1{
-    padding: 20px;
-    background-color: var(--cor1);
-    color: var(--cor2);
-    border-radius: 5px;
-    border: none;
-    width: 90%;
-    font-weight: lighter;
-  }
- 
-  label.diminutivo {
-    font-size: small;
-    font-weight: bold;
-    margin-top: 100px;
- }
- 
- p{
-    margin-bottom: 10px;
- }
- 
- 
- button.btn-btn-primary, a.entrar, .bottontradu {
-    background-color: var(--cor6);
-    border: none;
-    cursor: pointer;
-    border-radius: 5px;
-    padding: 20px;
-    margin-top: 15px;
-    font-weight: bold;
-    text-decoration: none;
-    color: var(--cor1);
- }
- 
- .btn-btn-primary:hover {
-   background-color: var(--cor0);
- }
- 
- 
- button.botaoacessar, .bottontradu{
-    background-color: var(--cor6);
-    color: white;
-    cursor: pointer;
- }
- 
- .botaoacessar:hover {
-   background-color: var(--cor0);
- }
- 
- 
- 
- .espaco{
-    margin-top: 70px;
-    text-align: center;
- }
- .nobullets{
-    list-style-type: none;
- }
- 
- .nodisplay {
-    display: none;
- }
- 
- .erro {
-   text-align: center;
-   margin: 15px;
- }
-
- img{
-   width: 50vmax;
- }
-
- .alert{
-   color: rgb(236, 101, 101);
- }
-
- .sucess{
-   color: rgb(168, 233, 168);
- }
+}

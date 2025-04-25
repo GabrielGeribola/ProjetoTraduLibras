@@ -62,3 +62,6 @@ exports.logout = function (req,res) {
   res.redirect('/')
 }
 
+exports.registerPage = (req, res) => {
+  return res.render('register');
+};

@@ -6,19 +6,23 @@
     <div class="header">
       <header>Tradulibras</header>
     </div>
-      <div >
-        <div >
-          <h2 >Login</h2>
-          <p >Acesse sua conta abaixo.</p>
+
+    <div class="row">
+      <div class="col-lg-2"></div>
+
+      <div class="col-lg-8 my-3">
+        <div class="row">
+          <h2 class="text-center">Criar conta</h2>
+          <p class="text-center lead">Preencha o formulário abaixo para criar sua conta.</p>
 
           <%- include('includes/messages'); %>
 
-          <div class="titulo-entrar">
-            <h4>Entrar</h4>
+          <div class="">
+            <h4>Cadastro</h4>
 
-            <form action="/login/login" method="POST">
+            <form action="/login/register" method="post">
               <div class="form-group">
-                <label class="diminutivo">Digite seu email</label>
+                <label class="diminutivo">Digite seu e-mail</label>
                 <br>
                 <input type="email" class="form-control" name="email" placeholder="Email" required>
               </div>
@@ -29,10 +33,10 @@
                 <input type="password" class="form-control" name="password" placeholder="Senha" required>
               </div>
 
-              <button type="submit" class="btn-btn-primary botaoacessar">Acessar</button>
+              <button type="submit" class="btn-btn-primary">Criar minha conta</button>
             </form>
 
-            <p class="tem-conta">Ainda não tem conta? <a class="linkp-register" href="/register">Crie uma agora</a></p>
+            <p class="tem-conta">Já tem uma conta? <a class="linkp-login" href="/login/index">Faça login</a></p>
           </div>
         </div>
       </div>
