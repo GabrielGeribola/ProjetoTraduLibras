@@ -3,18 +3,17 @@
 <body>
   <div class="container">
 
-    <div class="header">
-      <header>Tradulibras</header>
-    </div>
+    
+      <div class="logo-boasvindas-login">
+        <img src="/imgs/logo-escura.png" alt="Logo TraduLibras" class="img-fluid" />
+      </div>
+    
       <div >
         <div >
-          <h2 >Login</h2>
-          <p >Acesse sua conta abaixo.</p>
-
           <%- include('includes/messages'); %>
 
           <div class="titulo-entrar">
-            <h4>Entrar</h4>
+            <h4 class="entrar">Entrar</h4>
 
             <form action="/login/login" method="POST">
               <div class="form-group">
@@ -29,10 +28,14 @@
                 <input type="password" class="form-control" name="password" placeholder="Senha" required>
               </div>
 
+              
+
               <button type="submit" class="btn-btn-primary botaoacessar">Acessar</button>
             </form>
 
-            <p class="tem-conta">Ainda não tem conta? <a class="linkp-register" href="/register">Crie uma agora</a></p>
+            <div class="linha"></div>
+            <p class="tem-conta">Ainda não tem conta? </p>
+            <a class="linkp-register" href="/register">Crie uma agora</a>
           </div>
         </div>
       </div>

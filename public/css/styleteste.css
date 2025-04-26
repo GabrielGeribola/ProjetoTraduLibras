@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Josefin+Sans:ital,wght@0,100..700;1,100..700&display=swap');
+
 :root {
   --cor0: #004369; /* Cor do cabeçalho */
   --cor1: #f3f3f3; /* Cor de alguns botões */
@@ -6,16 +8,14 @@
   --cor4: #a3c8ff; /* Cor do botão acessar*/
   --cor5: black; /* Cor botão Criar conta, Entrar */
   --cor6: #fd8700; /* Cor para detalhes */
-  font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans",
-    "Helvetica Neue", sans-serif;
+  font-family: 'Josefin Sans', sans-serif;	
 }
 
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans",
-    "Helvetica Neue", sans-serif;
+  font-family: 'Josefin Sans', sans-serif;
 }
 
 body,
@@ -32,7 +32,7 @@ html {
   background: white;
   padding: 0 0 40px 0;
   border-radius: 20px;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 10px 20px rgba(0.15, 0.15 , 0.15 , 0.15);
   width: 90%;
   max-width: 500px;
   margin: auto;
@@ -40,11 +40,116 @@ html {
 }
 
 .header {
-  background-color: var(--cor0);
   width: 100%;
   text-align: center;
   padding: 20px 0;
-  border-radius: 20px 20px 0 0;
+  border-radius: 10px 10px 0 0; /* Reduz o arredondamento das laterais */
+  border-bottom: 2px solid #f5f6ff; /* Adiciona uma borda inferior sutil */
+}
+
+.boas-vindas {
+  color: var(--cor0);
+  font-size: 27px; /* Define um tamanho menor para o texto */
+  margin-bottom: 20px;
+}
+
+a{
+  background-color: var(--cor0);
+  color: var(--cor1);
+  display: block; /* Torna o link um elemento de bloco */
+  text-align: center; /* Centraliza o texto dentro do link */
+  margin: 0 auto; /* Centraliza o elemento na página */
+  width: fit-content; /* Ajusta a largura ao conteúdo */
+  text-decoration: none; /* Remove o sublinhado */
+  padding: 10px 20px; /* Adiciona espaçamento interno */
+  border-radius: 8px; /* Adiciona bordas arredondadas */
+}
+
+a:hover{
+  background-color: var(--cor4);
+  transform: scale(1.1); /* Aumenta o tamanho em 10% */
+  transition: transform 0.3s ease; /* Adiciona uma transição suave */
+color: var(--cor3);
+}
+
+.traduzindo{
+  color: var(--cor3);
+  text-align: center;
+  margin-top: 40px;
+  margin-bottom: 10px;
+}
+
+.clicar-abaixo{
+  margin: 10px;
+  margin-bottom: 5px;
+  color: var(--cor3);
+  text-align: center;
+  font: semibold;
+}
+
+.seta {
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 15px solid var(--cor6); /* Cor da seta */
+  margin: 10px auto; /* Centraliza horizontalmente */
+  animation: mover 1.5s infinite ease-in-out; /* Animação suave */
+  margin-top: 60px;
+}
+
+@keyframes mover {
+  0%, 30% {
+    transform: translateY(0); /* Posição inicial e final */
+  }
+  30% {
+    transform: translateY(-10px); /* Move para cima */
+  }
+}
+
+.comunicacao {
+  color: var(--cor6);
+  text-align: center;
+  margin-top: 10px;
+  margin-bottom: 70px;
+  font-weight: 600; /* Define a escrita como semibold */
+}
+
+.logo-boasvindas {
+  position: relative; /* Mantém o posicionamento relativo */
+  display: flex; /* Para centralizar ou alinhar melhor */
+  justify-content: flex-start; /* Alinha à esquerda */
+  align-items: center; /* Centraliza verticalmente */
+  margin-bottom: 30px; /* Adiciona espaçamento ao redor */
+  margin-left: 10px;
+}
+
+.logo-boasvindas img {
+  width: 130px; /* Define o tamanho da logo */
+  height: auto; /* Mantém a proporção da imagem */
+}
+
+.logo-boasvindas-login {
+  position: relative; /* Mantém o posicionamento relativo */
+  display: flex; /* Para centralizar ou alinhar melhor */
+  justify-content: flex-start; /* Alinha à esquerda */
+  align-items: center; /* Centraliza verticalmente */
+  margin: 30px; /* Adiciona espaçamento ao redor */
+  margin-left: 10px;
+}
+
+.logo-boasvindas-login img {
+  width: 130px; /* Define o tamanho da logo */
+  height: auto; /* Mantém a proporção da imagem */
+}
+
+.entrar {
+  font-size: 20px; /* Aumenta o tamanho da fonte para parecer um título */
+  font-weight: bold; /* Deixa o texto em negrito */
+  text-align: left; /* Centraliza o texto */
+  margin: 20px; /* Adiciona uma margem de 20px ao redor */
+  margin-top: 0;
+  color: var(--cor0); /* Define a cor do texto */
 }
 
 header {
@@ -82,12 +187,6 @@ p.lead {
   text-align: center;
 }
 
-.form-group:last-of-type {
-  margin-bottom: 30px; /* Maior espaço após o último grupo de formulário */
-  padding-bottom: 10px;
-  border-bottom: 1px solid #eee; /* Linha sutil de separação */
-}
-
 label.diminutivo {
   font-size: 14px;
   font-weight: bold;
@@ -100,21 +199,13 @@ label.diminutivo {
   margin-right: auto;
 }
 
-.input-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-}
-
 .form-control {
-  width: 90%; /* Reduzido de 100% para 90% */
-  padding: 12px 12px 12px 35px; /* Reduzido de 15px para 12px */
+  width: 90%; 
+  padding: 12px 12px 12px ; 
   border: 1px solid #ccc;
   border-radius: 8px;
   transition: border-color 0.3s ease;
-  font-size: 14px; /* Reduzido de 16px para 14px */
+  font-size: 14px; 
   margin-bottom: 10px;
   margin-left: auto;
   margin-right: auto;
@@ -135,17 +226,6 @@ label.diminutivo {
 .password-container input {
   width: 100%;
   padding-right: 40px;
-}
-
-.password-toggle {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  color: var(--cor0);
 }
 
 .remember-forgot {
@@ -175,26 +255,56 @@ label.diminutivo {
   color: var(--cor6);
 }
 
-.btn-btn-primary,
-.botaoacessar {
+.btn-criar-conta{
   background-color: var(--cor6);
   color: white;
   border: none;
-  padding: 10px 20px; /* Reduzido de 12px 25px para 10px 20px */
-  border-radius: 8px; /* Reduzido de 10px para 8px */
-  font-size: 14px; /* Reduzido de 16px para 14px */
+  padding: 10px 20px; /* Reduz o espaçamento interno */
+  border-radius: 8px; /* Mantém as bordas arredondadas */
+  font-size: 14px; /* Reduz o tamanho da fonte */
   transition: background-color 0.3s ease;
   cursor: pointer;
-  width: 80%; /* Reduzido de 100% para 80% */
+  width: 40%; /* Reduz a largura */
   margin-top: 20px;
+  margin-bottom: 10px; /* Adiciona margem inferior */
   margin-left: auto;
   margin-right: auto;
   display: block;
 }
 
-.btn-btn-primary:hover,
+.botaoacessar {
+  background-color: var(--cor6);
+  color: white;
+  border: none;
+  padding: 10px 20px; /* Reduz o espaçamento interno */
+  border-radius: 8px; /* Mantém as bordas arredondadas */
+  font-size: 17px; /* Reduz o tamanho da fonte */
+  transition: background-color 0.3s ease;
+  cursor: pointer;
+  width: 20%; /* Reduz a largura */
+  margin-top: 20px;
+  margin-bottom: 10px; /* Adiciona margem inferior */
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+}
+
+.btn-criar-conta:hover,
 .botaoacessar:hover {
-  background-color: var(--cor0);
+  background-color: var(--cor4);
+  color: var(--cor3);
+}
+
+.tem-conta {
+  text-align: center; /* Centraliza o texto */
+  margin: 20px; /* Adiciona margem superior */
+}
+
+.linha {
+  width: 100%; /* Faz a linha ocupar toda a largura do contêiner */
+  height: 1px; /* Define a altura da linha */
+  background-color: #ddd; /* Cor cinza clara para a linha */
+  margin: 20px 0; /* Adiciona espaçamento acima e abaixo da linha */
 }
 
 .switch-form {
