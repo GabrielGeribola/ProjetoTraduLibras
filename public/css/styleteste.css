@@ -1,146 +1,351 @@
-:root{
-   --cor0: #24363d; /* Cor do cabeçalho */
-   --cor1: #d9d9d9; /* Cor de alguns botões */
-   --cor2: #786f6f; /* Cor de algumas fontes (de algumas letras dentro das caixas de texto) */
-   --cor3: #968f8f; /* Cor do botão criar cadastro*/
-   --cor4: #397891; /* Cor do botão acessar*/
-   --cor5: black; /* Cor botão Criar conta, Entrar */
-   font-family:  -apple-system, system-ui,  BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif ;
- }
- 
- *{
-    margin: 0px;
-    padding: 0px;
-    height: auto;
-    width: auto;
-    font-family:  -apple-system, system-ui,  BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif ; 
- }
- 
- .col-lg-8-my-3, .home {
-    background-color: white;
+@import url('https://fonts.googleapis.com/css2?family=Josefin+Sans:ital,wght@0,100..700;1,100..700&display=swap');
+
+:root {
+  --cor0: #004369; /* Cor do cabeçalho */
+  --cor1: #f3f3f3; /* Cor de alguns botões */
+  --cor2: #ecb189; /* Cor de algumas fontes */
+  --cor3: #3b3f46; /* Cor do botão criar cadastro*/
+  --cor4: #a3c8ff; /* Cor do botão acessar*/
+  --cor5: black; /* Cor botão Criar conta, Entrar */
+  --cor6: #fd8700; /* Cor para detalhes */
+  font-family: 'Josefin Sans', sans-serif;	
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Josefin Sans', sans-serif;
+}
+
+body,
+html {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-image: linear-gradient(to top, #ecb189, #f3f3f3);
+}
+
+.container {
+  background: white;
+  padding: 0 0 40px 0;
+  border-radius: 20px;
+  box-shadow: 0 10px 20px rgba(0.15, 0.15 , 0.15 , 0.15);
+  width: 90%;
+  max-width: 500px;
+  margin: auto;
+  overflow: hidden;
+}
+
+.header {
+  width: 100%;
+  text-align: center;
+  padding: 20px 0;
+  border-radius: 10px 10px 0 0; /* Reduz o arredondamento das laterais */
+  border-bottom: 2px solid #f5f6ff; /* Adiciona uma borda inferior sutil */
+}
+
+.boas-vindas {
+  color: var(--cor0);
+  font-size: 27px; /* Define um tamanho menor para o texto */
+  margin-bottom: 20px;
+}
+
+a{
+  background-color: var(--cor0);
+  color: var(--cor1);
+  display: block; /* Torna o link um elemento de bloco */
+  text-align: center; /* Centraliza o texto dentro do link */
+  margin: 0 auto; /* Centraliza o elemento na página */
+  width: fit-content; /* Ajusta a largura ao conteúdo */
+  text-decoration: none; /* Remove o sublinhado */
+  padding: 10px 20px; /* Adiciona espaçamento interno */
+  border-radius: 8px; /* Adiciona bordas arredondadas */
+}
+
+a:hover{
+  background-color: var(--cor4);
+  transform: scale(1.1); /* Aumenta o tamanho em 10% */
+  transition: transform 0.3s ease; /* Adiciona uma transição suave */
+color: var(--cor3);
+}
+
+.traduzindo{
+  color: var(--cor3);
+  text-align: center;
+  margin-top: 40px;
+  margin-bottom: 10px;
+}
+
+.clicar-abaixo{
+  margin: 10px;
+  margin-bottom: 5px;
+  color: var(--cor3);
+  text-align: center;
+  font: semibold;
+}
+
+.seta {
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 15px solid var(--cor6); /* Cor da seta */
+  margin: 10px auto; /* Centraliza horizontalmente */
+  animation: mover 1.5s infinite ease-in-out; /* Animação suave */
+  margin-top: 60px;
+}
+
+@keyframes mover {
+  0%, 30% {
+    transform: translateY(0); /* Posição inicial e final */
+  }
+  30% {
+    transform: translateY(-10px); /* Move para cima */
+  }
+}
+
+.comunicacao {
+  color: var(--cor6);
+  text-align: center;
+  margin-top: 10px;
+  margin-bottom: 70px;
+  font-weight: 600; /* Define a escrita como semibold */
+}
+
+.logo-boasvindas {
+  position: relative; /* Mantém o posicionamento relativo */
+  display: flex; /* Para centralizar ou alinhar melhor */
+  justify-content: flex-start; /* Alinha à esquerda */
+  align-items: center; /* Centraliza verticalmente */
+  margin-bottom: 30px; /* Adiciona espaçamento ao redor */
+  margin-left: 10px;
+}
+
+.logo-boasvindas img {
+  width: 130px; /* Define o tamanho da logo */
+  height: auto; /* Mantém a proporção da imagem */
+}
+
+.logo-boasvindas-login {
+  position: relative; /* Mantém o posicionamento relativo */
+  display: flex; /* Para centralizar ou alinhar melhor */
+  justify-content: flex-start; /* Alinha à esquerda */
+  align-items: center; /* Centraliza verticalmente */
+  margin: 30px; /* Adiciona espaçamento ao redor */
+  margin-left: 10px;
+}
+
+.logo-boasvindas-login img {
+  width: 130px; /* Define o tamanho da logo */
+  height: auto; /* Mantém a proporção da imagem */
+}
+
+.entrar {
+  font-size: 20px; /* Aumenta o tamanho da fonte para parecer um título */
+  font-weight: bold; /* Deixa o texto em negrito */
+  text-align: left; /* Centraliza o texto */
+  margin: 20px; /* Adiciona uma margem de 20px ao redor */
+  margin-top: 0;
+  color: var(--cor0); /* Define a cor do texto */
+}
+
+header {
+  font-size: 28px;
+  color: white;
+  font-weight: bold;
+}
+
+.content {
+  padding: 20px 30px;
+}
+
+h2 {
+  margin-top: 10px;
+  color: var(--cor0);
+}
+
+h4 {
+  margin-top: 20px;
+  margin-bottom: 15px;
+  color: var(--cor0);
+}
+
+p.lead {
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.form-container {
+  margin-top: 10px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+label.diminutivo {
+  font-size: 14px;
+  font-weight: bold;
+  display: block;
+  margin-bottom: 5px;
+  color: var(--cor3);
+  text-align: left;
+  width: 90%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.form-control {
+  width: 90%; 
+  padding: 12px 12px 12px ; 
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  transition: border-color 0.3s ease;
+  font-size: 14px; 
+  margin-bottom: 10px;
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+}
+
+.form-control:focus {
+  border-color: var(--cor6);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(253, 135, 0, 0.2);
+}
+
+.password-container {
+  position: relative;
+  width: 100%;
+}
+
+.password-container input {
+  width: 100%;
+  padding-right: 40px;
+}
+
+.remember-forgot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.remember {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.remember input {
+  accent-color: var(--cor6);
+}
+
+.forgot {
+  color: var(--cor0);
+  text-decoration: none;
+}
+
+.forgot:hover {
+  text-decoration: underline;
+  color: var(--cor6);
+}
+
+.btn-criar-conta{
+  background-color: var(--cor6);
+  color: white;
+  border: none;
+  padding: 10px 20px; /* Reduz o espaçamento interno */
+  border-radius: 8px; /* Mantém as bordas arredondadas */
+  font-size: 14px; /* Reduz o tamanho da fonte */
+  transition: background-color 0.3s ease;
+  cursor: pointer;
+  width: 40%; /* Reduz a largura */
+  margin-top: 20px;
+  margin-bottom: 10px; /* Adiciona margem inferior */
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+}
+
+.botaoacessar {
+  background-color: var(--cor6);
+  color: white;
+  border: none;
+  padding: 10px 20px; /* Reduz o espaçamento interno */
+  border-radius: 8px; /* Mantém as bordas arredondadas */
+  font-size: 17px; /* Reduz o tamanho da fonte */
+  transition: background-color 0.3s ease;
+  cursor: pointer;
+  width: 20%; /* Reduz a largura */
+  margin-top: 20px;
+  margin-bottom: 10px; /* Adiciona margem inferior */
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+}
+
+.btn-criar-conta:hover,
+.botaoacessar:hover {
+  background-color: var(--cor4);
+  color: var(--cor3);
+}
+
+.tem-conta {
+  text-align: center; /* Centraliza o texto */
+  margin: 20px; /* Adiciona margem superior */
+}
+
+.linha {
+  width: 100%; /* Faz a linha ocupar toda a largura do contêiner */
+  height: 1px; /* Define a altura da linha */
+  background-color: #ddd; /* Cor cinza clara para a linha */
+  margin: 20px 0; /* Adiciona espaçamento acima e abaixo da linha */
+}
+
+.switch-form {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.link-button {
+  background: none;
+  border: none;
+  color: var(--cor6);
+  cursor: pointer;
+  font-weight: bold;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.link-button:hover {
+  color: var(--cor0);
+}
+
+/* Melhorar o espaçamento interno do formulário */
+form {
+  padding: 5px;
+  transition: transform 0.3s ease;
+}
+
+form:hover {
+  transform: scale(1.01);
+}
+
+.text-center {
+  text-align: center;
+}
+
+@media (max-width: 500px) {
+  .container {
+    width: 95%;
+  }
+
+  .content {
     padding: 15px;
-    box-sizing: border-box;
-    height: 89vh;
- }
- 
- h2, h4{
-    margin-top: 30px;
- }
- 
- 
-  body, html  {
-    height: 100vh;
-    width: 100vw;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-image: linear-gradient(to top, #07b5f5, #24363d);
-    border-radius: 20px;
   }
- 
- 
-  header{
-    color: white;
-    padding: 30px;
-    font-size: 30px;
-    text-align: center;
-    font-weight: bold;
-  }
- 
-  p.pespecial {
-    color: white;
-    font-weight: bold;
-    text-align: center;
-    margin-top: 15px;
-  }
- 
-  .header {
-    background-color: var(--cor0);
-    display: flex;
-    align-items: center;
-    width: 50vmax;
-    justify-content: center;
- }
- #menu {
-    justify-content: left;
-    align-items: normal;
- }
- 
-  .form-control, .input-1{
-    padding: 20px;
-    background-color: var(--cor1);
-    color: var(--cor2);
-    border-radius: 5px;
-    border: none;
-    width: 90%;
-    font-weight: lighter;
-  }
- 
-  label.diminutivo {
-    font-size: small;
-    font-weight: bold;
-    margin-top: 100px;
- }
- 
- p{
-    margin-bottom: 10px;
- }
- 
- 
- button.btn-btn-primary, a.entrar, .bottontradu {
-    background-color: var(--cor3);
-    border: none;
-    cursor: pointer;
-    border-radius: 5px;
-    padding: 20px;
-    margin-top: 15px;
-    font-weight: bold;
-    text-decoration: none;
-    color: var(--cor5);
- }
- 
- .btn-btn-primary:hover {
-   background-color: #423f3f;
- }
- 
- 
- button.botaoacessar, .bottontradu{
-    background-color: var(--cor4);
-    color: white;
-    cursor: pointer;
- }
- 
- .botaoacessar:hover {
-   background-color: #1d4c5f;
- }
- 
- 
- 
- .espaco{
-    margin-top: 70px;
-    text-align: center;
- }
- .nobullets{
-    list-style-type: none;
- }
- 
- .nodisplay {
-    display: none;
- }
- 
- .erro {
-   text-align: center;
-   margin: 15px;
- }
-
- img{
-   width: 50vmax;
- }
-
- .alert{
-   color: rgb(236, 101, 101);
- }
-
- .sucess{
-   color: rgb(168, 233, 168);
- }
+}
