@@ -1,47 +1,17 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-
-<head>
-  <base href="/home">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
-      rel="stylesheet">
-    <title>Tradulibras</title>
-    <link rel="stylesheet" href="/css/style.css">
+<%- include('includes/head'); %>
 
 
-</head>
 
 <body>
   <main>
-<div class="home">
+
+<%- include('includes/navbar'); %>
+
+
+<div div class="container">
     <h2 class="translate">TRADUTOR</h2>
 
-    <div>
-
-            <!-- Botão de Logout -->
-            <a href="/login/logout" class="button-logout">
-              <i class="material-icons">logout</i>
-            </a>
-          </div>
-
-
-       <!-- Menu Hamburguer -->
-       <button class="hamburger-menu" id="hamburgerMenu">
-        <div></div>
-        <div></div>
-        <div></div>
-      </button>
-
-      <!-- Opções do Menu -->
-      <div class="menu-options" id="menuOptions">
-        <a href="#">Opção 1</a>
-        <a href="#">Opção 2</a>
-        <a href="#">Opção 3</a>
-      </div>
-
-
+  
 
       <form id="searchForm">
         <label for="input_text">Digite uma palavra ou expressão:</label>
