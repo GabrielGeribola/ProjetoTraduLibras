@@ -1,0 +1,129 @@
+
+
+<style>
+
+
+
+/* Sidebar */
+.sidebar {
+    position: fixed;
+    background: rgba(163, 200, 255, 0.25);
+    border-radius: 30px;
+    
+    overflow-x: hidden;
+    transition: 0.5s;
+    padding-top: 60px;
+
+    width: 75px;
+    height: 95%;
+    left: 25px;
+    top: 20px;
+ 
+    padding: 40px 0px 0px 20px;
+    margin: auto;
+}
+
+
+.sidebar:hover {
+    width: 248px;
+}
+
+/* Links da sidebar */
+.sidebar a {
+  display: flex; /* FAZ FICAR UM DO LADO DO OUTRO */
+  align-items: center; /* centraliza verticalmente */
+  padding: 0;
+  text-decoration: none;
+  font-size: 20px;
+  color: #3B3F46;
+  background-color: transparent;
+  transition: 0.3s;
+
+  margin: 50px 0px 50px 0px;
+}
+
+
+.nav-img {
+  width: 200px; /* largura */
+  height: auto; /* altura automática para manter a proporção */
+}
+
+
+#icons{
+width: 42px;
+height: 41.71px;
+left: 53px;
+top: 145px;
+}
+
+/* Esconde o texto inicialmente */
+.link-text {
+  opacity: 0;
+  white-space: nowrap; /* impede que o texto quebre linha */
+  overflow: hidden;
+  transition: opacity 0.3s, margin 0.3s;
+  margin-left: 0;
+}
+
+/* Quando passar o mouse na sidebar, mostra o texto */
+.sidebar:hover .link-text {
+  opacity: 1;
+  margin-left: 10px; /* um espacinho entre o ícone e o texto */
+}
+
+.linha {
+  width: 80%;
+  height: 2px;
+  background-color: #3B3F46;
+  margin: 20px 0;
+}
+
+
+.linha:hover {
+    width: 90%;
+}
+
+
+
+</style>
+
+<body>
+
+
+<!-- Navbar lateral -->
+<div id="sidebar" class="sidebar">
+    <div>
+        <!-- Botão para abrir o menu -->
+        <img src="/imgs/logo-escura.png" alt="Logo TraduLibras" class="nav-img" />
+            
+        <div class="linha"></div>
+
+          <a href="/home">
+            <img src="/imgs/icon-traducao.png" id="icons"/>
+            <span class="link-text">Tradução</span>
+          </a>
+          <a href="#">
+            <img src="/imgs/icon-sugestoes.png" id="icons"/>
+            <span class="link-text">Sugestões</span></a>
+          <a href="#">
+            <img src="/imgs/icon-curso.png" id="icons"/>
+            <span class="link-text">Cursos</span></a>
+
+          <div class="linha"></div>
+
+          <a href="#">
+            <img src="/imgs/icon-sobre.png" id="icons"/>
+            <span class="link-text">Sobre</span></a>
+          <a href="#">
+            <img src="/imgs/icon-ajuda.png" id="icons"/>
+            <span class="link-text">Ajuda</span></a>
+          <a href="/login/logout" class="button-logout">
+            <img src="/imgs/icon-sair.png" id="icons"/>
+            <span class="link-text">Sair</span></a>
+          
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
