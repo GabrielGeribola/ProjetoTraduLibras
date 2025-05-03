@@ -62,8 +62,9 @@ html {
 .card-aprender:hover,
 .card-incluir:hover {
   transform: scale(1.1); /* Aumenta o tamanho em 10% */
-  transition: transform 0.3s ease, box-shadow 0.3s ease; /* Transição suave para hover */
+  transition: transform 0.3s ease, box-shadow 0.3s ease; /* Transição suave apenas para escala e sombra */
   box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2); /* Aumenta a sombra ao passar o mouse */
+  background-color: white; /* Garante que o fundo não mude */
 }
 
 .title-card{
@@ -75,6 +76,14 @@ html {
 .icon-traduzir,
 .icon-aprender, .icon-incluir {
   font-size: 25px;
+}
+
+.buttons-cards {
+  display: flex; /* Alinha os botões lado a lado */
+  justify-content: center; /* Centraliza os botões horizontalmente */
+  align-items: center; /* Alinha os botões verticalmente */
+  gap: 20px; /* Adiciona espaçamento entre os botões */
+  flex-wrap: wrap; /* Permite que os botões quebrem linha em telas menores */
 }
 
 .translate-home {
@@ -452,4 +461,80 @@ form:hover {
   .content {
     padding: 15px;
   }
+}
+
+.translate-home {
+  display: flex; /* Ativa o flexbox */
+  justify-content: center; /* Centraliza horizontalmente */
+  align-items: center; /* Centraliza verticalmente */
+  text-align: center; /* Garante que o texto interno seja centralizado */
+  margin: 0 auto; /* Centraliza o elemento no contêiner */
+  margin-bottom: 40px;
+  font-size: 30px; /* Aumenta o tamanho do texto */
+  position: absolute; /* Posiciona o título de forma absoluta */
+  top: 20px; /* Define a distância do topo da tela */
+  left: 50%; /* Centraliza horizontalmente */
+  transform: translateX(-50%); /* Ajusta para centralizar corretamente */
+}
+
+.cursos-pdf,
+.cursos-video {
+  display: flex; /* Alinha os itens lado a lado */
+  flex-wrap: wrap; /* Permite que os itens quebrem linha em telas menores */
+  gap: 20px; /* Espaçamento entre os itens */
+  justify-content: space-between; /* Garante espaçamento uniforme entre os itens */
+}
+
+.curso-primeiro-video,
+.curso-segundo-video,
+.curso-terceiro-video {
+  flex: 1 1 calc(33.33% - 20px); /* Cada item ocupa 1/3 da largura disponível */
+  max-width: 300px; /* Define um tamanho máximo */
+  box-sizing: border-box; /* Inclui padding e borda no tamanho total */
+  text-align: center; /* Centraliza o conteúdo dentro do item */
+  min-width: 250px; /* Garante que os itens tenham um tamanho mínimo */
+}
+
+
+
+.curso-primeiro-pdf,
+.curso-segundo-pdf,
+.curso-primeiro-video,
+.curso-segundo-video,
+.curso-terceiro-video {
+  flex: 1 1 calc(33.33% - 20px); /* Cada item ocupa 1/3 da largura disponível */
+  max-width: 300px; /* Define um tamanho máximo */
+  box-sizing: border-box; /* Inclui padding e borda no tamanho total */
+  text-align: center; /* Centraliza o conteúdo dentro do item */
+}
+
+.video-thumbnail {
+  width: 100%; /* Garante que a imagem ocupe toda a largura do contêiner */
+  height: auto; /* Mantém a proporção da imagem */
+  border-radius: 8px; /* Adiciona bordas arredondadas */
+}
+
+.cursos-pdf h4,
+.cursos-video h4 {
+  font-size: 1.2em;
+  color: var(--cor3);
+  margin-bottom: 10px;
+}
+
+.cursos-pdf a,
+.cursos-video a {
+  display: inline-block;
+  background-color: var(--cor4);
+  color: var(--cor3);
+  padding: 10px 20px;
+  border-radius: 5px;
+  text-decoration: none;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.cursos-pdf a:hover,
+.cursos-video a:hover {
+  background-color: var(--cor0);
+  color: var(--cor1);
 }
