@@ -39,6 +39,119 @@ html {
   overflow: hidden;
 }
 
+.card-traduzir,
+.card-aprender,
+.card-incluir {
+  background-color: var(--cor1); /* Cor de fundo do botão */
+  color: var(--cor3); /* Cor do texto */
+  border: none; /* Remove bordas */
+  padding: 20px; /* Reduz o espaçamento interno */
+  border-radius: 8px; /* Bordas arredondadas */
+  font-size: 16px; /* Tamanho da fonte */
+  font-weight: bold; /* Deixa o texto em negrito */
+  text-align: center; /* Centraliza o texto */
+  cursor: pointer; /* Mostra o cursor de clique */
+  transition: background-color 0.3s ease, box-shadow 0.3s ease; /* Transição suave para hover */
+  margin: 20px; /* Adiciona espaço maior entre os botões */
+  width: 370px; /* Define uma largura menor */
+  height: 150px; /* Define uma altura menor */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Adiciona uma sombra sutil */
+}
+
+.card-traduzir:hover,
+.card-aprender:hover,
+.card-incluir:hover {
+  transform: scale(1.1); /* Aumenta o tamanho em 10% */
+  transition: transform 0.3s ease, box-shadow 0.3s ease; /* Transição suave apenas para escala e sombra */
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2); /* Aumenta a sombra ao passar o mouse */
+  background-color: white; /* Garante que o fundo não mude */
+}
+
+.title-card{
+  color: var(--cor6);
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
+.icon-traduzir,
+.icon-aprender, .icon-incluir {
+  font-size: 25px;
+}
+
+.buttons-cards {
+  display: flex; /* Alinha os botões lado a lado */
+  justify-content: center; /* Centraliza os botões horizontalmente */
+  align-items: center; /* Alinha os botões verticalmente */
+  gap: 20px; /* Adiciona espaçamento entre os botões */
+  flex-wrap: wrap; /* Permite que os botões quebrem linha em telas menores */
+}
+
+.translate-home {
+  display: flex; /* Ativa o flexbox */
+  justify-content: center; /* Centraliza horizontalmente */
+  align-items: center; /* Centraliza verticalmente */
+  text-align: center; /* Garante que o texto interno seja centralizado */
+  margin: 0 auto; /* Centraliza o elemento no contêiner */
+  margin-bottom: 40px;
+  font-size: 30px; /* Aumenta o tamanho do texto */
+}
+
+.digite-expressao {
+  text-align: center; /* Centraliza o texto dentro do elemento */
+  display: block; /* Garante que o elemento seja tratado como bloco */
+  margin: 0 auto; /* Centraliza horizontalmente */
+  margin-bottom: 20px;
+}
+
+.input-group {
+  display: flex; /* Alinha o input e o botão lado a lado */
+  justify-content: center; /* Centraliza o grupo */
+  align-items: center; /* Alinha verticalmente */
+  gap: 10px; /* Espaçamento entre o input e o botão */
+  width: 100%; /* Garante que o grupo ocupe toda a largura */
+}
+
+.input-home {
+  flex: none; /* Remove o comportamento de ocupar todo o espaço disponível */
+  width: 40%; /* Diminui a largura horizontal */
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #d0e7ff; /* Cor sólida mais clara */
+  transition: all 0.3s ease; /* Transição suave */
+  font-size: 14px;
+}
+
+.input-home:focus {
+  width: 60%; /* Aumenta o tamanho horizontalmente ao clicar */
+  border-color: var(--cor4); /* Altera a cor da borda */
+  outline: none; /* Remove o contorno padrão */
+  box-shadow: 0 0 5px rgba(163, 200, 255, 0.5); /* Adiciona um leve brilho */
+}
+
+.btn-home {
+  background-color: var(--cor6); /* Cor do botão */
+  color: white; /* Cor do texto */
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease; /* Transição suave */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-home:focus {
+  background-color: var(--cor4); /* Cor ao focar */
+  outline: none; /* Remove o contorno padrão */
+}
+
+.btn-home:hover {
+  background-color: var(--cor4); /* Cor ao passar o mouse */
+}
+
 .header {
   width: 100%;
   text-align: center;
@@ -348,4 +461,80 @@ form:hover {
   .content {
     padding: 15px;
   }
+}
+
+.translate-home {
+  display: flex; /* Ativa o flexbox */
+  justify-content: center; /* Centraliza horizontalmente */
+  align-items: center; /* Centraliza verticalmente */
+  text-align: center; /* Garante que o texto interno seja centralizado */
+  margin: 0 auto; /* Centraliza o elemento no contêiner */
+  margin-bottom: 40px;
+  font-size: 30px; /* Aumenta o tamanho do texto */
+  position: absolute; /* Posiciona o título de forma absoluta */
+  top: 20px; /* Define a distância do topo da tela */
+  left: 50%; /* Centraliza horizontalmente */
+  transform: translateX(-50%); /* Ajusta para centralizar corretamente */
+}
+
+.cursos-pdf,
+.cursos-video {
+  display: flex; /* Alinha os itens lado a lado */
+  flex-wrap: wrap; /* Permite que os itens quebrem linha em telas menores */
+  gap: 20px; /* Espaçamento entre os itens */
+  justify-content: space-between; /* Garante espaçamento uniforme entre os itens */
+}
+
+.curso-primeiro-video,
+.curso-segundo-video,
+.curso-terceiro-video {
+  flex: 1 1 calc(33.33% - 20px); /* Cada item ocupa 1/3 da largura disponível */
+  max-width: 300px; /* Define um tamanho máximo */
+  box-sizing: border-box; /* Inclui padding e borda no tamanho total */
+  text-align: center; /* Centraliza o conteúdo dentro do item */
+  min-width: 250px; /* Garante que os itens tenham um tamanho mínimo */
+}
+
+
+
+.curso-primeiro-pdf,
+.curso-segundo-pdf,
+.curso-primeiro-video,
+.curso-segundo-video,
+.curso-terceiro-video {
+  flex: 1 1 calc(33.33% - 20px); /* Cada item ocupa 1/3 da largura disponível */
+  max-width: 300px; /* Define um tamanho máximo */
+  box-sizing: border-box; /* Inclui padding e borda no tamanho total */
+  text-align: center; /* Centraliza o conteúdo dentro do item */
+}
+
+.video-thumbnail {
+  width: 100%; /* Garante que a imagem ocupe toda a largura do contêiner */
+  height: auto; /* Mantém a proporção da imagem */
+  border-radius: 8px; /* Adiciona bordas arredondadas */
+}
+
+.cursos-pdf h4,
+.cursos-video h4 {
+  font-size: 1.2em;
+  color: var(--cor3);
+  margin-bottom: 10px;
+}
+
+.cursos-pdf a,
+.cursos-video a {
+  display: inline-block;
+  background-color: var(--cor4);
+  color: var(--cor3);
+  padding: 10px 20px;
+  border-radius: 5px;
+  text-decoration: none;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.cursos-pdf a:hover,
+.cursos-video a:hover {
+  background-color: var(--cor0);
+  color: var(--cor1);
 }

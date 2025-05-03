@@ -1,22 +1,19 @@
 <%- include('includes/head'); %>
 
-
-
 <body>
   <main>
 
 <%- include('includes/navbar'); %>
 
 
-<div div class="container">
-    <h2 class="translate">TRADUTOR</h2>
+<div div class="container-home">
+    <h2 class="translate-home">TRADUTOR</h2>
 
-  
-
-      <form id="searchForm">
-        <label for="input_text">Digite uma palavra ou expressão:</label>
-        <input type="text" id="input_text" name="input_text">
-        <button type="submit">Buscar</button>
+    <div class="digite-expressao"><p >Digite uma palavra ou expressão:</p></div>
+      <form id="searchForm" class="input-group">
+        
+        <input type="text" class="input-home" id="input_text" name="input-text" placeholder="Exemplo: amar">
+        <button class="btn-home" type="submit">&gt;</button>
     </form>
 
 
@@ -25,6 +22,25 @@
       <div class= "resultado" id= "result"></div>
 
 
+
+      <div class="buttons-cards">
+        <a href="/traduzir" class="card-traduzir">
+          <p class="icon-traduzir">🔁</p>
+          <h3 class="title-card">Traduzir</h3>
+          <p class="descricao-card">Converta palavras em Libras de forma rápida e intuitiva.</p>
+        </a>
+        <a href="/cursos" class="card-aprender">
+          <p class="icon-aprender">📖</p>
+          <h3 class="title-card">Aprender</h3>
+          <p class="descricao-card">Descubra novos sinais e amplie seu conhecimento em Libras.</p>
+        </a>
+        <a href="/incluir" class="card-incluir">
+          <p class="icon-incluir">🤗</p>
+          <h3 class="title-card">Incluir</h3>
+          <p class="descricao-card">Facilite a comunicação e torne o diálogo mais acessível.</p>
+        </a>
+      </div>
+      
       <script>
         document.getElementById('searchForm').addEventListener('submit', async function(event) {
             event.preventDefault();

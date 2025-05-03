@@ -1,0 +1,66 @@
+<%- include('includes/head'); %>
+
+<body>
+  <main>
+
+  <%- include('includes/navbar'); %>
+
+  <div class="container-home">
+    <h2 class="translate-home">CURSOS</h2>
+    <div class="cursos-pdf">
+        <h3>Vamos começar a aprender:</h3>
+        
+        <!-- Primeiro PDF -->
+        <div class="curso-primeiro-pdf">
+            <h4>Libras</h4>
+            <p>PDF</p>
+            <!-- Link para o PDF, que irá acionar o download -->
+            <a href="/pdfs/libras-curso.pdf" download="Libras_Curso">Faça o download</a>
+        </div>
+    
+        <!-- Segundo PDF -->
+        <div class="curso-segundo-pdf">
+            <h4>Libras</h4>
+            <p>PDF</p>
+            <!-- Link para o PDF, que irá acionar o download -->
+            <a href="/pdfs/sinais-em-libras.pdf" download="Sinais_em_Libras">Faça o download</a>
+        </div>
+    </div>
+    
+    <div class="cursos-video">
+        <h3>Recomendamos para você:</h3>
+        
+        <!-- Primeiro Vídeo -->
+        <div class="curso-primeiro-video">
+            <h4>Conceitos básicos em Libras</h4>
+            <a href="https://www.youtube.com/watch?v=VIDEO_ID_1" target="_blank">
+                <img src="https://img.youtube.com/vi/VIDEO_ID_1/hqdefault.jpg" alt="Conceitos básicos em Libras" class="video-thumbnail">
+                <p>Saiba mais</p>
+            </a>
+        </div>
+        
+        <!-- Segundo Vídeo -->
+        <div class="curso-segundo-video">
+            <h4>75 Sinais em Libras</h4>
+            <a href="https://www.youtube.com/watch?v=VIDEO_ID_2" target="_blank">
+                <img src="https://img.youtube.com/vi/VIDEO_ID_2/hqdefault.jpg" alt="75 Sinais em Libras" class="video-thumbnail">
+                <p>Saiba mais</p>
+            </a>
+        </div>
+        
+        <!-- Terceiro Vídeo -->
+        <div class="curso-terceiro-video">
+            <h4>Nível básico em Libras</h4>
+            <a href="https://www.youtube.com/watch?v=VIDEO_ID_3" target="_blank">
+                <img src="https://img.youtube.com/vi/VIDEO_ID_3/hqdefault.jpg" alt="Nível básico em Libras" class="video-thumbnail">
+                <p>Saiba mais</p>
+            </a>
+        </div>
+    </div>
+    
+  </div>
+
+  <%- include('includes/footer'); %>
+
+  </main>
+</body>
