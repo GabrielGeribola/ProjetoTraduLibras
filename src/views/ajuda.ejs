@@ -1,0 +1,116 @@
+<%- include('includes/head') %>
+<%- include('includes/navbar') %>
+
+<style>
+    .faq-container {
+    width: 90%;
+    max-width: 800px;
+    margin: 50px auto;
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0px 5px 20px rgba(0,0,0,0.1);
+  }
+
+  .faq-title {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 20px;
+    color: #1e293b;
+    border-bottom: 2px solid #60a5fa;
+    padding-bottom: 10px;
+  }
+
+  .accordion {
+    background-color: #f8fafc;
+    color: #0f172a;
+    cursor: pointer;
+    padding: 18px;
+    width: 100%;
+    border: none;
+    text-align: left;
+    outline: none;
+    font-size: 18px;
+    transition: 0.4s;
+    margin-bottom: 10px;
+    border-radius: 10px;
+  }
+
+  .active, .accordion:hover {
+    background-color: #e2e8f0;
+  }
+
+  .panel {
+    padding: 0 18px;
+    background-color: white;
+    display: none;
+    overflow: hidden;
+    border-radius: 10px;
+    margin-bottom: 10px;
+  }
+
+  .faq-image {
+    text-align: center;
+    margin-top: 30px;
+  }
+
+  .faq-image img {
+    width: 200px;
+  }
+</style>
+
+<div class="faq-container">
+  <div class="faq-title">Ajuda</div>
+
+  <button class="accordion">Como faço para redefinir minha senha?</button>
+  <div class="panel">
+    <p>Para redefinir sua senha, vá até a página de login e clique em "Esqueceu a senha?".</p>
+  </div>
+
+  <button class="accordion">Como realizo a tradução?</button>
+  <div class="panel">
+    <p>Após fazer login, acesse a aba "Home" e insira o texto que deseja traduzir.</p>
+  </div>
+
+  <button class="accordion">Como envio sugestões de frases ou palavras?</button>
+  <div class="panel">
+    <p>Utilize o formulário de contato disponível na página de sugestões para enviar suas ideias.</p>
+  </div>
+
+  <button class="accordion">Como funciona os cursos e apostilas?</button>
+  <div class="panel">
+    <p>Para acessar, entre na área de cursos e clique nos links de vídeo aulas ou baixe o PDF disponível.</p>
+  </div>
+
+  <div class="faq-image">
+    <img src="https://cdn-icons-png.flaticon.com/512/6614/6614671.png" alt="FAQ">
+  </div>
+</div>
+
+<script>
+    const acc = document.querySelectorAll(".accordion");
+  
+    acc.forEach(button => {
+      button.addEventListener("click", function() {
+        // Fecha todos os painéis primeiro
+        acc.forEach(btn => {
+          if (btn !== this) {
+            btn.classList.remove("active");
+            btn.nextElementSibling.style.display = "none";
+          }
+        });
+  
+        // Alterna o painel clicado
+        this.classList.toggle("active");
+        const panel = this.nextElementSibling;
+        if (panel.style.display === "block") {
+          panel.style.display = "none";
+        } else {
+          panel.style.display = "block";
+        }
+      });
+    });
+  </script>
+  
+
+<%- include('includes/footer') %>

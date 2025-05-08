@@ -10,6 +10,9 @@ route.get('/home', homeController.home);
 // Rota para a página de cursos
 route.get('/cursos', homeController.cursos); // Adicionando a rota de cursos
 
+// Rota para a página de ajuda
+route.get('/ajuda', homeController.ajuda); // Adicionando a rota de ajuda
+
 // Rotas de login
 route.get('/login/index', loginController.index);
 route.post('/login/register', loginController.register);
