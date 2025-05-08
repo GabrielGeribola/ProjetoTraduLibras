@@ -1,128 +1,139 @@
-<%- include('includes/head'); %>
+<%- include('includes/head') %>
+<%- include('includes/navbar') %>
 
 <style>
-  .container-cursos {
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 10px 20px;
-    font-family: 'Poppins', sans-serif;
-  }
 
-  .title-cursos {
-    text-align: center;
-    font-size: 32px;
-    margin-top: 10px; /* Título mais para cima */
-    margin-bottom: 30px; /* Espaço depois do título */
-  }
+.page-container {
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+  min-height: 100vh;
+  align-items: flex-start;
+}
 
-  .subtitulo {
-    font-size: 22px;
-    margin-bottom: 20px;
-    color: #333;
-  }
+.content-card {
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0px 4px 20px rgba(0,0,0,0.1);
+  padding: 30px 40px;
+  width: 90%; /* <<< NOVO! */
+  max-width: 1400px; /* <<< bem mais largo agora */
+}
 
-  .cursos-pdf,
-  .cursos-video {
+
+  .header {
     display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
     justify-content: space-between;
-    margin-bottom: 40px;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
   }
 
-  .curso-primeiro-pdf,
-  .curso-segundo-pdf,
-  .curso-primeiro-video,
-  .curso-segundo-video,
-  .curso-terceiro-video {
-    flex: 1 1 calc(33.33% - 20px);
-    box-sizing: border-box;
-    min-width: 250px;
-    max-width: 300px;
+  .header h1 {
+    font-size: 1.8rem;
+    color: #1e293b;
+    border-bottom: 2px solid #60a5fa;
+    padding-bottom: 5px;
+    margin: 0;
   }
 
-  .video-thumbnail {
-    width: 100%;
-    height: auto;
-    border-radius: 8px;
-  }
-
-  h4 {
-    font-size: 18px;
-    margin: 10px 0 5px;
-  }
-
-  a {
-    display: inline-block;
-    background-color: #004369;
-    color: white;
-    padding: 10px 20px;
-    border-radius: 6px;
-    text-decoration: none;
+  .search-bar {
+    width: 250px;
+    padding: 8px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 20px;
+    outline: none;
+    font-size: 14px;
     margin-top: 10px;
   }
 
-  a:hover {
-    background-color: #a3c8ff;
+  .section-title {
+    font-size: 1.3rem;
+    color: #1e293b;
+    margin: 20px 0 10px;
   }
 
-  p {
-    margin-top: 5px;
+  .courses-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); /* <<< aumentei */
+  gap: 20px; /* um pouco mais de espaço entre os cards */
+  margin-bottom: 20px;
+}
+
+  .card {
+    background: #f8fafc;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0px 2px 8px rgba(0,0,0,0.05);
+    text-align: center;
+    padding: 10px;
+    transition: transform 0.3s;
+  }
+
+  .card:hover {
+    transform: translateY(-4px);
+  }
+
+  .card img {
+    width: 100%;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 6px;
+    margin-bottom: 8px;
+  }
+
+  .card p {
+    margin: 0;
+    font-size: 12px;
+    color: #475569;
+  }
+
+  .carousel-container {
+    text-align: center;
+    margin-top: 20px;
+  }
+
+  .carousel-container img {
+    width: 180px;
+    border-radius: 15px;
   }
 </style>
 
-<body>
-  <main>
-    <%- include('includes/navbar'); %>
+<div class="page-container">
+  <div class="content-card">
+    <div class="header">
+      <h1>Cursos</h1>
+      <input type="text" class="search-bar" placeholder="🔍 Buscar cursos">
+    </div>
 
-    <div class="container-cursos">
-      <h2 class="title-cursos">CURSOS</h2>
-
-      <!-- Bloco PDF -->
-      <h3 class="subtitulo">Vamos começar a aprender:</h3>
-      <div class="cursos-pdf">
-        <div class="curso-primeiro-pdf">
-          <h4>Libras</h4>
-          <p>PDF</p>
-          <a href="/pdfs/libras-curso.pdf" download="Libras_Curso">Faça o download</a>
-        </div>
-
-        <div class="curso-segundo-pdf">
-          <h4>Libras</h4>
-          <p>PDF</p>
-          <a href="/pdfs/sinais-em-libras.pdf" download="Sinais_em_Libras">Faça o download</a>
-        </div>
+    <div class="section-title">Vamos começar a aprender:</div>
+    <div class="courses-grid">
+      <div class="card">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/3/32/LIBRAS.png" alt="PDF Libras">
+        <p><strong>LIBRAS</strong><br>PDF</p>
       </div>
-
-      <!-- Bloco Vídeos -->
-      <h3 class="subtitulo">Recomendamos para você:</h3>
-      <div class="cursos-video">
-        <div class="curso-primeiro-video">
-          <h4>Conceitos básicos em Libras</h4>
-          <a href="https://www.youtube.com/watch?v=VIDEO_ID_1" target="_blank">
-            <img src="https://img.youtube.com/vi/VIDEO_ID_1/hqdefault.jpg" alt="Conceitos básicos em Libras" class="video-thumbnail">
-            <p>Saiba mais</p>
-          </a>
-        </div>
-
-        <div class="curso-segundo-video">
-          <h4>75 Sinais em Libras</h4>
-          <a href="https://www.youtube.com/watch?v=VIDEO_ID_2" target="_blank">
-            <img src="https://img.youtube.com/vi/VIDEO_ID_2/hqdefault.jpg" alt="75 Sinais em Libras" class="video-thumbnail">
-            <p>Saiba mais</p>
-          </a>
-        </div>
-
-        <div class="curso-terceiro-video">
-          <h4>Nível básico em Libras</h4>
-          <a href="https://www.youtube.com/watch?v=VIDEO_ID_3" target="_blank">
-            <img src="https://img.youtube.com/vi/VIDEO_ID_3/hqdefault.jpg" alt="Nível básico em Libras" class="video-thumbnail">
-            <p>Saiba mais</p>
-          </a>
-        </div>
+      <div class="card">
+        <img src="https://static.signlanguageforum.com/uploads/monthly_2020_06/1577296389_brazilian-sign-language.png.5ec30ef2a5a5c83dff558b84a2cb56ab.png" alt="PDF Libras">
+        <p><strong>LIBRAS</strong><br>PDF</p>
       </div>
     </div>
 
-    <%- include('includes/footer'); %>
-  </main>
-</body>
+    <div class="section-title">Recomendados para você:</div>
+    <div class="courses-grid">
+      <div class="card">
+        <img src="https://i.ytimg.com/vi/q0sRMUq4_Ig/maxresdefault.jpg" alt="Conceitos Básicos">
+        <p>Conceitos Básicos em Libras<br><small>por: Ana Carol</small></p>
+      </div>
+      <div class="card">
+        <img src="https://i.ytimg.com/vi/MgPk7kYr9K4/maxresdefault.jpg" alt="75 sinais em Libras">
+        <p>75 Sinais em Libras<br><small>por: Neto Libras</small></p>
+      </div>
+      <div class="card">
+        <img src="https://cursosonlinecft.com.br/wp-content/uploads/2021/05/curso-de-libras-nivel-basico.png" alt="Nível básico">
+        <p>Nível básico em Libras<br><small>por: E cursos</small></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('includes/footer') %>
