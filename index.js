@@ -5,6 +5,7 @@ const session = require('express-session');
 const SequelizeStore = require('connect-session-sequelize') (session.Store);
 const sequelize = require('./src/config/database'); // Importe a instância do Sequelize criada anteriormente
 const flash = require('connect-flash');
+const cors = require('cors');
 
 
 const routes = require('./routes');
@@ -51,7 +52,7 @@ app.use(checkCsrfError);
 //app.use(csrfMiddleware);
 
 app.use(routes);
-
+app.use(cors());
 
 /*sequelize.sync({ alter: true })
   .then(() => console.log("Banco de dados sincronizado com sucesso!"))

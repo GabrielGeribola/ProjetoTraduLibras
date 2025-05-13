@@ -1,15 +1,4 @@
 
-* {
-  font-family:  -apple-system, system-ui,  BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif ;
-  background-color: white;
-  height: auto;
-  width: auto;
-  margin: 0px;
-  padding: 0px;
-  box-sizing: border-box;
-  border-radius: 20px;
-}
-
 body, html  {
   height: 100vh;
   width: 100vw;
@@ -221,11 +210,24 @@ i#menu:hover {
   background-color: #ffffff;
   width: 400px;
   padding: 15px;
-  margin: 20px auto; /* Centraliza o div no eixo horizontal */
-  text-align: center; /* Centraliza o texto */
-  border-radius: 10px; /* Ajusta os cantos arredondados */
-  word-wrap: break-word; /* Quebra linhas longas */
-  font-family: Arial, sans-serif; /* Ajusta a fonte, se necessário */
-  font-size: 16px;
+  margin: 20px auto;
+  text-align: center;
+  justify-content: center;
+  border-radius: 10px;
+  word-wrap: break-word;
+  font-family: Arial, sans-serif;
+  font-size: 13px;
 }
 
+.video-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+video {
+  width: 320px;
+  height: 240px;
+  border: 2px solid #004aad; /* Azul escuro */
+  border-radius: 10px;
+}

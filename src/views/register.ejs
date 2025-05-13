@@ -3,21 +3,23 @@
 <body>
   <div class="container">
 
-    
-      <div class="logo-boasvindas-login">
-        <img src="/imgs/logo-escura.png" alt="Logo TraduLibras" class="img-fluid" />
-      </div>
-    
-      <div >
-        <div >
+    <div class="logo-boasvindas-login">
+      <img src="/imgs/logo-escura.png" alt="Logo TraduLibras" class="img-fluid" />
+    </div>
+
+    <div class="row">
+      <div class="col-lg-2"></div>
+
+      <div class="col-lg-8 my-3">
+        <div class="row">
           <%- include('includes/messages'); %>
 
-          <div class="titulo-entrar">
-            <h4 class="entrar">Entrar</h4>
+          <div class="">
+            <h4 class="entrar">Cadastro</h4>
 
-            <form action="/login/login" method="POST">
+            <form action="/login/register" method="post">
               <div class="form-group">
-                <label class="diminutivo">Digite seu email</label>
+                <label class="diminutivo">Digite seu e-mail</label>
                 <br>
                 <input type="email" class="form-control" name="email" placeholder="Email" required>
               </div>
@@ -28,14 +30,13 @@
                 <input type="password" class="form-control" name="password" placeholder="Senha" required>
               </div>
 
-              
-
-              <button type="submit" class="btn-btn-primary botaoacessar">Acessar</button>
+              <button type="submit" class="btn-criar-conta">Criar minha conta</button>
             </form>
 
+
             <div class="linha"></div>
-            <p class="tem-conta">Ainda não tem conta? </p>
-            <a class="linkp-register" href="/register">Crie uma agora</a>
+            <p class="tem-conta">Ja tem conta? </p>
+            <a class="linkp-register" href="/login/index">Faça login</a>
           </div>
         </div>
       </div>

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="pt-br">
 
@@ -85,3 +86,96 @@
     </main>
 </body>
 </html>
+=======
+<%- include('includes/head'); %>
+
+<body>
+  <main>
+
+<%- include('includes/navbar'); %>
+
+<div class="digite-expressao"><p>Digite uma palavra ou expressão:</p></div>
+<form id="searchForm" class="input-group">
+  <input type="text" class="input-home" id="input_text" name="input_text" placeholder="Exemplo: amar">
+  <button class="btn-home" type="submit">&gt;</button>
+</form>
+
+<div class="resultado" id="result"></div>
+
+<!-- Feedback -->
+<div id="feedback" class="feedback-container" style="display: none;">
+  <p>Esse era o resultado esperado?</p>
+  <div class="feedback-buttons">
+    <button onclick="enviarFeedback(true)" class="btn-feedback btn-sim">👍 Sim</button>
+    <button onclick="enviarFeedback(false)" class="btn-feedback btn-nao">👎 Não</button>
+  </div>
+</div>
+
+<!-- SCRIPT -->
+<script>
+  let ultimaEntrada = '';
+  let ultimaSugestao = '';
+  let ultimoScore = 0.0;
+
+  document.getElementById('searchForm').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const inputText = document.getElementById('input_text').value;
+
+    ultimaEntrada = inputText;
+
+    const response = await fetch('http://localhost:5000/api/sugestao', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ texto: inputText }),
+      mode: 'cors'
+    });
+
+    const resultDiv = document.getElementById('result');
+    const feedbackDiv = document.getElementById('feedback');
+    const data = await response.json();
+
+    resultDiv.innerHTML = '';
+    feedbackDiv.style.display = 'none';
+
+    if (response.ok) {
+      ultimaSugestao = data.expressao;
+      ultimoScore = data.score;
+
+      resultDiv.innerHTML = `
+        <p>Expressão sugerida: <strong>${data.expressao}</strong></p>
+        <p>Nível de confiança: ${data.nivel_confianca}</p>
+        <div class="video-container">
+          <video controls autoplay>
+            <source src="${data.url}" type="video/mp4">
+            Seu navegador não suporta o elemento de vídeo.
+          </video>
+        </div>
+      `;
+      feedbackDiv.style.display = 'block';
+    } else {
+      resultDiv.innerHTML = `<p>${data.mensagem || 'Erro ao buscar expressão.'}</p>`;
+    }
+  });
+
+  async function enviarFeedback(foiUtil) {
+    const response = await fetch('http://localhost:5000/api/feedback', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        entrada: ultimaEntrada,
+        sugestao: ultimaSugestao,
+        score: ultimoScore,
+        foi_util: foiUtil
+      }),
+      mode: 'cors'
+    });
+
+    const data = await response.json();
+    alert(data.mensagem || 'Erro ao registrar feedback');
+  }
+</script>
+>>>>>>> 02274f59c54a7257af59ef3f56eccd64b63a027c
