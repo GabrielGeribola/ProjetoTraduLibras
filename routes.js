@@ -3,6 +3,7 @@ const route = express.Router();
 const homeController = require('./src/controllers/homeController');
 const loginController = require('./src/controllers/loginController');
 
+
 // Rotas da home
 route.get('/', homeController.index);
 route.get('/home', homeController.home);
@@ -12,6 +13,9 @@ route.get('/cursos', homeController.cursos); // Adicionando a rota de cursos
 
 // Rota para a página de ajuda
 route.get('/ajuda', homeController.ajuda); // Adicionando a rota de ajuda
+
+// Rota para a página de sugestao
+route.get('/sugestoes', homeController.sugestao); // Adicionando a rota de sugestao
 
 // Rotas de login
 route.get('/login/index', loginController.index);

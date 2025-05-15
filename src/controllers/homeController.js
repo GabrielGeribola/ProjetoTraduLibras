@@ -17,3 +17,8 @@ exports.cursos = (req, res) => {
 exports.ajuda = (req, res) => {
   res.render('ajuda'); // Renderiza o arquivo ajuda.ejs
 };
+
+// Rota para a página de sugestões
+exports.sugestao = (req, res) => {
+  res.render('sugestoes'); // Renderiza o arquivo sugestao.ejs
+};
