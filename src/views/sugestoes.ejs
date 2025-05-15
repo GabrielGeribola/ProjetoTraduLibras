@@ -1,0 +1,85 @@
+<%- include('includes/head') %>
+<%- include('includes/navbar') %>
+
+<style>
+  .sugestoes-container {
+    max-width: 800px;
+    margin: 40px auto;
+    background: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
+  }
+
+  .sugestoes-title {
+    font-size: 2rem;
+    text-align: center;
+    color: #1e293b;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #3b82f6;
+    padding-bottom: 10px;
+  }
+
+  .scroll-area {
+    max-height: 400px; /* ajuste conforme necessário */
+    overflow-y: auto;
+    padding-right: 10px;
+  }
+
+  .sugestoes-list {
+    list-style: decimal inside;
+    font-size: 18px;
+    color: #0f172a;
+    line-height: 1.8;
+    padding-left: 10px;
+  }
+
+  .sugestoes-list li {
+    margin-bottom: 10px;
+  }
+
+  .sugestoes-image {
+    text-align: center;
+    margin-top: 30px;
+  }
+
+  .sugestoes-image img {
+    width: 200px;
+  }
+</style>
+
+<div class="sugestoes-container">
+  <div class="sugestoes-title">Sugestões</div>
+
+  <div class="scroll-area">
+    <ol class="sugestoes-list">
+      <li>"Olá, como você está hoje?"</li>
+      <li>"O que você gostaria de fazer?"</li>
+      <li>"Qual é o seu plano para hoje?"</li>
+      <li>"Você pode me ajudar com isso?"</li>
+      <li>"Obrigado(a) pela sua ajuda!"</li>
+      <li>"Desculpe, eu não entendi. Pode explicar de novo?"</li>
+      <li>"Tenha um bom dia!"</li>
+      <li>"Estou ansioso(a) para te ver!"</li>
+      <li>"Como foi o seu dia?"</li>
+      <li>"Preciso de mais informações sobre isso."</li>
+      <li>"Você está livre para conversar agora?"</li>
+      <li>"Vamos marcar um encontro?"</li>
+      <li>"Estou feliz em falar com você!"</li>
+      <li>"Por favor, me avise se precisar de alguma coisa."</li>
+      <li>"Tenha uma ótima semana!"</li>
+      <li>"Estou pensando em você."</li>
+      <li>"Lembre-se de tomar cuidado!"</li>
+      <li>"Você pode me dar uma opinião sobre isso?"</li>
+      <li>"Tenha uma viagem segura!"</li>
+      <li>"Mal posso esperar para nos encontrarmos de novo!"</li>
+    </ol>
+  </div>
+
+  <div class="sugestoes-image">
+    <img src="https://cdn-icons-png.flaticon.com/512/6614/6614671.png" alt="Sugestões">
+  </div>
+</div>
+
+<%- include('includes/footer') %>
