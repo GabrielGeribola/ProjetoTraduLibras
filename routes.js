@@ -17,6 +17,9 @@ route.get('/ajuda', homeController.ajuda); // Adicionando a rota de ajuda
 // Rota para a página de sugestao
 route.get('/sugestoes', homeController.sugestao); // Adicionando a rota de sugestao
 
+//rota para a pagina de sobre
+route.get('/sobre', homeController.sobre); // Adicionando a rota de sobre
+
 // Rotas de login
 route.get('/login/index', loginController.index);
 route.post('/login/register', loginController.register);

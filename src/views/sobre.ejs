@@ -1,0 +1,237 @@
+<%- include('includes/head') %>
+<%- include('includes/navbar') %>
+
+<style>
+  .sobre-container {
+    max-width: 800px;
+    margin: 40px auto;
+    background: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
+  }
+
+  .sobre-title {
+    font-size: 2rem;
+    text-align: center;
+    color: #1e293b;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #3b82f6;
+    padding-bottom: 10px;
+  }
+
+  .sobre-scroll-area {
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 10px;
+  }
+
+  .sobre-text {
+    font-size: 18px;
+    line-height: 1.7;
+    color: #0f172a;
+    margin-bottom: 15px;
+  }
+
+  .github-list {
+    margin-top: 20px;
+  }
+
+  .github-list ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .github-list li {
+    margin-bottom: 10px;
+    font-size: 16px;
+  }
+
+  .github-list a {
+    color: #3b82f6;
+    text-decoration: none;
+  }
+
+  .github-list a:hover {
+    text-decoration: underline;
+  }
+
+  .sobre-image {
+    text-align: center;
+    margin-top: 30px;
+  }
+
+  .sobre-image img {
+    width: 100px;
+  }
+  .dev-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 20px;
+  margin-top: 30px;
+  padding: 0 10px;
+}
+
+.dev-card {
+  background-color: #f9fafb;
+  border-radius: 12px;
+  padding: 15px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  transition: transform 0.2s;
+}
+
+.dev-card:hover {
+  transform: translateY(-3px);
+}
+
+.dev-card img {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  margin-bottom: 10px;
+  object-fit: cover;
+}
+
+.dev-card h4 {
+  font-size: 16px;
+  margin: 0 0 8px;
+  color: #004369;
+}
+
+.dev-links {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dev-links a {
+  font-size: 13px;
+  color: #a3c8ff;
+  text-decoration: none;
+  color: white;
+}
+
+.dev-links a:hover {
+  text-decoration: none;
+    color: black;
+}
+</style>
+
+<div class="sobre-container">
+  <div class="sobre-title">Sobre</div>
+
+  <div class="sobre-scroll-area">
+    <p class="sobre-text">
+      Este projeto foi desenvolvido com o objetivo de promover a inclusão e facilitar a comunicação entre pessoas ouvintes e surdas por meio da tradução de palavras e expressões para a Língua Brasileira de Sinais (Libras).
+    </p>
+
+    <p class="sobre-text">
+      A plataforma oferece uma experiência intuitiva e acessível, permitindo que usuários explorem traduções em Libras, assistam a vídeos demonstrativos e contribuam com sugestões de novas expressões.
+    </p>
+
+    <p class="sobre-text">
+      O projeto foi desenvolvido por universitários dos cursos de <strong>Análise e Desenvolvimento de Sistemas</strong> e <strong>Ciência da Computação</strong> da <strong>FAM - Faculdade das Américas</strong>.
+    </p>
+
+    <p class="sobre-text">
+        Nosso compromisso é tornar a comunicação mais acessível e ajudar a construir um ambiente mais empático, inclusivo e respeitoso para todos. Estamos constantemente trabalhando para melhorar nossos recursos e ampliar nossa base de sinais.
+      </p>
+    
+      <p class="sobre-text">
+        Seja você um estudante, educador, familiar de uma pessoa surda ou simplesmente alguém interessado em aprender Libras, este espaço foi pensado para você!
+      </p>
+
+      <p class="sobre-text">
+        Agradecemos por fazer parte dessa jornada conosco. 💙
+      </p>
+
+    <h3 style="text-align:center; margin-top: 40px; color:#1e293b;">Conheça os participantes</h3>
+
+    
+
+<div class="dev-grid">
+  <!-- Membro 1 -->
+  <div class="dev-card">
+    <img src="https://avatars.githubusercontent.com/u/USER_ID1?v=4" alt="Nome 1">
+    <h4>Nome 1</h4>
+    <div class="dev-links">
+      <a href="https://github.com/usuario1" target="_blank">GitHub</a>
+      <a href="https://portfolio1.com" target="_blank">Portfólio</a>
+    </div>
+  </div>
+
+  <!-- Membro 2 -->
+  <div class="dev-card">
+    <img src="https://avatars.githubusercontent.com/u/USER_ID2?v=4" alt="Nome 2">
+    <h4>Nome 2</h4>
+    <div class="dev-links">
+      <a href="https://github.com/usuario2" target="_blank">GitHub</a>
+      <a href="https://portfolio2.com" target="_blank">Portfólio</a>
+    </div>
+  </div>
+
+  <!-- Membro 3 -->
+  <div class="dev-card">
+    <img src="https://avatars.githubusercontent.com/u/USER_ID3?v=4" alt="Nome 3">
+    <h4>Nome 3</h4>
+    <div class="dev-links">
+      <a href="https://github.com/usuario3" target="_blank">GitHub</a>
+    </div>
+  </div>
+
+  <!-- Membro 4 -->
+  <div class="dev-card">
+    <img src="https://avatars.githubusercontent.com/u/USER_ID4?v=4" alt="Nome 4">
+    <h4>Nome 4</h4>
+    <div class="dev-links">
+      <a href="https://github.com/usuario4" target="_blank">GitHub</a>
+    </div>
+  </div>
+
+  <!-- Membro 5 -->
+  <div class="dev-card">
+    <img src="https://avatars.githubusercontent.com/u/USER_ID5?v=4" alt="Nome 5">
+    <h4>Nome 5</h4>
+    <div class="dev-links">
+      <a href="https://github.com/usuario5" target="_blank">GitHub</a>
+    </div>
+  </div>
+
+  <!-- Membro 6 -->
+  <div class="dev-card">
+    <img src="https://avatars.githubusercontent.com/u/USER_ID6?v=4" alt="Nome 6">
+    <h4>Nome 6</h4>
+    <div class="dev-links">
+      <a href="https://github.com/usuario6" target="_blank">GitHub</a>
+    </div>
+  </div>
+
+  <!-- Membro 7 -->
+  <div class="dev-card">
+    <img src="https://avatars.githubusercontent.com/u/USER_ID7?v=4" alt="Nome 7">
+    <h4>Nome 7</h4>
+    <div class="dev-links">
+      <a href="https://github.com/usuario7" target="_blank">GitHub</a>
+    </div>
+  </div>
+
+  <!-- Membro 8 -->
+  <div class="dev-card">
+    <img src="https://avatars.githubusercontent.com/u/USER_ID8?v=4" alt="Nome 8">
+    <h4>Nome 8</h4>
+    <div class="dev-links">
+      <a href="https://github.com/usuario8" target="_blank">GitHub</a>
+    </div>
+  </div>
+</div>
+
+  </div>
+
+  <div class="sobre-image">
+    <img src="https://cdn-icons-png.flaticon.com/128/665/665049.png" alt="Sobre nós">
+  </div>
+</div>
+
+<%- include('includes/footer') %>

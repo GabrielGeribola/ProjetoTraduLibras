@@ -22,3 +22,8 @@ exports.ajuda = (req, res) => {
 exports.sugestao = (req, res) => {
   res.render('sugestoes'); // Renderiza o arquivo sugestao.ejs
 };
+
+//rota para a pagina de sobre
+exports.sobre = (req, res) => {
+  res.render('sobre'); // Renderiza o arquivo sobre.ejs
+};
