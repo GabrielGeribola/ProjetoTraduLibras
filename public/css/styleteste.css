@@ -453,7 +453,7 @@ form:hover {
   text-align: center;
 }
 
-@media (max-width: 500px) {
+@media (max-width: 600px) {
   .container {
     width: 95%;
   }
@@ -462,4 +462,164 @@ form:hover {
     padding: 15px;
   }
 }
+/* === ESTILOS DO CHAT === */
+#chatWrapper {
+  background: white;
+  width: 95%;
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 20px;
+  border-radius: 20px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  display: none; /* Inicia oculto (já está no seu HTML) */
+  flex-direction: column;
+  height: 80vh; /* Altura controlada */
+  max-height: 80vh; /* Limite máximo */
+  overflow: hidden; /* Impede que ultrapasse o container */
+}
 
+.chat-container {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 12px;
+  background-color: #f0f0f0;
+  border: 1px solid #ddd;
+  border: 1px solid #ddd;
+  max-height: calc(100% - 70px); /* Espaço para o input */
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.chat-input-container {
+  display: flex;
+  gap: 10px;
+  align-items: center; /* Centraliza verticalmente */
+  width: 100%;
+}
+
+.input-home {
+  flex-grow: 1;
+  padding: 12px 15px;
+  /* Mantém outros estilos existentes */
+}
+
+.btn-home {
+  padding: 12px 20px;
+  /* Mantém outros estilos existentes */
+  margin: 0; /* Remove margens que possam estar afetando */
+}
+
+.chat-bubble {
+  padding: 12px;
+  margin-bottom: 10px;
+  border-radius: 15px;
+  max-width: 75%;
+  word-wrap: break-word;
+  position: relative;
+  opacity: 0;
+  animation: fadeIn 0.3s ease forwards;
+  transform-origin: center;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Balão do BOT (esquerda) */
+.chat-bubble.bot {
+  align-self: flex-start;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 15px 15px 15px 0;
+  max-width: 80%;
+  margin-right: auto; /* Garante alinhamento à esquerda */
+}
+
+/* Balão do USUÁRIO (direita) */
+.chat-bubble.user {
+  align-self: flex-end;
+  background-color: var(--cor4);
+  color: var(--cor5);
+  border-radius: 15px 15px 0 15px;
+  max-width: 80%;
+  margin-left: auto; /* Garante alinhamento à direita */
+}
+
+/* Efeito ao passar o mouse */
+.chat-bubble:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+}
+
+.video-container video {
+  width: 100%;
+  border-radius: 8px;
+  margin-top: 10px;
+}
+
+.feedback-inline {
+  display: flex; /* Container flexível */
+  gap: 10px; /* Espaço entre botões */
+  margin-top: 10px;
+  justify-content: flex-start; /* Alinha à esquerda */
+  align-items: center; /* Centraliza verticalmente */
+  flex-wrap: nowrap; /* Impede quebra de linha */
+}
+
+.feedback-inline span {
+  font-size: 14px;
+  color: var(--cor3);
+}
+
+.feedback-inline button {
+ background: none !important; /* Remove fundo */
+  border: none !important; /* Remove borda */
+  color: var(--cor3); /* Cor do texto (#3b3f46) */
+  cursor: pointer;
+  font-size: 24px; /* Tamanho dos emojis */
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+/* Efeitos hover */
+.feedback-inline button:hover {
+  transform: translateY(-2px);
+}
+
+/* Efeito ativo */
+.feedback-inline button:active {
+  transform: scale(0.98);
+}
+
+@media (max-width: 600px) {
+  #chatWrapper {
+    width: 98%;
+    height: 85vh;
+    padding: 10px;
+  }
+  
+  .chat-input-container {
+  justify-content: flex-end; /* Alinha input à direita */
+  }
+  
+  .btn-home {
+    width: 100%;
+    margin-top: 10px;
+  }
+}

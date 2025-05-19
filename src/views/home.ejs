@@ -2,113 +2,161 @@
 
 <body>
   <main>
+    <%- include('includes/navbar'); %>
 
-<%- include('includes/navbar'); %>
+    <div class="container-home" id="homeContent">
+      <h2 class="translate-home">TRADUTOR</h2>
 
-<div class="container-home">
-  <h2 class="translate-home">TRADUTOR</h2>
+      <div class="digite-expressao">
+        <p>Digite uma palavra ou expressão:</p>
+      </div>
 
-  <div class="digite-expressao">
-    <p>Digite uma palavra ou expressão:</p>
-  </div>
+      <form id="searchForm" class="input-group">
+        <input type="text" class="input-home" id="input_text" name="input_text" placeholder="Exemplo: Abraço">
+        <button class="btn-home" type="submit">&gt;</button>
+      </form>
 
-  <form id="searchForm" class="input-group">
-    <input type="text" class="input-home" id="input_text" name="input_text" placeholder="Exemplo: amar">
-    <button class="btn-home" type="submit">&gt;</button>
-  </form>
+      <div class="resultado" id="result"></div>
 
-  <div class="resultado" id="result"></div>
+      <div class="feedback-container" id="feedback" style="display: none;">
+        <p>Esse era o resultado esperado?</p>
+        <div class="feedback-buttons">
+          <button onclick="enviarFeedback(true)" class="btn-feedback btn-sim">👍 Sim</button>
+          <button onclick="enviarFeedback(false)" class="btn-feedback btn-nao">👎 Não</button>
+        </div>
+      </div>
 
-  <!-- Feedback -->
-  <div id="feedback" class="feedback-container" style="display: none;">
-    <p>Esse era o resultado esperado?</p>
-    <div class="feedback-buttons">
-      <button onclick="enviarFeedback(true)" class="btn-feedback btn-sim">👍 Sim</button>
-      <button onclick="enviarFeedback(false)" class="btn-feedback btn-nao">👎 Não</button>
+      <div class="buttons-cards">
+        <a href="/home" class="card-traduzir">
+          <p class="icon-traduzir">🔁</p>
+          <h3 class="title-card">Traduzir</h3>
+          <p class="descricao-card">Converta palavras em Libras de forma rápida e intuitiva.</p>
+        </a>
+        <a href="/cursos" class="card-aprender">
+          <p class="icon-aprender">📖</p>
+          <h3 class="title-card">Aprender</h3>
+          <p class="descricao-card">Descubra novos sinais e amplie seu conhecimento em Libras.</p>
+        </a>
+        <a href="/sugestoes" class="card-incluir">
+          <p class="icon-incluir">🤗</p>
+          <h3 class="title-card">Incluir</h3>
+          <p class="descricao-card">Facilite a comunicação e torne o diálogo mais acessível.</p>
+        </a>
+      </div>
     </div>
-  </div>
 
-  <div class="buttons-cards">
-    <a href="/traduzir" class="card-traduzir">
-      <p class="icon-traduzir">🔁</p>
-      <h3 class="title-card">Traduzir</h3>
-      <p class="descricao-card">Converta palavras em Libras de forma rápida e intuitiva.</p>
-    </a>
-    <a href="/cursos" class="card-aprender">
-      <p class="icon-aprender">📖</p>
-      <h3 class="title-card">Aprender</h3>
-      <p class="descricao-card">Descubra novos sinais e amplie seu conhecimento em Libras.</p>
-    </a>
-    <a href="/sugestoes" class="card-incluir">
-      <p class="icon-incluir">🤗</p>
-      <h3 class="title-card">Incluir</h3>
-      <p class="descricao-card">Facilite a comunicação e torne o diálogo mais acessível.</p>
-    </a>
-  </div>
+    <!-- Chat dinâmico (inicia escondido) -->
+    <div id="chatWrapper" style="display: none">
+      <div class="chat-container" id="chatContainer"></div>
+      <form id="chatForm" class="chat-input-container">
+        <input type="text" class="input-home" id="chat_input" name="chat_input" placeholder="Digite aqui...">
+        <button class="btn-home" type="submit">&gt;</button>
+      </form>
+    </div>
 
-  <script>
-    let ultimaEntrada = '';
-    let ultimaSugestao = '';
-    let ultimoScore = 0.0;
+    <script>
+      let ultimaEntrada = ''
+      let ultimaSugestao = ''
+      let ultimoScore = 0.0
 
-    document.getElementById('searchForm').addEventListener('submit', async function(event) {
-      event.preventDefault();
-      const inputText = document.getElementById('input_text').value;
-      ultimaEntrada = inputText;
+      const resultDiv = document.getElementById('result')
+      const feedbackDiv = document.getElementById('feedback')
+      const homeContent = document.getElementById('homeContent')
+      const chatWrapper = document.getElementById('chatWrapper')
+      const chatContainer = document.getElementById('chatContainer')
 
-      const response = await fetch('http://localhost:5000/api/sugestao', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ texto: inputText }),
-        mode: 'cors'
-      });
+      const searchForm = document.getElementById('searchForm')
+      const chatForm = document.getElementById('chatForm')
+      const chatInput = document.getElementById('chat_input')
 
-      const resultDiv = document.getElementById('result');
-      const feedbackDiv = document.getElementById('feedback');
-      const data = await response.json();
+      function appendMessage(content, sender = 'user') {
+  const msg = document.createElement('div');
+  msg.classList.add('chat-bubble', sender);
+  
+  // Se for mensagem do bot, trata HTML (vídeo/feedback)
+  if (sender === 'bot' && content.includes('<video')) {
+    msg.innerHTML = content;
+  } else {
+    msg.textContent = content; // Previne XSS para mensagens simples
+  }
+  
+  chatContainer.appendChild(msg);
+  chatContainer.scrollTop = chatContainer.scrollHeight;
+}
 
-      resultDiv.innerHTML = '';
-      feedbackDiv.style.display = 'none';
+      searchForm.addEventListener('submit', async function (event) {
+        event.preventDefault()
+        const inputText = document.getElementById('input_text').value.trim()
+        if (!inputText) return
 
-      if (response.ok) {
-        ultimaSugestao = data.expressao;
-        ultimoScore = data.score;
+        // Oculta conteúdo inicial e mostra chat
+        homeContent.style.display = 'none'
+        chatWrapper.style.display = 'block'
 
-        resultDiv.innerHTML = `
-          <p>Expressão sugerida: <strong>${data.expressao}</strong></p>
-          <p>Nível de confiança: ${data.nivel_confianca}</p>
-          <div class="video-container">
-            <video controls autoplay>
-              <source src="${data.url}" type="video/mp4">
-              Seu navegador não suporta o elemento de vídeo.
-            </video>
-          </div>
-        `;
-        feedbackDiv.style.display = 'block';
-      } else {
-        resultDiv.innerHTML = `<p>${data.mensagem || 'Erro ao buscar expressão.'}</p>`;
+        // Passa o texto para o chat
+        chatInput.value = inputText
+        chatForm.dispatchEvent(new Event('submit'))
+      })
+
+      chatForm.addEventListener('submit', async function (event) {
+        event.preventDefault()
+        const inputText = chatInput.value.trim()
+        if (!inputText) return
+
+        ultimaEntrada = inputText
+        appendMessage(inputText, 'user')
+        chatInput.value = ''
+
+        const response = await fetch('http://localhost:5000/api/sugestao', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ texto: inputText }),
+          mode: 'cors'
+        })
+
+        const data = await response.json()
+
+        if (response.ok) {
+          ultimaSugestao = data.expressao
+          ultimoScore = data.score
+
+          const botMessage = `
+            <p><strong>${data.expressao}</strong></p>
+            <p>Nível de confiança: ${data.nivel_confianca}</p>
+            <div class="video-container">
+              <video controls>
+                <source src="${data.url}" type="video/mp4">
+                Seu navegador não suporta vídeo.
+              </video>
+            </div>
+            <div class="feedback-inline">
+              <span>Esse era o resultado esperado?</span>
+              <button onclick="enviarFeedback(true)">👍</button>
+              <button onclick="enviarFeedback(false)">👎</button>
+            </div>
+          `
+          appendMessage(botMessage, 'bot')
+        } else {
+          appendMessage(data.mensagem || 'Erro ao buscar expressão.', 'bot')
+        }
+      })
+
+      async function enviarFeedback(foiUtil) {
+        const response = await fetch('http://localhost:5000/api/feedback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            entrada: ultimaEntrada,
+            sugestao: ultimaSugestao,
+            score: ultimoScore,
+            foi_util: foiUtil
+          }),
+          mode: 'cors'
+        })
+
+        const data = await response.json()
+        appendMessage(data.mensagem || 'Feedback recebido!', 'bot')
       }
-    });
-
-    async function enviarFeedback(foiUtil) {
-      const response = await fetch('http://localhost:5000/api/feedback', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          entrada: ultimaEntrada,
-          sugestao: ultimaSugestao,
-          score: ultimoScore,
-          foi_util: foiUtil
-        }),
-        mode: 'cors'
-      });
-
-      const data = await response.json();
-      alert(data.mensagem || 'Erro ao registrar feedback');
-    }
-  </script>
+    </script>
+  </main>
 </body>
