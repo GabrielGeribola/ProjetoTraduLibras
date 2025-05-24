@@ -26,6 +26,7 @@ html {
   justify-content: center;
   align-items: center;
   background-image: linear-gradient(to top, #ecb189, #f3f3f3);
+
 }
 
 .container {
@@ -491,6 +492,7 @@ form:hover {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  height: 90%;
 }
 
 .chat-input-container {
@@ -607,7 +609,11 @@ form:hover {
   transform: scale(0.98);
 }
 
-@media (max-width: 600px) {
+.container-home {
+    margin: 0 20vw 0 20vw; /* Adiciona uma margin para impedir que se choque com a nav */
+  }
+
+@media (max-width: 850px) {
   #chatWrapper {
     width: 98%;
     height: 85vh;
@@ -617,9 +623,15 @@ form:hover {
   .chat-input-container {
   justify-content: flex-end; /* Alinha input à direita */
   }
+
+  .chat-container {
+    max-width: 50vw ;
+  }
   
   .btn-home {
     width: 100%;
     margin-top: 10px;
   }
+
+  
 }
