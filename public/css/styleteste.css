@@ -492,6 +492,7 @@ form:hover {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  height: 90%;
 }
 
 .chat-input-container {
