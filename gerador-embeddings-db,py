@@ -1,0 +1,58 @@
+import mysql.connector
+from sentence_transformers import SentenceTransformer
+import numpy as np
+import json
+
+# Conectar ao banco de dados
+def connect_to_db():
+    return mysql.connector.connect(
+        host="db-tradulibras.crywgwekuqzx.us-east-1.rds.amazonaws.com",
+        user="tradulibras",
+        password="Tradulibras2024",
+        database="app_tradu_embedding"
+    )
+
+# Carregar o modelo de embeddings mais robusto para múltiplos idiomas
+model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
+
+# Gerar embeddings da expressão
+def gerar_embeddings(expressao):
+    return model.encode(expressao).tolist()
+
+# Atualizar as embeddings no banco
+def update_embeddings(cursor):
+    cursor.execute("SELECT id_word, description FROM words_sl_br")
+    rows = cursor.fetchall()
+
+    for row in rows:
+        id_word = row[0]
+        description = row[1]
+
+        embedding = gerar_embeddings(description)
+        embedding_json = json.dumps(embedding)
+
+        update_query = """
+            UPDATE words_sl_br
+            SET embedding = %s
+            WHERE id_word = %s
+        """
+        cursor.execute(update_query, (embedding_json, id_word))
+
+# Função principal
+def main():
+    db = connect_to_db()
+    cursor = db.cursor()
+
+    try:
+        update_embeddings(cursor)
+        db.commit()
+        print("✅ Embeddings atualizadas com sucesso!")
+    except mysql.connector.Error as err:
+        print(f"Erro: {err}")
+        db.rollback()
+    finally:
+        cursor.close()
+        db.close()
+
+if __name__ == "__main__":
+    main()
