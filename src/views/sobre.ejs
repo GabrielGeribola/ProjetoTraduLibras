@@ -118,6 +118,55 @@
   text-decoration: none;
     color: black;
 }
+
+@media (max-width: 768px) {
+  .sobre-container {
+    width: calc(100% - 80px);
+    margin: 20px 20px 20px 80px; /* Mantém margin-left */
+    padding: 20px;
+    box-sizing: border-box;
+  }
+
+  .sobre-scroll-area {
+    max-height: 50vh; /* menor altura para telas pequenas */
+    overflow-y: auto;
+    padding-right: 6px;
+  }
+
+  /* Outros ajustes continuam... */
+  .sobre-title {
+    font-size: 1.5rem;
+  }
+
+  .sobre-text {
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  .dev-grid {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 15px;
+    padding: 0;
+  }
+
+  .dev-card {
+    padding: 12px;
+  }
+
+  .dev-card h4 {
+    font-size: 14px;
+  }
+
+  .dev-links a {
+    font-size: 12px;
+  }
+
+  .sobre-image img {
+    width: 80px;
+  }
+}
+
+
 </style>
 
 <div class="sobre-container">

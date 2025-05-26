@@ -635,3 +635,158 @@ form:hover {
 
   
 }
+
+@media (max-width: 360px) {
+  .container {
+    width: 100%;
+    padding: 0 10px 30px;
+  }
+
+  .card-traduzir,
+  .card-aprender,
+  .card-incluir {
+    width: 280px;
+    height: 120px;
+    font-size: 14px;
+    padding: 15px;
+    margin: 10px auto;
+  }
+
+  .input-home {
+    width: 65%;
+    font-size: 13px;
+  }
+
+  .btn-home {
+    padding: 10px 15px;
+    font-size: 14px;
+  }
+
+  .boas-vindas {
+    font-size: 22px;
+  }
+
+  .translate-home {
+    font-size: 22px;
+    padding: 0 5px;
+  }
+
+  .entrar {
+    font-size: 18px;
+    margin: 15px;
+  }
+
+  .btn-criar-conta,
+  .botaoacessar {
+    width: 80%;
+    font-size: 15px;
+    padding: 10px;
+  }
+
+  .form-control {
+    font-size: 13px;
+    padding: 10px;
+  }
+
+  .logo-boasvindas img,
+  .logo-boasvindas-login img {
+    width: 100px;
+  }
+
+  .chat-bubble {
+    font-size: 14px;
+    max-width: 85%;
+  }
+
+  .chat-container {
+    padding: 8px;
+  }
+
+  .chat-input-container {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .seta {
+    margin-top: 30px;
+  }
+}
+
+
+/* 🌐 Adição: Responsividade para telas pequenas (até 360px) */
+@media (max-width: 480px) {
+  .card-traduzir,
+  .card-aprender,
+  .card-incluir {
+    width: 90%;
+    height: 130px;
+    font-size: 14px;
+    padding: 15px;
+    margin: 10px auto;
+  }
+
+  .input-home {
+    width: 70%;
+    font-size: 12px;
+  }
+
+  .btn-home {
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+
+  .form-control {
+    font-size: 13px;
+    padding: 10px;
+  }
+
+  .boas-vindas {
+    font-size: 22px;
+  }
+
+  .entrar {
+    font-size: 18px;
+    margin: 10px;
+  }
+
+  .btn-criar-conta,
+  .botaoacessar {
+    width: 80%;
+    font-size: 15px;
+  }
+
+  .logo-boasvindas img,
+  .logo-boasvindas-login img {
+    width: 100px;
+  }
+
+  .chat-bubble {
+    font-size: 13px;
+    padding: 10px;
+  }
+
+  .container {
+    padding: 10px;
+  }
+
+  .translate-home {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+
+  .comunicacao {
+    font-size: 14px;
+  }
+
+  .digite-expressao {
+    font-size: 13px;
+  }
+
+  .seta {
+    margin-top: 40px;
+  }
+
+  .descricao-card {
+    font-size: 80%;
+  }
+}
