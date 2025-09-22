@@ -1,0 +1,12 @@
+- abrir dois terminais
+- no primeiro rodar o comando que inicia a aplicação em ejs
+    npm run dev 
+- no segundo  se já criou a venv antes, basta iniciar a venv:
+    source venv/bin/activate
+- após iniciar a API
+     python3 ApiTradu.py 
+     
+- caso não tenha a venv criada é necessário criar uma e instalar as dependencias da API.
+    python3 -m venv venv
+    source venv/bin/activate
+    pip3 install mysql-connector-python scipy python-Levenshtein scikit-learn nltk sentence-transformers --esse é o processo mais demorado,
