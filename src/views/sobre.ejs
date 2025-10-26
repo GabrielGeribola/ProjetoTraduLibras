@@ -3,8 +3,9 @@
 
 <style>
   .sobre-container {
-    max-width: 800px;
-    margin: 40px auto;
+    max-width: 70vw;
+    min-height: 75vh;
+    margin: 40px 40px 40px 80px ;
     background: #fff;
     padding: 30px;
     border-radius: 12px;
@@ -22,7 +23,7 @@
   }
 
   .sobre-scroll-area {
-    max-height: 400px;
+    max-height: 60vh;
     overflow-y: auto;
     padding-right: 10px;
   }
@@ -117,6 +118,55 @@
   text-decoration: none;
     color: black;
 }
+
+@media (max-width: 768px) {
+  .sobre-container {
+    width: calc(100% - 80px);
+    margin: 20px 20px 20px 80px; /* Mantém margin-left */
+    padding: 20px;
+    box-sizing: border-box;
+  }
+
+  .sobre-scroll-area {
+    max-height: 50vh; /* menor altura para telas pequenas */
+    overflow-y: auto;
+    padding-right: 6px;
+  }
+
+  /* Outros ajustes continuam... */
+  .sobre-title {
+    font-size: 1.5rem;
+  }
+
+  .sobre-text {
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  .dev-grid {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 15px;
+    padding: 0;
+  }
+
+  .dev-card {
+    padding: 12px;
+  }
+
+  .dev-card h4 {
+    font-size: 14px;
+  }
+
+  .dev-links a {
+    font-size: 12px;
+  }
+
+  .sobre-image img {
+    width: 80px;
+  }
+}
+
+
 </style>
 
 <div class="sobre-container">
@@ -147,18 +197,17 @@
         Agradecemos por fazer parte dessa jornada conosco. 💙
       </p>
 
-    <h3 style="text-align:center; margin-top: 40px; color:#1e293b;">Conheça os participantes</h3>
+    <h3 style="text-align:center; margin-top: 20px; color:#1e293b;">Conheça os participantes</h3>
 
 
 
-<div class="dev-grid">
+<div class="dev-grid" style="align-items: center;">
   <!-- Membro 1 -->
   <div class="dev-card">
-    <img src="https://avatars.githubusercontent.com/u/USER_ID1?v=4" alt="Nome 1">
+    <img src="https://assetstradulibras.s3.us-east-1.amazonaws.com/imgs/icon-joao.jpeg" alt="Nome 1">
     <h4>João Moura</h4>
     <div class="dev-links">
-      <a href="https://github.com/mourinnn" target="_blank">GitHub</a>
-      <a href="https://portfolio1.com" target="_blank">Portfólio</a>
+      <a href="https://www.linkedin.com/in/joão-moura-209b24291/?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=ios_app" target="_blank">Contato</a>
     </div>
   </div>
 
@@ -167,8 +216,7 @@
     <img src="https://avatars.githubusercontent.com/u/61872177?v=4" alt="Nome 2">
     <h4>Alice Batista Grem da Silva</h4>
     <div class="dev-links">
-      <a href="https://github.com/Alice-Grem" target="_blank">GitHub</a>
-      <a href="https://portfolio2.com" target="_blank">Portfólio</a>
+      <a href="https://github.com/Alice-Grem" target="_blank">Contato</a>
     </div>
   </div>
 
@@ -177,7 +225,7 @@
     <img src="https://avatars.githubusercontent.com/u/166943026?v=4" alt="Nome 3">
     <h4>Gabriel Rodrigues</h4>
     <div class="dev-links">
-      <a href="https://github.com/bielgeri" target="_blank">GitHub</a>
+      <a href="https://github.com/bielgeri" target="_blank">Contato</a>
     </div>
   </div>
 
@@ -186,7 +234,7 @@
     <img src="https://avatars.githubusercontent.com/u/125068498?v=4" alt="Nome 4">
     <h4>Catarina Dalsan </h4>
     <div class="dev-links">
-      <a href="https://github.com/Catyz00" target="_blank">GitHub</a>
+      <a href="https://github.com/Catyz00" target="_blank">Contato</a>
     </div>
   </div>
 
@@ -195,7 +243,7 @@
     <img src="https://avatars.githubusercontent.com/u/USER_ID5?v=4" alt="Nome 5">
     <h4>Guilherme Barboza</h4>
     <div class="dev-links">
-      <a href="https://github.com/usuario5" target="_blank">GitHub</a>
+      <a href="https://github.com/usuario5" target="_blank">Contato</a>
     </div>
   </div>
 
@@ -204,7 +252,7 @@
     <img src="https://avatars.githubusercontent.com/u/140861646?v=4" alt="Nome 6">
     <h4>Gustavo Dutra</h4>
     <div class="dev-links">
-      <a href="https://github.com/OLemonPie" target="_blank">GitHub</a>
+      <a href="https://github.com/OLemonPie" target="_blank">Contato</a>
     </div>
   </div>
 
@@ -213,7 +261,7 @@
     <img src="https://avatars.githubusercontent.com/u/140853105?v=4" alt="Nome 7">
     <h4>Paulo César</h4>
     <div class="dev-links">
-      <a href="https://github.com/PauloCezarSB" target="_blank">GitHub</a>
+      <a href="https://github.com/PauloCezarSB" target="_blank">Contato</a>
     </div>
   </div>
 

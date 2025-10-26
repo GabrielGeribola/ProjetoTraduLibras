@@ -10,17 +10,22 @@
     align-items: flex-start;
     width: 100%;
 
-    margin-left: 300px;
+    /* Campo para centralizar o container e impedir a navbar de barrar*/
+    margin-left: 100px;
+    margin: center;
+
   }
 
   .content-card {
     width: 100%;
     height: 90%;
+    min-height: 810px;
     max-width: 1900px; /* Aumentei a largura máxima */
     background: #ffffff;
     border-radius: 20px; /* Mais arredondado */
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1); /* Sombra um pouco maior */
     padding: 50px; /* Mais espaço interno */
+
   }
 
   .header {
@@ -160,6 +165,121 @@
 .scrollable-content::-webkit-scrollbar-track {
   background-color: #f1f5f9;
 }
+
+.section-header {
+  cursor: pointer;
+  user-select: none;
+  margin-bottom: 10px;
+  background-color: #e2e8f0;
+  padding: 10px 15px;
+  border-radius: 10px;
+  transition: background-color 0.3s ease;
+}
+
+.section-header:hover {
+  background-color: #cbd5e1;
+}
+
+.section-content {
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+
+.toggle-section.open .section-content {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+  .page-container {
+    flex-direction: column;
+    padding: 20px 10px;
+    margin-left: 0;
+  }
+
+  .content-card {
+    padding: 25px 20px;
+    min-height: auto;
+    margin-left: 80px; /* Mantido conforme solicitado */
+    width: calc(100% - 80px); /* Ajusta largura com a margem */
+    box-sizing: border-box;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .header h1 {
+    font-size: 24px;
+  }
+
+  .search-bar {
+    width: 100%;
+    font-size: 14px;
+  }
+
+  .section-title {
+    font-size: 18px;
+  }
+
+  .courses-grid {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .card {
+    flex: 1 1 100%;
+    padding: 15px;
+  }
+
+  .card img {
+    height: 120px;
+  }
+
+  .card p {
+    font-size: 14px;
+  }
+
+  .card p small {
+    font-size: 12px;
+  }
+
+  .topics-container {
+    padding: 20px 0;
+    gap: 20px;
+  }
+
+  .topic {
+    padding: 20px;
+  }
+
+  .topic h3 {
+    font-size: 18px;
+  }
+
+  .topic p {
+    font-size: 14px;
+  }
+
+  .btn-topic {
+    font-size: 14px;
+    padding: 6px 14px;
+  }
+
+  .section-header {
+    font-size: 16px;
+    padding: 8px 12px;
+  }
+}
+
+
+
   </style>
 
 
@@ -172,30 +292,47 @@
 
   <div class="scrollable-content">
     <!-- Artigos Didáticos -->
-    <h2>📄 Artigos Didáticos</h2>
-    <div class="topics-container">
-      <% artigos.forEach(artigo => { %>
-        <div class="topic">
-          <h3><%= artigo.titulo %></h3>
-          <p><%= artigo.descricao %></p>
-          <a href="<%= artigo.link %>" target="_blank" class="btn-topic">📄 Ler artigo</a>
-        </div>
-      <% }) %>
+    <div class="toggle-section">
+      <h2 class="section-header">📄 Artigos Didáticos</h2>
+      <div class="topics-container section-content">
+          <% artigos.forEach(artigo => { %>
+          <div class="topic">
+            <h3><%= artigo.titulo %></h3>
+            <p><%= artigo.descricao %></p>
+            <a href="<%= artigo.link %>" target="_blank" class="btn-topic">📄 Ler artigo</a>
+          </div>
+        <% }) %>
+      </div>
     </div>
 
+
     <!-- Vídeos Didáticos -->
-    <h2>🎬 Vídeos Didáticos</h2>
-    <div class="topics-container">
-      <% videos.forEach(video => { %>
+    <div class="toggle-section">
+      <h2 class="section-header">🎬 Vídeos Didáticos</h2>
+      <div class="topics-container section-content">
+        <% videos.forEach(video => { %>
         <div class="topic">
           <h3><%= video.titulo %></h3>
           <p><%= video.descricao %></p>
           <a href="<%= video.link %>" target="_blank" class="btn-topic">▶️ Assistir vídeo</a>
         </div>
-      <% }) %>
+        <% }) %>
+      </div>
     </div>
+
+
   </div>
 </div>
 </div>
+
+<script>
+  document.querySelectorAll('.section-header').forEach(header => {
+    header.addEventListener('click', () => {
+      const section = header.parentElement;
+      section.classList.toggle('open');
+    });
+  });
+</script>
+
 
 <%- include('includes/footer') %>

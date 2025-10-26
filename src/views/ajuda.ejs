@@ -2,61 +2,100 @@
 <%- include('includes/navbar') %>
 
 <style>
-    .faq-container {
-    width: 90%;
-    max-width: 800px;
-    margin: 50px auto;
-    background: #fff;
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0px 5px 20px rgba(0,0,0,0.1);
+   .faq-container {
+  width: 90%;
+  max-width: 800px;
+  margin: 50px auto;
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0px 5px 20px rgba(0,0,0,0.1);
+  box-sizing: border-box;
+}
+
+.faq-title {
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 20px;
+  color: #1e293b;
+  border-bottom: 2px solid #60a5fa;
+  padding-bottom: 10px;
+}
+
+.accordion {
+  background-color: #f8fafc;
+  color: #0f172a;
+  cursor: pointer;
+  padding: 18px;
+  width: 100%;
+  border: none;
+  text-align: left;
+  outline: none;
+  font-size: 18px;
+  transition: 0.4s;
+  margin-bottom: 10px;
+  border-radius: 10px;
+}
+
+.active, .accordion:hover {
+  background-color: #e2e8f0;
+}
+
+.panel {
+  padding: 0 18px;
+  background-color: white;
+  display: none;
+  overflow: hidden;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+.faq-image {
+  text-align: center;
+  margin-top: 30px;
+}
+
+.faq-image img {
+  width: 200px;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Responsividade */
+@media (max-width: 600px) {
+  .faq-container {
+    width: 95%;
+    margin: 20px auto;
+    margin-left: 80px;
+    padding: 15px;
   }
 
   .faq-title {
-    text-align: center;
-    font-size: 2rem;
-    margin-bottom: 20px;
-    color: #1e293b;
-    border-bottom: 2px solid #60a5fa;
-    padding-bottom: 10px;
+    font-size: 1.5rem;
+    padding-bottom: 8px;
   }
 
   .accordion {
-    background-color: #f8fafc;
-    color: #0f172a;
-    cursor: pointer;
-    padding: 18px;
-    width: 100%;
-    border: none;
-    text-align: left;
-    outline: none;
-    font-size: 18px;
-    transition: 0.4s;
-    margin-bottom: 10px;
-    border-radius: 10px;
-  }
-
-  .active, .accordion:hover {
-    background-color: #e2e8f0;
+    font-size: 16px;
+    padding: 14px 12px;
   }
 
   .panel {
-    padding: 0 18px;
-    background-color: white;
-    display: none;
-    overflow: hidden;
-    border-radius: 10px;
-    margin-bottom: 10px;
+    padding: 0 12px;
   }
 
   .faq-image {
-    text-align: center;
-    margin-top: 30px;
+    margin-top: 20px;
   }
 
   .faq-image img {
-    width: 200px;
+    width: 150px;
   }
+}
+
+
+  
+
 </style>
 
 <div class="faq-container">
