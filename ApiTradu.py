@@ -8,6 +8,11 @@ from Levenshtein import distance as levenshtein_distance
 from nltk.stem import WordNetLemmatizer
 from sentence_transformers import SentenceTransformer
 import nltk
+import os
+import tempfile
+from werkzeug.utils import secure_filename
+from pydub import AudioSegment
+import speech_recognition as sr
 
 # Baixar dados NLTK
 nltk.download('wordnet')
@@ -92,6 +97,127 @@ def registrar_feedback(cursor, entrada, sugestao, score, foi_util):
             VALUES (%s, %s)
         """, (entrada.lower(), sugestao.lower()))
 
+# ----------------- Função de transcrição (escopo global) -----------------
+def transcrever_audio_caminho(file_path):
+    """
+    Transcreve áudio usando speech_recognition + Google Web Speech API.
+    Recebe um arquivo .wav (convertido previamente).
+    Retorna texto transcrito ou None.
+    """
+    r = sr.Recognizer()
+    try:
+        with sr.AudioFile(file_path) as source:
+            audio = r.record(source)
+        texto = r.recognize_google(audio, language='pt-BR')
+        return texto
+    except sr.UnknownValueError:
+        return None
+    except sr.RequestError as e:
+        print("Erro na API do Google Speech:", e)
+        return None
+    except Exception as e:
+        print("Erro inesperado em transcrever_audio_caminho:", e)
+        return None
+
+# ----------------- Função que reaproveita lógica de sugestão -----------------
+def buscar_sugestao_por_texto(user_input):
+    db = connect_to_db()
+    cursor = db.cursor()
+    try:
+        expressions, embeddings = get_expressions_and_embeddings(cursor)
+        user_input_lem = lemmatize_expression(user_input)
+        embedding_input = gerar_embeddings(user_input_lem)
+        sugestao_expr, score = find_most_similar_expression(embedding_input, embeddings, expressions)
+
+        if sugestao_expr and not esta_na_lista_de_exclusao(cursor, user_input, sugestao_expr):
+            url = find_animation_url(cursor, sugestao_expr)
+            nivel_conf = 'alta' if score >= 0.8 else ('baixa' if score >= 0.6 else 'nenhuma')
+            if nivel_conf != 'nenhuma':
+                return {
+                    'expressao': sugestao_expr,
+                    'score': float(score),
+                    'nivel_confianca': nivel_conf,
+                    'url': url
+                }
+
+        # Fallback Levenshtein
+        closest_expr, dist = find_closest_expression_levenshtein(user_input, expressions)
+        if dist <= 2 and not esta_na_lista_de_exclusao(cursor, user_input, closest_expr):
+            url = find_animation_url(cursor, closest_expr)
+            return {
+                'expressao': closest_expr,
+                'score': 0.0,
+                'nivel_confianca': 'resultado por proximidade de escrita',
+                'url': url
+            }
+
+        return {'mensagem': 'not_found', 'status': 'not_found'}
+    except Exception as e:
+        return {'erro': str(e), 'mensagem': 'error', 'status': 'error'}
+    finally:
+        cursor.close()
+        db.close()
+
+# ----------------- Rota /api/transcrever -----------------
+@app.route('/api/transcrever', methods=['POST'])
+def transcrever():
+    if 'file' not in request.files:
+        return jsonify({'mensagem': 'Nenhum arquivo enviado.'}), 400
+
+    f = request.files['file']
+    if f.filename == '':
+        return jsonify({'mensagem': 'Arquivo sem nome.'}), 400
+
+    filename = secure_filename(f.filename)
+    tmp_dir = tempfile.mkdtemp(prefix='uploads_')
+    input_path = os.path.join(tmp_dir, filename)
+    output_path = os.path.join(tmp_dir, 'converted.wav')
+
+    try:
+        f.save(input_path)
+
+        # Converter webm/ogg/mp3 → wav (pydub + ffmpeg)
+        try:
+            audio = AudioSegment.from_file(input_path)
+            audio.export(output_path, format='wav')
+        except Exception as e:
+            print("Erro na conversão de áudio:", e)
+            return jsonify({'mensagem': 'Erro ao converter o áudio.'}), 500
+
+        # Transcrever com SpeechRecognition (Google)
+        texto = transcrever_audio_caminho(output_path)
+        if not texto:
+            return jsonify({'mensagem': 'Não foi possível transcrever o áudio.'}), 500
+
+        # Buscar sugestão com o texto transcrito
+        sugestao_result = buscar_sugestao_por_texto(texto)
+        response_payload = {'texto': texto}
+
+        if sugestao_result and sugestao_result.get('expressao'):
+            response_payload.update(sugestao_result)
+            return jsonify(response_payload), 200
+        else:
+            response_payload.update({
+                'mensagem': 'Transcrição concluída, mas nenhuma expressão encontrada.',
+                'sugestao_link': '/sugestoes'
+            })
+            return jsonify(response_payload), 404
+
+    except Exception as e:
+        return jsonify({'mensagem': 'Erro ao processar arquivo: ' + str(e)}), 500
+
+    finally:
+        # apagar os arquivos temporários
+        try:
+            for path in [input_path, output_path]:
+                if os.path.exists(path):
+                    os.remove(path)
+            if os.path.exists(tmp_dir):
+                os.rmdir(tmp_dir)
+        except Exception as e:
+            print('Erro ao limpar arquivos temporários:', e)
+
+# ----------------- Rota /api/sugestao (mantida) -----------------
 @app.route('/api/sugestao', methods=['POST'])
 def sugestao():
     user_input = request.json.get('texto')
@@ -149,6 +275,7 @@ def sugestao():
         cursor.close()
         db.close()
 
+# ----------------- Rota /api/feedback (mantida) -----------------
 @app.route('/api/feedback', methods=['POST'])
 def feedback():
     data = request.json

@@ -8,12 +8,13 @@
       <h2 class="translate-home">TRADUTOR</h2>
 
       <div class="digite-expressao">
-        <p>Digite uma palavra ou expressão:</p>
+        <p>Digite uma palavra ou expressão ou grave sua voz:</p>
       </div>
 
       <form id="searchForm" class="input-group">
         <input type="text" class="input-home" id="input_text" name="input_text" placeholder="Exemplo: Abraço">
         <button class="btn-home" type="submit">&gt;</button>
+        <button type="button" class="btn-home" id="recordBtn">🎤 Gravar Áudio</button>
       </form>
 
       <div class="resultado" id="result"></div>
@@ -48,115 +49,327 @@
     <!-- Chat dinâmico (inicia escondido) -->
     <div id="chatWrapper" style="display: none">
       <div class="chat-container" id="chatContainer"></div>
-      <form id="chatForm" class="chat-input-container">
-        <input type="text" class="input-home" id="chat_input" name="chat_input" placeholder="Digite aqui...">
-        <button class="btn-home" type="submit">&gt;</button>
+
+      <!-- Form do chat com microfone ao lado da setinha -->
+      <form id="chatForm" class="chat-input-container" style="display:flex; gap:8px; align-items:center;">
+        <input type="text" class="input-home" id="chat_input" name="chat_input" placeholder="Digite aqui..." style="flex:1;">
+        <button type="button" class="btn-home" id="chatRecordBtn" title="Gravar áudio no chat">🎤</button>
+        <button class="btn-home" type="submit" title="Enviar">›</button>
       </form>
     </div>
 
-    <script>
-      let ultimaEntrada = ''
-      let ultimaSugestao = ''
-      let ultimoScore = 0.0
+<script>
+  // ---------- CONFIGURE AQUI a URL do backend Flask ----------
+  // Troque a porta se necessário (ex: 'http://localhost:5001')
+  const API_BASE = 'http://localhost:5000';
 
-      const resultDiv = document.getElementById('result')
-      const feedbackDiv = document.getElementById('feedback')
-      const homeContent = document.getElementById('homeContent')
-      const chatWrapper = document.getElementById('chatWrapper')
-      const chatContainer = document.getElementById('chatContainer')
+  // debug
+  console.log('DEBUG location.origin =', location.origin);
+  console.log('DEBUG API_BASE =', API_BASE);
 
-      const searchForm = document.getElementById('searchForm')
-      const chatForm = document.getElementById('chatForm')
-      const chatInput = document.getElementById('chat_input')
+  let ultimaEntrada = ''
+  let ultimaSugestao = ''
+  let ultimoScore = 0.0
+  let currentStream = null
 
-      function appendMessage(content, sender = 'user') {
-  const msg = document.createElement('div');
-  msg.classList.add('chat-bubble', sender);
-  
-  // Se for mensagem do bot, trata HTML (vídeo/feedback)
-  if (sender === 'bot' && content.includes('<video')) {
-    msg.innerHTML = content;
-  } else {
-    msg.textContent = content; // Previne XSS para mensagens simples
+  const resultDiv = document.getElementById('result')
+  const feedbackDiv = document.getElementById('feedback')
+  const homeContent = document.getElementById('homeContent')
+  const chatWrapper = document.getElementById('chatWrapper')
+  const chatContainer = document.getElementById('chatContainer')
+
+  const searchForm = document.getElementById('searchForm')
+  const chatForm = document.getElementById('chatForm')
+  const chatInput = document.getElementById('chat_input')
+  const recordBtn = document.getElementById('recordBtn')
+  const chatRecordBtn = document.getElementById('chatRecordBtn')
+
+  function appendMessage(content, sender = 'user', asHtml = false) {
+    const msg = document.createElement('div');
+    msg.classList.add('chat-bubble', sender);
+
+    if (sender === 'bot' && asHtml) {
+      msg.innerHTML = content;
+    } else {
+      msg.textContent = content;
+    }
+
+    chatContainer.appendChild(msg);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
   }
-  
-  chatContainer.appendChild(msg);
-  chatContainer.scrollTop = chatContainer.scrollHeight;
-}
 
-      searchForm.addEventListener('submit', async function (event) {
-        event.preventDefault()
-        const inputText = document.getElementById('input_text').value.trim()
-        if (!inputText) return
+  // --- Envio de texto pelo input (inicial) ---
+  searchForm.addEventListener('submit', async function (event) {
+    event.preventDefault()
+    const inputText = document.getElementById('input_text').value.trim()
+    if (!inputText) return
 
-        // Oculta conteúdo inicial e mostra chat
-        homeContent.style.display = 'none'
-        chatWrapper.style.display = 'block'
+    homeContent.style.display = 'none'
+    chatWrapper.style.display = 'block'
 
-        // Passa o texto para o chat
-        chatInput.value = inputText
-        chatForm.dispatchEvent(new Event('submit'))
+    chatInput.value = inputText
+    chatForm.dispatchEvent(new Event('submit'))
+  })
+
+  // --- Envio de texto pelo chat (setinha) ---
+  chatForm.addEventListener('submit', async function (event) {
+    event.preventDefault()
+    const inputText = chatInput.value.trim()
+    if (!inputText) return
+
+    ultimaEntrada = inputText
+    appendMessage(inputText, 'user')
+    chatInput.value = ''
+
+    try {
+      const response = await fetch(`${API_BASE}/api/sugestao`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ texto: inputText })
       })
 
-      chatForm.addEventListener('submit', async function (event) {
-        event.preventDefault()
-        const inputText = chatInput.value.trim()
-        if (!inputText) return
-
-        ultimaEntrada = inputText
-        appendMessage(inputText, 'user')
-        chatInput.value = ''
-
-        const response = await fetch('http://localhost:5000/api/sugestao', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ texto: inputText }),
-          mode: 'cors'
-        })
-
-        const data = await response.json()
-
-        if (response.ok) {
-          ultimaSugestao = data.expressao
-          ultimoScore = data.score
-
-          const botMessage = `
-            <p><strong>${data.expressao}</strong></p>
-            <p>Nível de confiança: ${data.nivel_confianca}</p>
-            <div class="video-container">
-              <video controls>
-                <source src="${data.url}" type="video/mp4">
-                Seu navegador não suporta vídeo.
-              </video>
-            </div>
-            <div class="feedback-inline">
-              <span>Esse era o resultado esperado?</span>
-              <button onclick="enviarFeedback(true)">👍</button>
-              <button onclick="enviarFeedback(false)">👎</button>
-            </div>
-          `
-          appendMessage(botMessage, 'bot')
-        } else {
-          appendMessage(data.mensagem || 'Erro ao buscar expressão.', 'bot')
-        }
-      })
-
-      async function enviarFeedback(foiUtil) {
-        const response = await fetch('http://localhost:5000/api/feedback', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            entrada: ultimaEntrada,
-            sugestao: ultimaSugestao,
-            score: ultimoScore,
-            foi_util: foiUtil
-          }),
-          mode: 'cors'
-        })
-
-        const data = await response.json()
-        appendMessage(data.mensagem || 'Feedback recebido!', 'bot')
+      let data;
+      try {
+        data = await response.json();
+      } catch (err) {
+        const text = await response.text();
+        console.error('Resposta não-JSON em /api/sugestao:', text);
+        appendMessage('Erro do servidor ao buscar sugestão.', 'bot');
+        return;
       }
-    </script>
-  </main>
+
+      if (response.ok) {
+        ultimaSugestao = data.expressao
+        ultimoScore = data.score ?? 0.0
+
+        const botMessage = `
+          <p><strong>${data.expressao}</strong></p>
+          <p>Nível de confiança: ${data.nivel_confianca}</p>
+          <div class="video-container">
+            <video controls>
+              <source src="${data.url}" type="video/mp4">
+              Seu navegador não suporta vídeo.
+            </video>
+          </div>
+          <div class="feedback-inline">
+            <span>Esse era o resultado esperado?</span>
+            <button onclick="enviarFeedback(true)">👍</button>
+            <button onclick="enviarFeedback(false)">👎</button>
+          </div>
+        `
+        appendMessage(botMessage, 'bot', true)
+      } else {
+        appendMessage(data.mensagem || 'Erro ao buscar expressão.', 'bot')
+      }
+    } catch (err) {
+      console.error(err)
+      appendMessage('Erro de rede ao buscar expressão.', 'bot')
+    }
+  })
+
+  async function enviarFeedback(foiUtil) {
+    try {
+      const response = await fetch(`${API_BASE}/api/feedback`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          entrada: ultimaEntrada,
+          sugestao: ultimaSugestao,
+          score: ultimoScore,
+          foi_util: foiUtil
+        })
+      })
+
+      let data;
+      try {
+        data = await response.json();
+      } catch (err) {
+        console.error('Resposta não-JSON em /api/feedback:', await response.text());
+        appendMessage('Erro ao enviar feedback.', 'bot');
+        return;
+      }
+
+      appendMessage(data.mensagem || 'Feedback recebido!', 'bot')
+    } catch (err) {
+      console.error(err)
+      appendMessage('Erro ao enviar feedback.', 'bot')
+    }
+  }
+
+  // --- Gravação de áudio da tela inicial ---
+  recordBtn.addEventListener('click', async () => {
+    // desabilita botão enquanto grava
+    recordBtn.disabled = true
+    recordBtn.textContent = '🎙️ Gravando...'
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      currentStream = stream
+      const mediaRecorder = new MediaRecorder(stream);
+      const chunks = [];
+
+      mediaRecorder.ondataavailable = e => chunks.push(e.data);
+      mediaRecorder.onstop = async () => {
+        // libera o microfone
+        try {
+          if (currentStream) {
+            currentStream.getTracks().forEach(t => t.stop());
+            currentStream = null
+          }
+        } catch (e) {
+          console.warn('Erro ao parar tracks:', e)
+        }
+
+        const blob = new Blob(chunks, { type: 'audio/webm' });
+        const formData = new FormData();
+        formData.append('file', blob, 'recording.webm');
+
+        appendMessage('Enviando áudio para transcrição...', 'bot');
+
+        let response;
+        try {
+          response = await fetch(`${API_BASE}/api/transcrever`, {
+            method: 'POST',
+            body: formData
+          });
+        } catch (err) {
+          console.error('Erro de rede ao enviar áudio:', err)
+          appendMessage('Erro de rede ao enviar áudio.', 'bot')
+          recordBtn.disabled = false
+          recordBtn.textContent = '🎤 Gravar Áudio'
+          return
+        }
+
+        let data;
+        // lidar com respostas não-JSON ou HTML de erro
+        if (response.ok) {
+          try {
+            data = await response.json();
+          } catch (err) {
+            const text = await response.text();
+            console.error('Resposta inválida (não JSON) de /api/transcrever:', text);
+            appendMessage('Resposta inválida do servidor.', 'bot')
+            recordBtn.disabled = false
+            recordBtn.textContent = '🎤 Gravar Áudio'
+            return;
+          }
+        } else {
+          const text = await response.text();
+          console.error('Erro do servidor em /api/transcrever:', text);
+          appendMessage('Erro ao transcrever (status ' + response.status + ')', 'bot');
+          recordBtn.disabled = false
+          recordBtn.textContent = '🎤 Gravar Áudio'
+          return;
+        }
+
+        if (data.texto) {
+          // usa o mesmo fluxo de texto: coloca no input e dispara a busca
+          homeContent.style.display = 'none'
+          chatWrapper.style.display = 'block'
+          chatInput.value = data.texto;
+          appendMessage(`Transcrição: "${data.texto}"`, 'bot');
+          setTimeout(() => chatForm.dispatchEvent(new Event('submit')), 100);
+        } else {
+          appendMessage(data.mensagem || 'Não foi possível transcrever o áudio.', 'bot');
+        }
+
+        recordBtn.disabled = false
+        recordBtn.textContent = '🎤 Gravar Áudio'
+      };
+
+      mediaRecorder.start();
+      appendMessage('🎤 Gravando áudio por 5 segundos...', 'bot');
+      setTimeout(() => {
+        if (mediaRecorder.state !== 'inactive') mediaRecorder.stop()
+      }, 5000);
+    } catch (err) {
+      console.error(err);
+      appendMessage('Permissão negada ou erro ao acessar microfone.', 'bot');
+      recordBtn.disabled = false
+      recordBtn.textContent = '🎤 Gravar Áudio'
+    }
+  });
+
+  // --- Gravação de áudio direto pelo chat (microfone ao lado da setinha) ---
+  chatRecordBtn.addEventListener('click', async () => {
+    chatRecordBtn.disabled = true;
+    chatRecordBtn.textContent = '🎙️';
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      currentStream = stream;
+      const mediaRecorder = new MediaRecorder(stream);
+      const chunks = [];
+
+      mediaRecorder.ondataavailable = e => chunks.push(e.data);
+      mediaRecorder.onstop = async () => {
+        // libera o microfone
+        try { currentStream.getTracks().forEach(t => t.stop()); currentStream = null } catch(e){}
+
+        const blob = new Blob(chunks, { type: 'audio/webm' });
+        const formData = new FormData();
+        formData.append('file', blob, 'chat_recording.webm');
+
+        appendMessage('Enviando áudio para transcrição...', 'bot');
+
+        let response;
+        try {
+          response = await fetch(`${API_BASE}/api/transcrever`, { method: 'POST', body: formData });
+        } catch (err) {
+          console.error('Erro de rede ao enviar áudio:', err);
+          appendMessage('Erro de rede ao enviar áudio.', 'bot');
+          chatRecordBtn.disabled = false;
+          chatRecordBtn.textContent = '🎤';
+          return;
+        }
+
+        if (!response.ok) {
+          const text = await response.text();
+          console.error('Erro do servidor em /api/transcrever:', text);
+          appendMessage('Erro ao transcrever (status ' + response.status + ')', 'bot');
+          chatRecordBtn.disabled = false;
+          chatRecordBtn.textContent = '🎤';
+          return;
+        }
+
+        let data;
+        try {
+          data = await response.json();
+        } catch (err) {
+          console.error('Resposta inválida do servidor:', await response.text());
+          appendMessage('Resposta inválida do servidor.', 'bot');
+          chatRecordBtn.disabled = false;
+          chatRecordBtn.textContent = '🎤';
+          return;
+        }
+
+        if (data.texto) {
+          // coloca o texto no input do chat e dispara submit
+          homeContent.style.display = 'none';
+          chatWrapper.style.display = 'block';
+          chatInput.value = data.texto;
+          appendMessage(`Transcrição: "${data.texto}"`, 'bot');
+          setTimeout(() => chatForm.dispatchEvent(new Event('submit')), 100);
+        } else {
+          appendMessage(data.mensagem || 'Não foi possível transcrever o áudio.', 'bot');
+        }
+
+        chatRecordBtn.disabled = false;
+        chatRecordBtn.textContent = '🎤';
+      };
+
+      // start & auto stop in 5s
+      mediaRecorder.start();
+      appendMessage('🎤 Gravando áudio por 5 segundos...', 'bot');
+      setTimeout(() => { if (mediaRecorder.state !== 'inactive') mediaRecorder.stop() }, 5000);
+
+    } catch (err) {
+      console.error(err);
+      appendMessage('Permissão negada ou erro ao acessar microfone.', 'bot');
+      chatRecordBtn.disabled = false;
+      chatRecordBtn.textContent = '🎤';
+    }
+  });
+</script>
+</main>
 </body>
