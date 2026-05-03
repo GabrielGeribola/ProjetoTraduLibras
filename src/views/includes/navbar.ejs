@@ -1,222 +1,139 @@
-
-
-<style>
-
-
-
-/* Sidebar */
- .sidebar {
-    position: fixed;
-    top: 20px;
-    left: 25px;
-    width: 75px;
-    height: 95%;
-    background: white;
-    border-radius: 30px;
-    padding: 15px 0 0 20px;
-    align-content: center;
-    overflow-x: hidden;
-    transition: width 0.5s;
-    z-index: 10; /* acima do overlay */
-  }
-
-  .sidebar:hover {
-    width: 248px;
-  }
-
-  /* Overlay com buraco */
-  .overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    pointer-events: none;
-    z-index: 5;
-    clip-path: polygon(0 0, 0 0, 0 0, 0 0); /* será atualizado via JS */
-  }
-
-
-/* Links da sidebar */
-.sidebar a {
-  z-index: 2; /* acima do overlay */
-  display: flex; /* FAZ FICAR UM DO LADO DO OUTRO */
-  align-items: center; /* centraliza verticalmente */
-  padding: 0;
-  text-decoration: none;
-  font-size: 20px;
-  color: #3B3F46;
-  background-color: transparent;
-  transition: 0.3s;
-
-  margin: 50px 0px 50px 0px;
-}
-
-
-.nav-img {
-  width: 225px; /* largura */
-  height: auto; /* altura automática para manter a proporção */
-}
-
-
-#icons{
-width: 42px;
-height: 41.71px;
-left: 53px;
-top: 145px;
-}
-
-/* Esconde o texto inicialmente */
-.link-text {
-  opacity: 0;
-  white-space: nowrap; /* impede que o texto quebre linha */
-  overflow: hidden;
-  transition: opacity 0.3s, margin 0.3s;
-  margin-left: 0;
-}
-
-/* Quando passar o mouse na sidebar, mostra o texto */
-.sidebar:hover .link-text {
-  opacity: 1;
-  margin-left: 10px; /* um espacinho entre o ícone e o texto */
-}
-
-
-
-.linha {
-  width: 80%;
-  height: 2px;
-  background-color: #3B3F46;
-  margin: 20px 0;
-}
-
-
-.linha:hover {
-    width: 90%;
-}
-
-/* 📱 Responsividade para telas pequenas */
-@media (max-width: 480px) {
-  .sidebar {
-    top: 10px;
-    left: 10px;
-    width: 60px;
-    padding: 10px 0 0 10px;
-    border-radius: 20px;
-  }
-
-  .sidebar:hover {
-    width: 200px;
-  }
-
-  .sidebar a {
-    margin: 30px 0;
-  }
-
-  #icons {
-    width: 36px;
-    height: 36px;
-  }
-
-  .nav-img {
-    width: 160px;
-  }
-
-  .link-text {
-    font-size: 14px;
-  }
-
-  .linha {
-    width: 70%;
-    margin: 10px 0;
-  }
-
-  .linha:hover {
-    width: 75%;
-  }
-}
-
-
-</style>
-
 <body>
 
-  <!-- Escurece a tela -->
-  <div class="overlay" id="overlay"></div>
+<!-- Overlay -->
+<div class="overlay" id="overlay"></div>
 
+<!-- Botão hamburguer (sempre visível) -->
+<button class="hamburger-btn" id="hamburgerBtn" aria-label="Abrir menu" aria-expanded="false">
+  <span></span>
+  <span></span>
+  <span></span>
+</button>
 
-<!-- Navbar lateral -->
-<div id="sidebar" class="sidebar" 
-        onmouseenter="document.getElementById('overlay').style.opacity = '1'"
-        onmouseleave="document.getElementById('overlay').style.opacity = '0'">
+<!-- Botão modo escuro (canto superior direito) -->
+<button class="dark-toggle" id="darkToggle" aria-label="Alternar modo escuro">
+  <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <circle cx="12" cy="12" r="5"/>
+    <line x1="12" y1="1" x2="12" y2="3"/>
+    <line x1="12" y1="21" x2="12" y2="23"/>
+    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+    <line x1="1" y1="12" x2="3" y2="12"/>
+    <line x1="21" y1="12" x2="23" y2="12"/>
+    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+  </svg>
+  <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <path d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"/>
+  </svg>
+</button>
 
-    <div>
-        <!-- Botão para abrir o menu -->
-        <img src="https://assetstradulibras.s3.us-east-1.amazonaws.com/imgs/logo-escura.png" alt="Logo TraduLibras" class="nav-img" />
+<!-- Sidebar (abre ao clicar no hamburguer) -->
+<nav class="sidebar" id="sidebar" aria-hidden="true">
 
-        <div class="linha"></div>
+  <div class="sidebar-header">
+    <img
+      src="https://assetstradulibras.s3.us-east-1.amazonaws.com/imgs/logo-escura.png"
+      alt="Logo TraduLibras"
+      class="nav-img nav-img-light"
+    />
+    <img
+      src="https://assetstradulibras.s3.us-east-1.amazonaws.com/imgs/logo-escura.png"
+      alt="Logo TraduLibras"
+      class="nav-img nav-img-dark"
+    />
+  </div>
 
-          <a href="/home">
-            <img src="https://assetstradulibras.s3.us-east-1.amazonaws.com/imgs/icon-traducao.png" id="icons"/>
-            <span class="link-text">Tradução</span>
-          </a>
-          <a href="/sugestoes">
-            <img src="https://assetstradulibras.s3.us-east-1.amazonaws.com/imgs/icon-sugestoes.png" id="icons"/>
-            <span class="link-text">Sugestões</span></a>
-          <a href="/cursos">
-            <img src="https://assetstradulibras.s3.us-east-1.amazonaws.com/imgs/icon-curso.png" id="icons"/>
+  <div class="nav-linha"></div>
 
-            <span class="link-text">Cursos</span></a>
+  <a href="/home" class="nav-link">
+    <img src="https://assetstradulibras.s3.us-east-1.amazonaws.com/imgs/icon-traducao.png" class="nav-icon" alt=""/>
+    <span class="link-text">Tradução</span>
+  </a>
+  <a href="/sugestoes" class="nav-link">
+    <img src="https://assetstradulibras.s3.us-east-1.amazonaws.com/imgs/icon-sugestoes.png" class="nav-icon" alt=""/>
+    <span class="link-text">Sugestões</span>
+  </a>
+  <a href="/cursos" class="nav-link">
+    <img src="https://assetstradulibras.s3.us-east-1.amazonaws.com/imgs/icon-curso.png" class="nav-icon" alt=""/>
+    <span class="link-text">Cursos</span>
+  </a>
 
-          <div class="linha"></div>
+  <div class="nav-linha"></div>
 
-          <a href="/sobre">
-            <img src="https://assetstradulibras.s3.us-east-1.amazonaws.com/imgs/icon-sobre.png" id="icons"/>
-            <span class="link-text">Sobre</span></a>
-          <a href="/ajuda">
-            <img src="https://assetstradulibras.s3.us-east-1.amazonaws.com/imgs/icon-ajuda.png" id="icons"/>
-            <span class="link-text">Ajuda</span></a>
-          <a href="/login/logout" class="button-logout">
-            <img src="https://assetstradulibras.s3.us-east-1.amazonaws.com/imgs/icon-sair.png" id="icons"/>
-            <span class="link-text">Sair</span></a>
+  <a href="/sobre" class="nav-link">
+    <img src="https://assetstradulibras.s3.us-east-1.amazonaws.com/imgs/icon-sobre.png" class="nav-icon" alt=""/>
+    <span class="link-text">Sobre</span>
+  </a>
+  <a href="/ajuda" class="nav-link">
+    <img src="https://assetstradulibras.s3.us-east-1.amazonaws.com/imgs/icon-ajuda.png" class="nav-icon" alt=""/>
+    <span class="link-text">Ajuda</span>
+  </a>
 
-    </div>
-</div>
+  <div class="nav-spacer"></div>
+
+  <a href="/login/logout" class="nav-link nav-logout">
+    <img src="https://assetstradulibras.s3.us-east-1.amazonaws.com/imgs/icon-sair.png" class="nav-icon" alt=""/>
+    <span class="link-text">Sair</span>
+  </a>
+
+</nav>
 
 <script>
-  const sidebar = document.getElementById('sidebar');
-  const overlay = document.getElementById('overlay');
+  // ── Hamburger / Sidebar ──────────────────────────────────
+  const hamburgerBtn = document.getElementById('hamburgerBtn');
+  const sidebar      = document.getElementById('sidebar');
+  const overlay      = document.getElementById('overlay');
 
-  sidebar.addEventListener('mouseenter', () => {
-    const rect = sidebar.getBoundingClientRect();
+  function openSidebar() {
+    sidebar.classList.add('open');
+    overlay.classList.add('visible');
+    hamburgerBtn.classList.add('active');
+    hamburgerBtn.setAttribute('aria-expanded', 'true');
+    sidebar.setAttribute('aria-hidden', 'false');
+  }
 
-    // Atualiza o clip-path para recortar a área da sidebar
-    overlay.style.clipPath = `polygon(
-      0% 0%, 
-      0% 100%, 
-      ${rect.left}px 100%, 
-      ${rect.left}px ${rect.top}px, 
-      ${rect.left + rect.width}px ${rect.top}px, 
-      ${rect.left + rect.width}px ${rect.bottom}px, 
-      ${rect.left}px ${rect.bottom}px, 
-      ${rect.left}px 100%, 
-      100% 100%, 
-      100% 0%
-    )`;
+  function closeSidebar() {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('visible');
+    hamburgerBtn.classList.remove('active');
+    hamburgerBtn.setAttribute('aria-expanded', 'false');
+    sidebar.setAttribute('aria-hidden', 'true');
+  }
 
-    overlay.style.opacity = '1';
+  hamburgerBtn.addEventListener('click', () => {
+    sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
   });
 
-  sidebar.addEventListener('mouseleave', () => {
-    overlay.style.opacity = '0';
+  overlay.addEventListener('click', closeSidebar);
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeSidebar();
+  });
+
+  // Marca link ativo
+  document.querySelectorAll('.nav-link').forEach(link => {
+    if (window.location.pathname.startsWith(link.getAttribute('href'))) {
+      link.classList.add('active');
+    }
+  });
+
+  // ── Dark Mode ────────────────────────────────────────────
+  const darkToggle = document.getElementById('darkToggle');
+  const root       = document.documentElement;
+
+  if (localStorage.getItem('theme') === 'dark') {
+    root.setAttribute('data-theme', 'dark');
+  }
+
+  darkToggle.addEventListener('click', () => {
+    const isDark = root.getAttribute('data-theme') === 'dark';
+    if (isDark) {
+      root.removeAttribute('data-theme');
+      localStorage.setItem('theme', 'light');
+    } else {
+      root.setAttribute('data-theme', 'dark');
+      localStorage.setItem('theme', 'dark');
+    }
   });
 </script>
-
-
-</script>
-
-</body>
-</html>

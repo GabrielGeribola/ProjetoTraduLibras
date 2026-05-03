@@ -24,7 +24,7 @@
     "nodemon": "^3.1.10"
   },
   "dependencies": {
-    "aws-sdk": "^2.1624.0",
+    "aws-sdk": "^1.18.0",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.2",
     "connect-flash": "^0.1.1",
@@ -32,7 +32,7 @@
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "csrf": "^3.1.0",
-    "csurf": "^1.11.0",
+    "csurf": "^1.2.2",
     "dotenv": "^16.4.5",
     "editorconfig": "^2.0.0",
     "ejs": "^3.1.10",
@@ -46,7 +46,7 @@
     "prettier": "^3.2.5",
     "react": "^18.2.0",
     "sequelize": "^6.37.3",
-    "sqlite3": "^5.1.7",
+    "sqlite3": "^6.0.1",
     "tedious": "^18.1.0",
     "validator": "^13.11.0",
     "webpack": "^5.91.0"
