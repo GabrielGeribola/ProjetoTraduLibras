@@ -63,6 +63,20 @@
   // Troque a porta se necessário (ex: 'http://localhost:5001')
   const API_BASE = 'http://localhost:5000';
 
+  const params = new URLSearchParams(window.location.search);
+  const palavraUrl = params.get('word');
+
+  if (palavraUrl) {
+
+    const input = document.getElementById('input_text');
+
+    input.value = palavraUrl;
+
+    setTimeout(() => {
+      searchForm.dispatchEvent(new Event('submit'));
+    }, 500);
+  }
+
   // debug
   console.log('DEBUG location.origin =', location.origin);
   console.log('DEBUG API_BASE =', API_BASE);
@@ -97,6 +111,23 @@
     chatContainer.appendChild(msg);
     chatContainer.scrollTop = chatContainer.scrollHeight;
   }
+
+    // Verifica se veio palavra pela URL
+  window.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    const word = params.get('word');
+
+    if (word) {
+      const input = document.getElementById('input_text');
+
+      input.value = word;
+
+      // dispara automaticamente a tradução
+      setTimeout(() => {
+        searchForm.dispatchEvent(new Event('submit'));
+      }, 300);
+    }
+});
 
   // --- Envio de texto pelo input (inicial) ---
   searchForm.addEventListener('submit', async function (event) {
