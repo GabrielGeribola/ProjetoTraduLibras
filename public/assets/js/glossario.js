@@ -18,8 +18,18 @@ fetch('/data/glossario.json')
       categorias[categoria].push(item);
     });
 
+    const ordemCategorias = [
+      'Alimentos',
+      'Animais',
+      'Educação',
+      'Saúde',
+      'Outros'
+    ];
+
     // RENDERIZAR
-    Object.keys(categorias).forEach(categoria => {
+    ordemCategorias.forEach(categoria => {
+
+      if (!categorias[categoria]) return;
 
             // HEADER DA CATEGORIA
       const titulo = document.createElement('div');

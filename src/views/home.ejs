@@ -66,17 +66,6 @@
   const params = new URLSearchParams(window.location.search);
   const palavraUrl = params.get('word');
 
-  if (palavraUrl) {
-
-    const input = document.getElementById('input_text');
-
-    input.value = palavraUrl;
-
-    setTimeout(() => {
-      searchForm.dispatchEvent(new Event('submit'));
-    }, 500);
-  }
-
   // debug
   console.log('DEBUG location.origin =', location.origin);
   console.log('DEBUG API_BASE =', API_BASE);
@@ -112,22 +101,7 @@
     chatContainer.scrollTop = chatContainer.scrollHeight;
   }
 
-    // Verifica se veio palavra pela URL
-  window.addEventListener('DOMContentLoaded', () => {
-    const params = new URLSearchParams(window.location.search);
-    const word = params.get('word');
-
-    if (word) {
-      const input = document.getElementById('input_text');
-
-      input.value = word;
-
-      // dispara automaticamente a tradução
-      setTimeout(() => {
-        searchForm.dispatchEvent(new Event('submit'));
-      }, 300);
-    }
-});
+ 
 
   // --- Envio de texto pelo input (inicial) ---
   searchForm.addEventListener('submit', async function (event) {
@@ -401,6 +375,23 @@
       chatRecordBtn.textContent = '🎤';
     }
   });
+
+     // Verifica se veio palavra pela URL
+ let autoTraducaoExecutada = false;
+
+window.addEventListener('DOMContentLoaded', () => {
+  if (autoTraducaoExecutada) return;
+  const params = new URLSearchParams(window.location.search);
+  const word = params.get('word');
+
+  if (word) {
+
+    autoTraducaoExecutada = true;
+    document.getElementById('input_text').value = word;
+    document.getElementById('searchForm')
+      .dispatchEvent(new Event('submit'));
+  }
+});
 </script>
 </main>
 </body>
