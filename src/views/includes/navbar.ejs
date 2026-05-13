@@ -3,48 +3,45 @@
 <!-- Overlay -->
 <div class="overlay" id="overlay"></div>
 
-<!-- Botão hamburguer (sempre visível) -->
+<!-- Botão hamburguer -->
 <button class="hamburger-btn" id="hamburgerBtn" aria-label="Abrir menu" aria-expanded="false">
-  <span></span>
-  <span></span>
-  <span></span>
+  <span></span><span></span><span></span>
 </button>
 
-<!-- Botão modo escuro (canto superior direito) -->
-<button class="dark-toggle" id="darkToggle" aria-label="Alternar modo escuro">
-  <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-    <circle cx="12" cy="12" r="5"/>
-    <line x1="12" y1="1" x2="12" y2="3"/>
-    <line x1="12" y1="21" x2="12" y2="23"/>
-    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-    <line x1="1" y1="12" x2="3" y2="12"/>
-    <line x1="21" y1="12" x2="23" y2="12"/>
-    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-  </svg>
-  <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-    <path d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"/>
+<!-- Botão configurações (engrenagem) -->
+<button class="settings-btn" id="settingsBtn" aria-label="Configurações">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="3"/>
+    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
   </svg>
 </button>
 
-<!-- Sidebar (abre ao clicar no hamburguer) -->
+<!-- Painel de configurações -->
+<div class="settings-panel" id="settingsPanel">
+  <div class="settings-header">
+    <span>Configurações</span>
+    <button class="settings-close" id="settingsClose" aria-label="Fechar">✕</button>
+  </div>
+  <div class="settings-item">
+    <div class="settings-item-info">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+        <path d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"/>
+      </svg>
+      <span>Modo escuro</span>
+    </div>
+    <label class="toggle-switch">
+      <input type="checkbox" id="darkModeToggle">
+      <span class="toggle-track">
+        <span class="toggle-thumb"></span>
+      </span>
+    </label>
+  </div>
+</div>
+
+<!-- Sidebar -->
 <nav class="sidebar" id="sidebar" aria-hidden="true">
 
-  <div class="sidebar-header">
-    <img
-      src="https://assetstradulibras.s3.us-east-1.amazonaws.com/imgs/logo-escura.png"
-      alt="Logo TraduLibras"
-      class="nav-img nav-img-light"
-    />
-    <img
-      src="https://assetstradulibras.s3.us-east-1.amazonaws.com/imgs/logo-escura.png"
-      alt="Logo TraduLibras"
-      class="nav-img nav-img-dark"
-    />
-  </div>
-
-  <div class="nav-linha"></div>
+  <div class="nav-linha" style="margin-top: 68px;"></div>
 
   <a href="/home" class="nav-link">
     <img src="https://assetstradulibras.s3.us-east-1.amazonaws.com/imgs/icon-traducao.png" class="nav-icon" alt=""/>
@@ -80,7 +77,14 @@
 </nav>
 
 <script>
-  // ── Hamburger / Sidebar ──────────────────────────────────
+  // ── Aplica tema salvo ANTES de renderizar (evita flash) ──
+  (function() {
+    if (localStorage.getItem('theme') === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+  })();
+
+  // ── Hamburger ────────────────────────────────────────────
   const hamburgerBtn = document.getElementById('hamburgerBtn');
   const sidebar      = document.getElementById('sidebar');
   const overlay      = document.getElementById('overlay');
@@ -91,6 +95,8 @@
     hamburgerBtn.classList.add('active');
     hamburgerBtn.setAttribute('aria-expanded', 'true');
     sidebar.setAttribute('aria-hidden', 'false');
+    // Fecha settings se estiver aberto
+    settingsPanel.classList.remove('open');
   }
 
   function closeSidebar() {
@@ -105,10 +111,16 @@
     sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
   });
 
-  overlay.addEventListener('click', closeSidebar);
+  overlay.addEventListener('click', () => {
+    closeSidebar();
+    settingsPanel.classList.remove('open');
+  });
 
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') closeSidebar();
+    if (e.key === 'Escape') {
+      closeSidebar();
+      settingsPanel.classList.remove('open');
+    }
   });
 
   // Marca link ativo
@@ -118,22 +130,36 @@
     }
   });
 
-  // ── Dark Mode ────────────────────────────────────────────
-  const darkToggle = document.getElementById('darkToggle');
-  const root       = document.documentElement;
+  // ── Configurações ────────────────────────────────────────
+  const settingsBtn   = document.getElementById('settingsBtn');
+  const settingsPanel = document.getElementById('settingsPanel');
+  const settingsClose = document.getElementById('settingsClose');
+  const darkToggle    = document.getElementById('darkModeToggle');
+  const root          = document.documentElement;
 
-  if (localStorage.getItem('theme') === 'dark') {
-    root.setAttribute('data-theme', 'dark');
+  // Sincroniza o toggle com o tema atual
+  function syncToggle() {
+    darkToggle.checked = root.getAttribute('data-theme') === 'dark';
   }
+  syncToggle();
 
-  darkToggle.addEventListener('click', () => {
-    const isDark = root.getAttribute('data-theme') === 'dark';
-    if (isDark) {
-      root.removeAttribute('data-theme');
-      localStorage.setItem('theme', 'light');
-    } else {
+  settingsBtn.addEventListener('click', () => {
+    settingsPanel.classList.toggle('open');
+    // Fecha sidebar se estiver aberto
+    closeSidebar();
+  });
+
+  settingsClose.addEventListener('click', () => {
+    settingsPanel.classList.remove('open');
+  });
+
+  darkToggle.addEventListener('change', () => {
+    if (darkToggle.checked) {
       root.setAttribute('data-theme', 'dark');
       localStorage.setItem('theme', 'dark');
+    } else {
+      root.removeAttribute('data-theme');
+      localStorage.setItem('theme', 'light');
     }
   });
 </script>

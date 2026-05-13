@@ -2,62 +2,37 @@ require('dotenv').config();
 const express = require('express');
 const app = express();
 const session = require('express-session');
-const SequelizeStore = require('connect-session-sequelize') (session.Store);
-const sequelize = require('./src/config/database'); // Importe a instância do Sequelize criada anteriormente
 const flash = require('connect-flash');
 const cors = require('cors');
 
-
 const routes = require('./routes');
 const path = require('path');
-const csrf = require('csurf');
-const User = require('./src/models/UserModel');
-const {middlewareGlobal, csrfMiddleware, checkCsrfError} = require('./src/middlewares/middleware');
+const { middlewareGlobal, checkCsrfError } = require('./src/middlewares/middleware');
 
-
-app.use(express.urlencoded({extended: true}));
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.resolve(__dirname, 'public')));
 
-const sessionStore = new SequelizeStore ({
-  db: sequelize,
-  tableName: 'session'
-});
-
-// CONFIGURAÇÃO DE CONEXÃO BD (NÃO CONFIGURAÇÃO DE DADOS)
+// Sessão em memória — não precisa de banco
 const sessionOptions = session({
-  secret:'teste_de_chave_secreta',
-  store: sessionStore,
+  secret: 'teste_de_chave_secreta',
   resave: false,
   saveUninitialized: false,
+  cookie: { maxAge: 1000 * 60 * 60 * 24 }, // 1 dia
 });
 
-// Inicializa o armazenamento da sessão antes de usar no aplicativo
-
-sessionStore.sync();
-
 app.use(sessionOptions);
-
 app.use(flash());
-
 
 app.set('views', path.resolve(__dirname, 'src', 'views'));
 app.set('view engine', 'ejs');
 
-
-//app.use(csrf());
-//Nossos proprios middlewares
 app.use(middlewareGlobal);
 app.use(checkCsrfError);
-//app.use(csrfMiddleware);
-
-app.use(routes);
 app.use(cors());
+app.use(routes);
 
-/*sequelize.sync({ alter: true })
-  .then(() => console.log("Banco de dados sincronizado com sucesso!"))
-  .catch((error) => console.error("Erro ao sincronizar o banco de dados:", error));*/
-
-app.listen(3306, () => {
-  console.log("Servidor iniciado na porta 3306: http://localhost:3306")
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Servidor iniciado na porta ${PORT}: http://localhost:${PORT}`);
 });
