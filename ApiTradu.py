@@ -26,10 +26,10 @@ model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
 
 def connect_to_db():
     return mysql.connector.connect(
-        host="db-tradulibras.crywgwekuqzx.us-east-1.rds.amazonaws.com",
-        user="tradulibras",
-        password="Tradulibras2024",
-        database="app_tradu_embedding"
+        host=os.getenv("DB_HOST", "db"),
+        user=os.getenv("DB_USER", "tradulibras"),
+        password=os.getenv("DB_PASS", "Tradulibras2024"),
+        database=os.getenv("DB_NAME", "app_tradu_embedding")
     )
 
 def gerar_embeddings(texto):
@@ -311,4 +311,4 @@ def feedback():
         db.close()
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=False)
