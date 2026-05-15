@@ -20133,7 +20133,7 @@
     "id": 2014,
     "key": "jabuti",
     "label": "Jabuti",
-    "categoria": "Outros",
+    "categoria": "Alimentos",
     "tags": [
       "outros",
       "jabuti"
@@ -20143,7 +20143,7 @@
     "id": 2015,
     "key": "jabuticaba",
     "label": "Jabuticaba",
-    "categoria": "Outros",
+    "categoria": "Alimentos",
     "tags": [
       "outros",
       "jabuticaba"
@@ -20153,7 +20153,7 @@
     "id": 2016,
     "key": "jaca",
     "label": "Jaca",
-    "categoria": "Outros",
+    "categoria": "Alimentos",
     "tags": [
       "outros",
       "jaca"
@@ -20163,7 +20163,7 @@
     "id": 2017,
     "key": "jacare",
     "label": "Jacare",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "jacare"
@@ -20173,7 +20173,7 @@
     "id": 2018,
     "key": "jaguar",
     "label": "Jaguar",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "jaguar"
@@ -20303,7 +20303,7 @@
     "id": 2031,
     "key": "javali",
     "label": "Javali",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "javali"
@@ -20363,7 +20363,7 @@
     "id": 2037,
     "key": "jiboia",
     "label": "Jiboia",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "jiboia"
@@ -20573,7 +20573,7 @@
     "id": 2058,
     "key": "jumento",
     "label": "Jumento",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "jumento"
@@ -20863,7 +20863,7 @@
     "id": 2087,
     "key": "lagarta",
     "label": "Lagarta",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "lagarta"
@@ -20873,7 +20873,7 @@
     "id": 2088,
     "key": "lagartixa",
     "label": "Lagartixa",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "lagartixa"
@@ -20903,7 +20903,7 @@
     "id": 2091,
     "key": "lagosta",
     "label": "Lagosta",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "lagosta"
@@ -21063,7 +21063,7 @@
     "id": 2107,
     "key": "lanche",
     "label": "Lanche",
-    "categoria": "Outros",
+    "categoria": "Alimentos",
     "tags": [
       "outros",
       "lanche"
@@ -21163,7 +21163,7 @@
     "id": 2117,
     "key": "laranja",
     "label": "Laranja",
-    "categoria": "Outros",
+    "categoria": "Alimentos",
     "tags": [
       "outros",
       "laranja"
@@ -21373,7 +21373,7 @@
     "id": 2138,
     "key": "leao",
     "label": "Leao",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "leao"
@@ -21383,7 +21383,7 @@
     "id": 2139,
     "key": "lebre",
     "label": "Lebre",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "lebre"
@@ -21493,7 +21493,7 @@
     "id": 2150,
     "key": "leitao",
     "label": "Leitao",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "leitao"
@@ -21503,7 +21503,7 @@
     "id": 2151,
     "key": "leitecondensado",
     "label": "Leite-condensado",
-    "categoria": "Outros",
+    "categoria": "Alimentos",
     "tags": [
       "outros",
       "leite-condensado"
@@ -21513,7 +21513,7 @@
     "id": 2152,
     "key": "leite",
     "label": "Leite",
-    "categoria": "Outros",
+    "categoria": "Alimentos",
     "tags": [
       "outros",
       "leite"
@@ -21663,7 +21663,7 @@
     "id": 2167,
     "key": "lepra",
     "label": "Lepra",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "lepra"
@@ -21723,7 +21723,7 @@
     "id": 2173,
     "key": "lesma",
     "label": "Lesma",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "lesma"
@@ -21803,7 +21803,7 @@
     "id": 2181,
     "key": "lhama",
     "label": "Lhama",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "lhama"
@@ -21913,7 +21913,7 @@
     "id": 2192,
     "key": "limao",
     "label": "Limao",
-    "categoria": "Outros",
+    "categoria": "Alimentos",
     "tags": [
       "outros",
       "limao"
@@ -22223,7 +22223,7 @@
     "id": 2223,
     "key": "lobisomem",
     "label": "Lobisomem",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "lobisomem"
@@ -22233,7 +22233,7 @@
     "id": 2224,
     "key": "lobo",
     "label": "Lobo",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "lobo"
@@ -38083,7 +38083,7 @@
     "id": 3809,
     "key": "dinossauro",
     "label": "Dinossauro",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "dinossauro"
@@ -38253,7 +38253,7 @@
     "id": 3826,
     "key": "doce",
     "label": "Doce",
-    "categoria": "Outros",
+    "categoria": "Alimentos",
     "tags": [
       "outros",
       "doce"
@@ -39743,7 +39743,7 @@
     "id": 3975,
     "key": "ovelha",
     "label": "Ovelha",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "ovelha"
@@ -39933,7 +39933,7 @@
     "id": 3994,
     "key": "pessego",
     "label": "Pessego",
-    "categoria": "Outros",
+    "categoria": "Alimentos",
     "tags": [
       "outros",
       "pessego"
@@ -40113,7 +40113,7 @@
     "id": 4012,
     "key": "porco",
     "label": "Porco",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "porco"
@@ -40783,7 +40783,7 @@
     "id": 4079,
     "key": "rosquinha_de_massa_frita",
     "label": "Rosquinha de massa frita",
-    "categoria": "Outros",
+    "categoria": "Alimentos",
     "tags": [
       "outros",
       "rosquinha de massa frita"
@@ -40853,7 +40853,7 @@
     "id": 4086,
     "key": "alimentacao",
     "label": "Alimentação",
-    "categoria": "Outros",
+    "categoria": "Alimentos",
     "tags": [
       "outros",
       "alimentação"
@@ -41043,7 +41043,7 @@
     "id": 4105,
     "key": "bode",
     "label": "Bode",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "bode"
@@ -41053,7 +41053,7 @@
     "id": 4106,
     "key": "boi",
     "label": "Boi",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "boi"
@@ -41063,7 +41063,7 @@
     "id": 4107,
     "key": "bolo",
     "label": "Bolo",
-    "categoria": "Outros",
+    "categoria": "Alimentos",
     "tags": [
       "outros",
       "bolo"
@@ -41103,7 +41103,7 @@
     "id": 4111,
     "key": "borboleta",
     "label": "Borboleta",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "borboleta"
@@ -41243,7 +41243,7 @@
     "id": 4125,
     "key": "bufalo",
     "label": "Bufalo",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "bufalo"
@@ -41263,7 +41263,7 @@
     "id": 4127,
     "key": "doutor_medico",
     "label": "Doutor medico",
-    "categoria": "Outros",
+    "categoria": "Saúde",
     "tags": [
       "outros",
       "doutor medico"
@@ -41273,7 +41273,7 @@
     "id": 4128,
     "key": "droga_medicamento",
     "label": "Droga, medicamento",
-    "categoria": "Outros",
+    "categoria": "Saúde",
     "tags": [
       "outros",
       "droga, medicamento"
@@ -41893,7 +41893,7 @@
     "id": 4190,
     "key": "maca",
     "label": "Maçã",
-    "categoria": "Outros",
+    "categoria": "Alimentos",
     "tags": [
       "outros",
       "maçã"
