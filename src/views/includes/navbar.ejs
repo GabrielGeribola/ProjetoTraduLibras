@@ -22,6 +22,8 @@
     <span>Configurações</span>
     <button class="settings-close" id="settingsClose" aria-label="Fechar">✕</button>
   </div>
+
+  <!-- Modo escuro -->
   <div class="settings-item">
     <div class="settings-item-info">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
@@ -31,10 +33,25 @@
     </div>
     <label class="toggle-switch">
       <input type="checkbox" id="darkModeToggle">
-      <span class="toggle-track">
-        <span class="toggle-thumb"></span>
-      </span>
+      <span class="toggle-track"><span class="toggle-thumb"></span></span>
     </label>
+  </div>
+
+  <div class="settings-divider"></div>
+
+  <!-- Tamanho da fonte -->
+  <div class="settings-item settings-item-col">
+    <div class="settings-item-info">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+        <polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/>
+      </svg>
+      <span>Tamanho da fonte</span>
+    </div>
+    <div class="font-size-control">
+      <button class="font-size-btn" id="fontDecrease" aria-label="Diminuir fonte">A−</button>
+      <span class="font-size-label" id="fontLabel">Médio</span>
+      <button class="font-size-btn" id="fontIncrease" aria-label="Aumentar fonte">A+</button>
+    </div>
   </div>
 </div>
 
@@ -77,10 +94,14 @@
 </nav>
 
 <script>
-  // ── Aplica tema salvo ANTES de renderizar (evita flash) ──
-  (function() {
+  // ── Aplica preferências salvas ANTES de renderizar (evita flash) ──
+  (function () {
     if (localStorage.getItem('theme') === 'dark') {
       document.documentElement.setAttribute('data-theme', 'dark');
+    }
+    const savedSize = localStorage.getItem('fontSize');
+    if (savedSize) {
+      document.documentElement.setAttribute('data-font-size', savedSize);
     }
   })();
 
@@ -88,6 +109,7 @@
   const hamburgerBtn = document.getElementById('hamburgerBtn');
   const sidebar      = document.getElementById('sidebar');
   const overlay      = document.getElementById('overlay');
+  const settingsPanel = document.getElementById('settingsPanel');
 
   function openSidebar() {
     sidebar.classList.add('open');
@@ -95,7 +117,6 @@
     hamburgerBtn.classList.add('active');
     hamburgerBtn.setAttribute('aria-expanded', 'true');
     sidebar.setAttribute('aria-hidden', 'false');
-    // Fecha settings se estiver aberto
     settingsPanel.classList.remove('open');
   }
 
@@ -117,41 +138,31 @@
   });
 
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') {
-      closeSidebar();
-      settingsPanel.classList.remove('open');
-    }
+    if (e.key === 'Escape') { closeSidebar(); settingsPanel.classList.remove('open'); }
   });
 
-  // Marca link ativo
   document.querySelectorAll('.nav-link').forEach(link => {
     if (window.location.pathname.startsWith(link.getAttribute('href'))) {
       link.classList.add('active');
     }
   });
 
-  // ── Configurações ────────────────────────────────────────
+  // ── Configurações — painel ────────────────────────────────
   const settingsBtn   = document.getElementById('settingsBtn');
-  const settingsPanel = document.getElementById('settingsPanel');
   const settingsClose = document.getElementById('settingsClose');
-  const darkToggle    = document.getElementById('darkModeToggle');
-  const root          = document.documentElement;
-
-  // Sincroniza o toggle com o tema atual
-  function syncToggle() {
-    darkToggle.checked = root.getAttribute('data-theme') === 'dark';
-  }
-  syncToggle();
 
   settingsBtn.addEventListener('click', () => {
     settingsPanel.classList.toggle('open');
-    // Fecha sidebar se estiver aberto
     closeSidebar();
   });
 
-  settingsClose.addEventListener('click', () => {
-    settingsPanel.classList.remove('open');
-  });
+  settingsClose.addEventListener('click', () => settingsPanel.classList.remove('open'));
+
+  // ── Dark Mode ─────────────────────────────────────────────
+  const darkToggle = document.getElementById('darkModeToggle');
+  const root       = document.documentElement;
+
+  darkToggle.checked = root.getAttribute('data-theme') === 'dark';
 
   darkToggle.addEventListener('change', () => {
     if (darkToggle.checked) {
@@ -161,5 +172,39 @@
       root.removeAttribute('data-theme');
       localStorage.setItem('theme', 'light');
     }
+  });
+
+  // ── Tamanho da fonte ──────────────────────────────────────
+  const SIZES  = ['pequeno', 'medio', 'grande', 'extra'];
+  const LABELS = { pequeno: 'Pequeno', medio: 'Médio', grande: 'Grande', extra: 'Extra' };
+
+  const fontDecrease = document.getElementById('fontDecrease');
+  const fontIncrease = document.getElementById('fontIncrease');
+  const fontLabel    = document.getElementById('fontLabel');
+
+  function getCurrentSizeIndex() {
+    const current = root.getAttribute('data-font-size') || 'medio';
+    return SIZES.indexOf(current);
+  }
+
+  function applyFontSize(size) {
+    root.setAttribute('data-font-size', size);
+    localStorage.setItem('fontSize', size);
+    fontLabel.textContent = LABELS[size];
+    fontDecrease.disabled = SIZES.indexOf(size) === 0;
+    fontIncrease.disabled = SIZES.indexOf(size) === SIZES.length - 1;
+  }
+
+  // Inicializa label e estado dos botões
+  applyFontSize(root.getAttribute('data-font-size') || 'medio');
+
+  fontDecrease.addEventListener('click', () => {
+    const idx = getCurrentSizeIndex();
+    if (idx > 0) applyFontSize(SIZES[idx - 1]);
+  });
+
+  fontIncrease.addEventListener('click', () => {
+    const idx = getCurrentSizeIndex();
+    if (idx < SIZES.length - 1) applyFontSize(SIZES[idx + 1]);
   });
 </script>
