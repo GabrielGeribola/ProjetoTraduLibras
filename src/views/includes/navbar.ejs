@@ -58,7 +58,19 @@
 <!-- Sidebar -->
 <nav class="sidebar" id="sidebar" aria-hidden="true">
 
-  <div class="nav-linha" style="margin-top: 68px;"></div>
+  <div class="sidebar-header">
+    <img
+      src="https://assetstradulibras.s3.us-east-1.amazonaws.com/imgs/logo-clara.png"
+      alt="Logo TraduLibras"
+      class="nav-img nav-img-light"
+    />
+    <img
+      src="https://assetstradulibras.s3.us-east-1.amazonaws.com/imgs/logo-escura.png"
+      alt="Logo TraduLibras"
+      class="nav-img nav-img-dark"
+    />
+  </div>
+  <div class="nav-linha" style="margin-top: 20px;"></div>
 
   <a href="/home" class="nav-link">
     <img src="https://assetstradulibras.s3.us-east-1.amazonaws.com/imgs/icon-traducao.png" class="nav-icon" alt=""/>
@@ -86,10 +98,17 @@
 
   <div class="nav-spacer"></div>
 
-  <a href="/login/logout" class="nav-link nav-logout">
-    <img src="https://assetstradulibras.s3.us-east-1.amazonaws.com/imgs/icon-sair.png" class="nav-icon" alt=""/>
-    <span class="link-text">Sair</span>
-  </a>
+  <% if (usuario) { %>
+    <a href="/logout" class="nav-link nav-logout">
+      <img src="https://assetstradulibras.s3.us-east-1.amazonaws.com/imgs/icon-sair.png" class="nav-icon" alt=""/>
+      <span class="link-text">Sair</span>
+    </a>
+  <% } else { %>
+    <a href="/login" class="nav-link nav-login">
+      <img src="https://assetstradulibras.s3.us-east-1.amazonaws.com/imgs/icon-login.png" class="nav-icon" alt=""/>
+      <span class="link-text">Entrar</span>
+    </a>
+  <% } %>
 
 </nav>
 
@@ -112,20 +131,33 @@
   const settingsPanel = document.getElementById('settingsPanel');
 
   function openSidebar() {
-    sidebar.classList.add('open');
-    overlay.classList.add('visible');
-    hamburgerBtn.classList.add('active');
-    hamburgerBtn.setAttribute('aria-expanded', 'true');
-    sidebar.setAttribute('aria-hidden', 'false');
-    settingsPanel.classList.remove('open');
+  sidebar.classList.add('open');
+  overlay.classList.add('visible');
+
+  hamburgerBtn.classList.add('active');
+  hamburgerBtn.classList.add('hidden');
+
+  // ✅ ESCONDER CONFIG TAMBÉM (IMPORTANTE)
+  settingsBtn.classList.add('hidden');
+
+  hamburgerBtn.setAttribute('aria-expanded', 'true');
+  sidebar.setAttribute('aria-hidden', 'false');
+
+  settingsPanel.classList.remove('open');
   }
 
   function closeSidebar() {
-    sidebar.classList.remove('open');
-    overlay.classList.remove('visible');
-    hamburgerBtn.classList.remove('active');
-    hamburgerBtn.setAttribute('aria-expanded', 'false');
-    sidebar.setAttribute('aria-hidden', 'true');
+  sidebar.classList.remove('open');
+  overlay.classList.remove('visible');
+
+  hamburgerBtn.classList.remove('active');
+  hamburgerBtn.classList.remove('hidden');
+
+  // ✅ MOSTRAR CONFIG DE NOVO
+  settingsBtn.classList.remove('hidden');
+
+  hamburgerBtn.setAttribute('aria-expanded', 'false');
+  sidebar.setAttribute('aria-hidden', 'true');
   }
 
   hamburgerBtn.addEventListener('click', () => {
@@ -148,14 +180,16 @@
   });
 
   // ── Configurações — painel ────────────────────────────────
-  const settingsBtn   = document.getElementById('settingsBtn');
-  const settingsClose = document.getElementById('settingsClose');
-
   settingsBtn.addEventListener('click', () => {
-    settingsPanel.classList.toggle('open');
-    closeSidebar();
-  });
+  const isOpen = settingsPanel.classList.contains('open');
 
+  if (isOpen) {
+    settingsPanel.classList.remove('open');
+  } else {
+    closeSidebar(); // fecha menu antes
+    settingsPanel.classList.add('open');
+  }
+});
   settingsClose.addEventListener('click', () => settingsPanel.classList.remove('open'));
 
   // ── Dark Mode ─────────────────────────────────────────────
