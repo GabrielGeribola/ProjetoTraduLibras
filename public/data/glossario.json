@@ -6253,7 +6253,7 @@
     "id": 626,
     "key": "cachorroquente",
     "label": "Cachorro-quente",
-    "categoria": "Outros",
+    "categoria": "Alimentos",
     "tags": [
       "outros",
       "cachorro-quente"
@@ -7753,7 +7753,7 @@
     "id": 776,
     "key": "cavalo_marinho",
     "label": "Cavalo marinho",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "cavalo marinho"
@@ -7763,7 +7763,7 @@
     "id": 777,
     "key": "cavalo",
     "label": "Cavalo",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "cavalo"
@@ -9403,7 +9403,7 @@
     "id": 941,
     "key": "comida",
     "label": "Comida",
-    "categoria": "Outros",
+    "categoria": "Alimentos",
     "tags": [
       "outros",
       "comida"
@@ -10793,7 +10793,7 @@
     "id": 1080,
     "key": "coruja",
     "label": "Coruja",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "coruja"
@@ -10943,7 +10943,7 @@
     "id": 1095,
     "key": "coxinha_de_galinha",
     "label": "Coxinha_de_galinha",
-    "categoria": "Outros",
+    "categoria": "Alimentos",
     "tags": [
       "outros",
       "coxinha_de_galinha"
@@ -12763,7 +12763,7 @@
     "id": 1277,
     "key": "empada",
     "label": "Empada",
-    "categoria": "Outros",
+    "categoria": "Alimentos",
     "tags": [
       "outros",
       "empada"
@@ -13033,7 +13033,7 @@
     "id": 1304,
     "key": "enfermeiro",
     "label": "Enfermeiro",
-    "categoria": "Outros",
+    "categoria": "Saúde",
     "tags": [
       "outros",
       "enfermeiro"
@@ -13553,7 +13553,7 @@
     "id": 1356,
     "key": "ervilha",
     "label": "Ervilha",
-    "categoria": "Outros",
+    "categoria": "Alimentos",
     "tags": [
       "outros",
       "ervilha"
@@ -13933,7 +13933,7 @@
     "id": 1394,
     "key": "espaguete",
     "label": "Espaguete",
-    "categoria": "Outros",
+    "categoria": "Alimentos",
     "tags": [
       "outros",
       "espaguete"
@@ -24793,7 +24793,7 @@
     "id": 2480,
     "key": "mosca",
     "label": "Mosca",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "mosca"
@@ -24803,7 +24803,7 @@
     "id": 2481,
     "key": "mosquito",
     "label": "Mosquito",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "mosquito"
@@ -27733,7 +27733,7 @@
     "id": 2774,
     "key": "passaro",
     "label": "Passaro",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "passaro"
@@ -33583,7 +33583,7 @@
     "id": 3359,
     "key": "tartaruga",
     "label": "Tartaruga",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "tartaruga"
@@ -33593,7 +33593,7 @@
     "id": 3360,
     "key": "tatu",
     "label": "Tatu",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "tatu"
