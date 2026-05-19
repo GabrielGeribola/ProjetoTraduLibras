@@ -32,6 +32,11 @@ const sessionOptions = session({
   saveUninitialized: false,
 });
 
+app.use((req, res, next) => {
+  res.locals.usuario = req.session?.usuario || null;
+  next();
+});
+
 // Inicializa o armazenamento da sessão antes de usar no aplicativo
 
 sessionStore.sync();
