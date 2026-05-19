@@ -1653,7 +1653,7 @@
     "id": 166,
     "key": "alce",
     "label": "Alce",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "alce"
@@ -3333,7 +3333,7 @@
     "id": 334,
     "key": "aranha",
     "label": "Aranha",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "aranha"
@@ -3683,7 +3683,7 @@
     "id": 369,
     "key": "arroz",
     "label": "Arroz",
-    "categoria": "Outros",
+    "categoria": "Alimentos",
     "tags": [
       "outros",
       "arroz"
@@ -4933,7 +4933,7 @@
     "id": 494,
     "key": "baleia",
     "label": "Baleia",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "baleia"
@@ -4973,7 +4973,7 @@
     "id": 498,
     "key": "banana",
     "label": "Banana",
-    "categoria": "Outros",
+    "categoria": "Alimentos",
     "tags": [
       "outros",
       "banana"
@@ -5833,7 +5833,7 @@
     "id": 584,
     "key": "biscoito",
     "label": "Biscoito",
-    "categoria": "Outros",
+    "categoria": "Alimentos",
     "tags": [
       "outros",
       "biscoito"
@@ -5953,7 +5953,7 @@
     "id": 596,
     "key": "bolacha",
     "label": "Bolacha",
-    "categoria": "Outros",
+    "categoria": "Alimentos",
     "tags": [
       "outros",
       "bolacha"
@@ -6733,7 +6733,7 @@
     "id": 674,
     "key": "camarao",
     "label": "Camarao",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "camarao"
@@ -7373,7 +7373,7 @@
     "id": 738,
     "key": "carneassada",
     "label": "Carne-assada",
-    "categoria": "Outros",
+    "categoria": "Alimentos",
     "tags": [
       "outros",
       "carne-assada"
@@ -7383,7 +7383,7 @@
     "id": 739,
     "key": "carnemoida",
     "label": "Carne-moida",
-    "categoria": "Outros",
+    "categoria": "Alimentos",
     "tags": [
       "outros",
       "carne-moida"
@@ -7393,7 +7393,7 @@
     "id": 740,
     "key": "carne",
     "label": "Carne",
-    "categoria": "Outros",
+    "categoria": "Alimentos",
     "tags": [
       "outros",
       "carne"
@@ -7403,7 +7403,7 @@
     "id": 741,
     "key": "carneiro",
     "label": "Carneiro",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "carneiro"
@@ -7913,7 +7913,7 @@
     "id": 792,
     "key": "cenoura",
     "label": "Cenoura",
-    "categoria": "Outros",
+    "categoria": "Alimentos",
     "tags": [
       "outros",
       "cenoura"
@@ -8483,7 +8483,7 @@
     "id": 849,
     "key": "churrasco",
     "label": "Churrasco",
-    "categoria": "Outros",
+    "categoria": "Alimentos",
     "tags": [
       "outros",
       "churrasco"
@@ -8503,7 +8503,7 @@
     "id": 851,
     "key": "churrasquinho",
     "label": "Churrasquinho",
-    "categoria": "Outros",
+    "categoria": "Alimentos",
     "tags": [
       "outros",
       "churrasquinho"
@@ -8883,7 +8883,7 @@
     "id": 889,
     "key": "cobra",
     "label": "Cobra",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "cobra"
@@ -14233,7 +14233,7 @@
     "id": 1424,
     "key": "esquilo",
     "label": "Esquilo",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "esquilo"
@@ -15223,7 +15223,7 @@
     "id": 1523,
     "key": "farinhaderosca",
     "label": "Farinha-de-rosca",
-    "categoria": "Outros",
+    "categoria": "Alimentos",
     "tags": [
       "outros",
       "farinha-de-rosca"
@@ -15233,7 +15233,7 @@
     "id": 1524,
     "key": "farinha_de_trigo",
     "label": "Farinha_de_trigo",
-    "categoria": "Outros",
+    "categoria": "Alimentos",
     "tags": [
       "outros",
       "farinha_de_trigo"
@@ -15443,7 +15443,7 @@
     "id": 1545,
     "key": "feijao",
     "label": "Feijao",
-    "categoria": "Outros",
+    "categoria": "Alimentos",
     "tags": [
       "outros",
       "feijao"
@@ -15453,7 +15453,7 @@
     "id": 1546,
     "key": "feijoada",
     "label": "Feijoada",
-    "categoria": "Outros",
+    "categoria": "Alimentos",
     "tags": [
       "outros",
       "feijoada"
@@ -16413,7 +16413,7 @@
     "id": 1642,
     "key": "frango",
     "label": "Frango",
-    "categoria": "Outros",
+    "categoria": "Alimentos",
     "tags": [
       "outros",
       "frango"
@@ -16773,7 +16773,7 @@
     "id": 1678,
     "key": "gafanhoto",
     "label": "Gafanhoto",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "gafanhoto"
@@ -16863,7 +16863,7 @@
     "id": 1687,
     "key": "gamba",
     "label": "Gamba",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "gamba"
@@ -17043,7 +17043,7 @@
     "id": 1705,
     "key": "gaviao",
     "label": "Gaviao",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "gaviao"
@@ -17333,7 +17333,7 @@
     "id": 1734,
     "key": "girafa",
     "label": "Girafa",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "girafa"
@@ -22603,7 +22603,7 @@
     "id": 2261,
     "key": "macaco",
     "label": "Macaco",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "macaco"
@@ -22993,7 +22993,7 @@
     "id": 2300,
     "key": "mamao",
     "label": "Mamao",
-    "categoria": "Outros",
+    "categoria": "Alimentos",
     "tags": [
       "outros",
       "mamao"
@@ -23793,7 +23793,7 @@
     "id": 2380,
     "key": "mel",
     "label": "Mel",
-    "categoria": "Outros",
+    "categoria": "Alimentos",
     "tags": [
       "outros",
       "mel"
@@ -23803,7 +23803,7 @@
     "id": 2381,
     "key": "melancia",
     "label": "Melancia",
-    "categoria": "Outros",
+    "categoria": "Alimentos",
     "tags": [
       "outros",
       "melancia"
@@ -24713,7 +24713,7 @@
     "id": 2472,
     "key": "morango",
     "label": "Morango",
-    "categoria": "Outros",
+    "categoria": "Alimentos",
     "tags": [
       "outros",
       "morango"
@@ -27203,7 +27203,7 @@
     "id": 2721,
     "key": "panqueca",
     "label": "Panqueca",
-    "categoria": "Outros",
+    "categoria": "Alimentos",
     "tags": [
       "outros",
       "panqueca"
@@ -27243,7 +27243,7 @@
     "id": 2725,
     "key": "papagaio",
     "label": "Papagaio",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "papagaio"
@@ -28083,7 +28083,7 @@
     "id": 2809,
     "key": "peixe",
     "label": "Peixe",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "peixe"
@@ -28303,7 +28303,7 @@
     "id": 2831,
     "key": "pepino",
     "label": "Pepino",
-    "categoria": "Outros",
+    "categoria": "Alimentos",
     "tags": [
       "outros",
       "pepino"
@@ -29093,7 +29093,7 @@
     "id": 2910,
     "key": "piranha",
     "label": "Piranha",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "piranha"
@@ -30533,7 +30533,7 @@
     "id": 3054,
     "key": "queijo",
     "label": "Queijo",
-    "categoria": "Outros",
+    "categoria": "Alimentos",
     "tags": [
       "outros",
       "queijo"
@@ -30943,7 +30943,7 @@
     "id": 3095,
     "key": "raposa",
     "label": "Raposa",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "raposa"
@@ -31053,7 +31053,7 @@
     "id": 3106,
     "key": "rato",
     "label": "Rato",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "rato"
@@ -31733,7 +31733,7 @@
     "id": 3174,
     "key": "rinoceronte",
     "label": "Rinoceronte",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "rinoceronte"
@@ -32183,7 +32183,7 @@
     "id": 3219,
     "key": "saladadefrutas",
     "label": "Salada-de-frutas",
-    "categoria": "Outros",
+    "categoria": "Alimentos",
     "tags": [
       "outros",
       "salada-de-frutas"
@@ -32193,7 +32193,7 @@
     "id": 3220,
     "key": "salada",
     "label": "Salada",
-    "categoria": "Outros",
+    "categoria": "Alimentos",
     "tags": [
       "outros",
       "salada"
@@ -32203,7 +32203,7 @@
     "id": 3221,
     "key": "salame",
     "label": "Salame",
-    "categoria": "Outros",
+    "categoria": "Alimentos",
     "tags": [
       "outros",
       "salame"
@@ -33963,7 +33963,7 @@
     "id": 3397,
     "key": "tigre",
     "label": "Tigre",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "tigre"
@@ -34353,7 +34353,7 @@
     "id": 3436,
     "key": "tucano",
     "label": "Tucano",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "tucano"
@@ -34723,7 +34723,7 @@
     "id": 3473,
     "key": "urubu",
     "label": "Urubu",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "urubu"
@@ -34753,7 +34753,7 @@
     "id": 3476,
     "key": "uva",
     "label": "Uva",
-    "categoria": "Outros",
+    "categoria": "Alimentos",
     "tags": [
       "outros",
       "uva"
@@ -34773,7 +34773,7 @@
     "id": 3478,
     "key": "vaca",
     "label": "Vaca",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "vaca"
@@ -36193,7 +36193,7 @@
     "id": 3620,
     "key": "zebra",
     "label": "Zebra",
-    "categoria": "Outros",
+    "categoria": "Animais",
     "tags": [
       "outros",
       "zebra"
