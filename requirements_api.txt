@@ -6,3 +6,8 @@ scikit-learn
 python-Levenshtein
 nltk
 sentence-transformers
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch
+werkzeug
+pydub
+SpeechRecognition

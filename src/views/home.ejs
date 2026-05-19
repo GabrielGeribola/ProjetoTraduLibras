@@ -119,6 +119,15 @@
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') closeTutorial();
   });
+  
+  // ---------- CONFIGURE AQUI a URL do backend Flask ----------
+  // Troque a porta se necessário (ex: 'http://localhost:5001')
+  const API_BASE = '';
+
+  const params = new URLSearchParams(window.location.search);
+  const palavraUrl = params.get('word');
+
+
 
   // ── API / Tradutor ────────────────────────────────────────
   const API_BASE = 'http://localhost:5000';
@@ -148,6 +157,9 @@
     chatContainer.scrollTop = chatContainer.scrollHeight;
   }
 
+ 
+
+  // --- Envio de texto pelo input (inicial) ---
   searchForm.addEventListener('submit', async function (event) {
     event.preventDefault();
     const inputText = document.getElementById('input_text').value.trim();
@@ -282,6 +294,23 @@
       setTimeout(() => { if (mediaRecorder.state !== 'inactive') mediaRecorder.stop(); }, 5000);
     } catch (err) { appendMessage('Permissão negada ou erro ao acessar microfone.', 'bot'); chatRecordBtn.disabled = false; chatRecordBtn.textContent = '🎤'; }
   });
+
+     // Verifica se veio palavra pela URL
+ let autoTraducaoExecutada = false;
+
+window.addEventListener('DOMContentLoaded', () => {
+  if (autoTraducaoExecutada) return;
+  const params = new URLSearchParams(window.location.search);
+  const word = params.get('word');
+
+  if (word) {
+
+    autoTraducaoExecutada = true;
+    document.getElementById('input_text').value = word;
+    document.getElementById('searchForm')
+      .dispatchEvent(new Event('submit'));
+  }
+});
 </script>
 </main>
 </body>

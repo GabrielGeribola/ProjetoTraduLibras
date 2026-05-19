@@ -63,6 +63,6 @@ app.use(cors());
   .then(() => console.log("Banco de dados sincronizado com sucesso!"))
   .catch((error) => console.error("Erro ao sincronizar o banco de dados:", error));*/
 
-app.listen(3306, () => {
+app.listen(3000, () => {
   console.log("Servidor iniciado na porta 3306: http://localhost:3306")
 });
