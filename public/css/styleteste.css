@@ -307,7 +307,7 @@ p { color: var(--text-muted); }
   filter:brightness(0) saturate(100%) invert(85%) sepia(30%) saturate(600%) hue-rotate(5deg);
 }
 
-.nav-spacer { flex:1; }
+.nav-spacer { flex:0.7; }
 .nav-logout { color:rgba(255,255,255,0.4); margin-top:8px; }
 .nav-logout:hover {
   background:rgba(255,80,80,0.12) !important; color:#ff7070 !important;
@@ -414,6 +414,11 @@ p { color: var(--text-muted); }
   overflow: hidden;
 }
 
+.tutorial-video-wrap iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
 
 .tutorial-caption {
   text-align:center; padding:14px 20px;
@@ -598,19 +603,61 @@ form:hover { transform:scale(1.005); }
    ============================================================ */
 .page-container { display:flex; justify-content:center; padding:80px 36px 36px 36px; min-height:85vh; align-items:flex-start; width:100%; }
 .content-card { width:100%; min-height:810px; max-width:1400px; background: var(--surface); border-radius:20px; box-shadow:0 6px 24px rgba(55,55,53,.09); padding:40px; border:1.5px solid var(--border); transition:background .35s, border-color .35s; }
-.content-card .header { display:flex; justify-content:space-between; align-items:center; margin-bottom:28px; padding:0; background:none; border:none; border-radius:0; width:100%; }
-.content-card .header h1 { font-family:'DM Serif Display',serif; font-style:italic; font-size:2rem; color: var(--text-dark); border-bottom:none; padding:0; }
-.search-bar { padding:10px 15px; border:2px solid var(--border); border-radius:10px; font-size:15px; width:240px; background: var(--bg); color: var(--text-dark); outline:none; transition:border-color .2s, background .35s, color .35s; }
+.content-card .header { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:16px; margin-bottom:28px; padding:0; background:none; border:none; border-radius:0; width:100%; }
+.content-card .header h1 { min-width:0; font-family:'DM Serif Display',serif; font-style:italic; font-size:2rem; color: var(--text-dark); border-bottom:none; padding:0; }
+.search-bar { padding:10px 15px; border:2px solid var(--border); border-radius:10px; font-size:15px; width:100%; max-width:320px; flex:1 1 240px; min-width:0; background: var(--bg); color: var(--text-dark); outline:none; transition:border-color .2s, background .35s, color .35s; }
 .search-bar:focus { border-color: var(--orange); }
 .section-title { font-family:'DM Serif Display',serif; font-style:italic; font-size:1.3rem; color: var(--text-dark); margin:32px 0 16px; border-bottom:2px solid var(--orange); padding-bottom:8px; transition:color .35s; }
-.section-header { cursor:pointer; user-select:none; display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; background: var(--surface-2); padding:13px 16px; border-radius:10px; border:1.5px solid var(--border); font-family:'DM Serif Display',serif; font-style:italic; font-size:1.1rem; color: var(--text-dark); transition:background .2s, border-color .35s, color .35s; }
-.section-header:hover { background: var(--peach); border-color: var(--orange); }
-.section-content { display:none; animation:fadeIn .3s ease; }
+/* Accordion */
+.toggle-section {
+  width:100%; margin-bottom:16px;
+  border:1.5px solid var(--border); border-radius:12px;
+  transition:border-color .35s;
+}
+.toggle-section.open { border-color: var(--orange); }
+
+.section-header {
+  cursor:pointer; user-select:none;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 18px; margin-bottom:0;
+  background: var(--surface-2);
+  border-radius:10px;
+  border:none;
+  font-family:'DM Serif Display',serif; font-style:italic; font-size:1.1rem;
+  color: var(--text-dark);
+  transition:background .2s, color .35s;
+  width:100%;
+}
+.section-header::after {
+  content:'\203A';
+  font-size:22px; font-style:normal;
+  display:inline-block;
+  transform:rotate(90deg);
+  transition:transform .3s ease;
+  flex-shrink:0; margin-left:10px; line-height:1;
+}
+.section-header:hover { background: var(--peach); }
+.toggle-section.open .section-header { border-radius:10px 10px 0 0; background: var(--peach); }
+.toggle-section.open .section-header::after { transform:rotate(270deg); }
+
+.section-content {
+  display:none;
+  padding:16px 16px 20px;
+  background: var(--surface);
+  border-top:1px solid var(--border);
+  border-radius:0 0 10px 10px;
+  transition:background .35s;
+}
 .toggle-section.open .section-content { display:block; }
-.scrollable-content { max-height:580px; overflow-y:auto; padding-right:8px; }
+
+.scrollable-content { padding-right:0; overflow-y:visible; }
 .scrollable-content::-webkit-scrollbar { width:5px; }
 .scrollable-content::-webkit-scrollbar-thumb { background: var(--peach); border-radius:10px; }
-.topics-container { padding:20px 0; display:flex; flex-direction:column; gap:20px; }
+.topics-container { padding:0; display:flex; flex-direction:column; gap:14px; }
+/* garante que display:none tem prioridade quando fechado */
+.section-content { display:none !important; }
+.toggle-section.open .section-content { display:flex !important; }
+.section-content.topics-container { padding:16px 16px 20px; gap:14px; }
 .topic { background: var(--surface-2); padding:22px; border-radius:12px; border:1.5px solid var(--border); box-shadow:0 2px 8px rgba(55,55,53,.05); transition:background .35s, border-color .35s; }
 .topic:hover { border-color: var(--orange); }
 .topic h3 { font-family:'DM Serif Display',serif; font-style:italic; margin-bottom:8px; color: var(--text-dark); font-size:1.15rem; }
@@ -645,6 +692,77 @@ form:hover { transform:scale(1.005); }
 .sugestoes-image { text-align:center; margin-top:28px; }
 .sugestoes-image img { width:180px; opacity:.7; }
 
+
+/* ============================================================
+   PÁGINA GLOSSÁRIO
+   ============================================================ */
+.glossario-container {
+  max-width: 860px;
+  margin: 80px auto 48px;
+  padding: 0 24px;
+}
+
+.glossario-title {
+  font-family: 'DM Serif Display', serif;
+  font-style: italic;
+  font-size: 2.2rem;
+  text-align: center;
+  color: var(--text-dark);
+  margin-bottom: 8px;
+  border-bottom: 3px solid var(--orange);
+  padding-bottom: 14px;
+}
+
+.glossario-subtitle {
+  text-align: center;
+  font-size: 15px;
+  color: var(--text-muted);
+  margin-bottom: 32px;
+}
+
+/* container dos acordeões do glossário */
+#glossario-container { display: flex; flex-direction: column; gap: 0; }
+
+/* pills de palavra */
+.glossario-grupo {
+  display: none;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 16px 18px 20px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  border-radius: 0 0 10px 10px;
+}
+
+.toggle-section.open .glossario-grupo { display: flex; }
+
+.glossario-tag {
+  display: inline-block;
+  padding: 7px 14px;
+  background: var(--surface-2);
+  border: 1.5px solid var(--border);
+  border-radius: 20px;
+  text-decoration: none;
+  color: var(--text-dark);
+  font-size: 14px;
+  font-weight: 500;
+  transition: background .2s ease, border-color .2s ease,
+              color .2s ease, transform .15s ease;
+}
+
+.glossario-tag:hover {
+  background: var(--orange);
+  border-color: var(--orange);
+  color: var(--bg);
+  transform: translateY(-2px);
+}
+
+@media (max-width: 600px) {
+  .glossario-container { padding: 0 12px; margin-top: 72px; }
+  .glossario-title { font-size: 1.8rem; }
+  .glossario-tag { font-size: 13px; padding: 6px 12px; }
+}
+
 /* ============================================================
    RESPONSIVIDADE
    ============================================================ */
@@ -668,6 +786,8 @@ form:hover { transform:scale(1.005); }
   .page-container  { padding:68px 10px 10px; }
   .faq-container, .sugestoes-container { margin:68px 10px 10px; padding:22px 16px; width:auto; }
   .content-card { padding:24px 16px; }
+  .content-card .header { flex-direction:column; align-items:stretch; gap:10px; }
+  .search-bar { max-width:100%; width:100%; flex:none; }
   .hamburger-btn,.settings-btn { top:14px; }
   .hamburger-btn { left:14px; } .settings-btn { right:14px; }
   .settings-panel { right:14px; top:68px; width:220px; }
@@ -681,4 +801,125 @@ form:hover { transform:scale(1.005); }
   .btn-criar-conta,.botaoacessar { width:80%; }
   video { width:280px; height:210px; }
   .translate-home { font-size:1.8rem; }
+}
+/* ============================================================
+   PÁGINA GLOSSÁRIO
+   ============================================================ */
+.glossario-container {
+  max-width: 860px;
+  margin: 80px auto 48px;
+  padding: 36px 40px;
+  background: var(--surface);
+  border-radius: 20px;
+  border: 1.5px solid var(--border);
+  box-shadow: 0 6px 24px rgba(55,55,53,.09);
+  transition: background .35s, border-color .35s;
+}
+
+.glossario-page-title {
+  font-family: 'DM Serif Display', serif;
+  font-style: italic;
+  font-size: 2.2rem;
+  text-align: center;
+  color: var(--text-dark);
+  margin-bottom: 28px;
+  padding-bottom: 14px;
+  border-bottom: 3px solid var(--orange);
+  transition: color .35s;
+}
+
+/* Cabeçalho de categoria */
+.glossario-categoria-titulo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 32px;
+  margin-bottom: 14px;
+  font-family: 'DM Serif Display', serif;
+  font-style: italic;
+  font-size: 1.4rem;
+  font-weight: 400;
+  color: var(--text-dark);
+  cursor: pointer;
+  user-select: none;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  border: 1.5px solid var(--border);
+  transition: background .2s, border-color .2s, color .35s;
+}
+
+.glossario-categoria-titulo:hover {
+  background: var(--peach);
+  border-color: var(--orange);
+}
+
+.glossario-categoria-titulo.aberto {
+  background: var(--peach);
+  border-color: var(--orange);
+  border-radius: 10px 10px 0 0;
+  margin-bottom: 0;
+  border-bottom: none;
+}
+
+/* Seta */
+.glossario-seta {
+  display: inline-block;
+  font-style: normal;
+  font-size: 18px;
+  transition: transform .3s ease;
+  color: var(--orange);
+  flex-shrink: 0;
+}
+
+.glossario-categoria-titulo.aberto .glossario-seta {
+  transform: rotate(90deg);
+}
+
+/* Grupo de tags */
+.glossario-grupo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 14px;
+  background: var(--surface);
+  border: 1.5px solid var(--orange);
+  border-top: none;
+  border-radius: 0 0 10px 10px;
+  transition: background .35s;
+}
+
+.glossario-grupo.fechado {
+  display: none;
+}
+
+/* Tag / link individual */
+.glossario-tag {
+  padding: 7px 14px;
+  background: var(--surface-2);
+  border: 1.5px solid var(--border);
+  border-radius: 20px;
+  text-decoration: none;
+  color: var(--text-dark);
+  font-size: 14px;
+  font-weight: 500;
+  font-family: 'DM Sans', sans-serif;
+  transition: background .2s, border-color .2s, color .2s, transform .15s;
+}
+
+.glossario-tag:hover {
+  background: var(--orange);
+  border-color: var(--orange);
+  color: var(--bg);
+  transform: translateY(-2px);
+}
+
+/* Responsivo */
+@media (max-width: 600px) {
+  .glossario-container {
+    margin: 68px 12px 24px;
+    padding: 22px 16px;
+  }
+  .glossario-page-title { font-size: 1.8rem; }
+  .glossario-categoria-titulo { font-size: 1.1rem; }
 }

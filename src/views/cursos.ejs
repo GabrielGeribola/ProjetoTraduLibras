@@ -6,15 +6,17 @@
 
     <div class="header">
       <h1>Cursos</h1>
-      <input type="text" class="search-bar" placeholder="🔍 Buscar cursos">
+      <input type="text" class="search-bar" id="searchInput" placeholder="🔍 Buscar cursos">
     </div>
 
     <div class="scrollable-content">
 
       <!-- Artigos Didáticos -->
-      <div class="toggle-section">
-        <h2 class="section-header">📄 Artigos Didáticos</h2>
-        <div class="topics-container section-content">
+      <div class="toggle-section" id="section-artigos">
+        <button class="section-header" type="button" aria-expanded="false">
+          📄 Artigos Didáticos
+        </button>
+        <div class="section-content topics-container">
           <% artigos.forEach(artigo => { %>
           <div class="topic">
             <h3><%= artigo.titulo %></h3>
@@ -26,9 +28,11 @@
       </div>
 
       <!-- Vídeos Didáticos -->
-      <div class="toggle-section">
-        <h2 class="section-header">🎬 Vídeos Didáticos</h2>
-        <div class="topics-container section-content">
+      <div class="toggle-section" id="section-videos">
+        <button class="section-header" type="button" aria-expanded="false">
+          🎬 Vídeos Didáticos
+        </button>
+        <div class="section-content topics-container">
           <% videos.forEach(video => { %>
           <div class="topic">
             <h3><%= video.titulo %></h3>
@@ -44,9 +48,37 @@
 </div>
 
 <script>
-  document.querySelectorAll('.section-header').forEach(header => {
-    header.addEventListener('click', () => {
-      header.parentElement.classList.toggle('open');
+  // Acordeão
+  document.querySelectorAll('.section-header').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const section = btn.parentElement;
+      const isOpen  = section.classList.contains('open');
+      section.classList.toggle('open', !isOpen);
+      btn.setAttribute('aria-expanded', String(!isOpen));
+    });
+  });
+
+  // Busca — filtra tópicos e expande a seção automaticamente
+  document.getElementById('searchInput').addEventListener('input', function () {
+    const q = this.value.trim().toLowerCase();
+
+    document.querySelectorAll('.toggle-section').forEach(section => {
+      const topics   = section.querySelectorAll('.topic');
+      let anyVisible = false;
+
+      topics.forEach(topic => {
+        const text    = topic.textContent.toLowerCase();
+        const matches = !q || text.includes(q);
+        topic.style.display = matches ? '' : 'none';
+        if (matches) anyVisible = true;
+      });
+
+      // Abre seção se houver resultado, fecha se não houver (só durante busca)
+      if (q) {
+        section.classList.toggle('open', anyVisible);
+        section.querySelector('.section-header').setAttribute('aria-expanded', String(anyVisible));
+      }
+      section.style.display = anyVisible || !q ? '' : 'none';
     });
   });
 </script>

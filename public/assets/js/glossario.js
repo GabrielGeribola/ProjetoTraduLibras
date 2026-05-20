@@ -4,99 +4,60 @@ fetch('/data/glossario.json')
 
     const container = document.getElementById('glossario-container');
 
-    // AGRUPAR POR CATEGORIA
+    // Agrupar por categoria
     const categorias = {};
-
     glossario.forEach(item => {
-
-      const categoria = item.categoria || 'Outros';
-
-      if (!categorias[categoria]) {
-        categorias[categoria] = [];
-      }
-
-      categorias[categoria].push(item);
+      const cat = item.categoria || 'Outros';
+      if (!categorias[cat]) categorias[cat] = [];
+      categorias[cat].push(item);
     });
 
-    const ordemCategorias = [
-      'Alimentos',
-      'Animais',
-      'Educação',
-      'Saúde',
-      'Outros'
-    ];
+    const ordemCategorias = ['Alimentos', 'Animais', 'Educação', 'Saúde', 'Outros'];
 
-    // RENDERIZAR
     ordemCategorias.forEach(categoria => {
-
       if (!categorias[categoria]) return;
 
-            // HEADER DA CATEGORIA
-      const titulo = document.createElement('div');
+      // Header da categoria
+      const header = document.createElement('div');
+      header.className = 'glossario-categoria-titulo aberto';
 
-      titulo.textContent = `▼ ${categoria}`;
+      const seta = document.createElement('span');
+      seta.className = 'glossario-seta';
+      seta.textContent = '›';
 
-      titulo.style.marginTop = '30px';
-      titulo.style.marginBottom = '15px';
-      titulo.style.color = '#1e293b';
-      titulo.style.fontSize = '32px';
-      titulo.style.fontWeight = 'bold';
-      titulo.style.cursor = 'pointer';
-      titulo.style.userSelect = 'none';
+      const label = document.createElement('span');
+      label.textContent = categoria;
 
-      // CONTAINER DOS LINKS
+      header.appendChild(seta);
+      header.appendChild(label);
+
+      // Grupo de links
       const grupo = document.createElement('div');
-
-      grupo.style.display = 'flex';
-      grupo.style.flexWrap = 'wrap';
-      grupo.style.gap = '10px';
+      grupo.className = 'glossario-grupo';
 
       categorias[categoria].forEach(item => {
-
         const link = document.createElement('a');
-
+        link.className = 'glossario-tag';
         link.textContent = item.label;
-
         link.href = `/home?word=${encodeURIComponent(item.label)}`;
-
-        // ESTILO
-        link.style.padding = '8px 12px';
-        link.style.background = '#e2e8f0';
-        link.style.borderRadius = '8px';
-        link.style.textDecoration = 'none';
-        link.style.color = '#0f172a';
-        link.style.fontWeight = 'bold';
-        link.style.transition = '0.2s';
-
-        link.addEventListener('mouseover', () => {
-          link.style.background = '#cbd5e1';
-        });
-
-        link.addEventListener('mouseout', () => {
-          link.style.background = '#e2e8f0';
-        });
-
         grupo.appendChild(link);
       });
-      
-      container.appendChild(titulo);
+
+      container.appendChild(header);
       container.appendChild(grupo);
 
-      // EXPANDIR / RECOLHER
+      // Expandir / recolher
       let aberto = true;
 
-      titulo.addEventListener('click', () => {
-
+      header.addEventListener('click', () => {
         aberto = !aberto;
-
         if (aberto) {
-          grupo.style.display = 'flex';
-          titulo.textContent = `▼ ${categoria}`;
+          header.classList.add('aberto');
+          grupo.classList.remove('fechado');
         } else {
-          grupo.style.display = 'none';
-          titulo.textContent = `► ${categoria}`;
+          header.classList.remove('aberto');
+          grupo.classList.add('fechado');
         }
-
       });
     });
 
