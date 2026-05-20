@@ -93,7 +93,7 @@
   // ── Vídeo Tutorial ────────────────────────────────────────
   // Troque a URL abaixo pelo link embed do seu tutorial (YouTube, Vimeo, etc.)
   // Exemplo YouTube: https://www.youtube.com/embed/SEU_VIDEO_ID
-  const TUTORIAL_URL = 'https://www.youtube.com/embed/dQw4w9WgXcQ';
+  const TUTORIAL_URL = 'https://assetstradulibras.s3.us-east-1.amazonaws.com/imgs/tutorial_tradulibras_com_som.mp4';
 
   const btnTutorial     = document.getElementById('btnTutorial');
   const tutorialOverlay = document.getElementById('tutorialOverlay');
@@ -122,7 +122,7 @@
   
   // ---------- CONFIGURE AQUI a URL do backend Flask ----------
   // Troque a porta se necessário (ex: 'http://localhost:5001')
-  const API_BASE = '';
+  const API_BASE = 'http://localhost:5000';
 
   const params = new URLSearchParams(window.location.search);
   const palavraUrl = params.get('word');
@@ -130,7 +130,6 @@
 
 
   // ── API / Tradutor ────────────────────────────────────────
-  const API_BASE = 'http://localhost:5000';
 
   let ultimaEntrada  = '';
   let ultimaSugestao = '';
