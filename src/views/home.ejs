@@ -12,14 +12,13 @@
           <button class="tutorial-close" id="tutorialClose" aria-label="Fechar">✕</button>
         </div>
         <div class="tutorial-video-wrap">
-          <iframe
-            id="tutorialIframe"
-            src=""
-            title="Tutorial TraduLibras"
-            frameborder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowfullscreen>
-          </iframe>
+          <video
+            id="tutorialVideo"
+            controls
+            autoplay
+            playsinline
+            style="width:100%; border-radius:12px;">
+          </video>
         </div>
         <p class="tutorial-caption">Aprenda a usar o TraduLibras em poucos minutos.</p>
       </div>
@@ -91,46 +90,50 @@
 
 <script>
   // ── Vídeo Tutorial ────────────────────────────────────────
-  // Troque a URL abaixo pelo link embed do seu tutorial (YouTube, Vimeo, etc.)
-  // Exemplo YouTube: https://www.youtube.com/embed/SEU_VIDEO_ID
-  const TUTORIAL_URL = 'https://assetstradulibras.s3.us-east-1.amazonaws.com/imgs/tutorial_tradulibras_com_som.mp4';
+  const TUTORIAL_URL =
+    'https://assetstradulibras.s3.us-east-1.amazonaws.com/imgs/tutorial_tradulibras_com_som.mp4';
 
   const btnTutorial     = document.getElementById('btnTutorial');
   const tutorialOverlay = document.getElementById('tutorialOverlay');
   const tutorialClose   = document.getElementById('tutorialClose');
-  const tutorialIframe  = document.getElementById('tutorialIframe');
+  const tutorialVideo   = document.getElementById('tutorialVideo');
 
   btnTutorial.addEventListener('click', () => {
-    tutorialIframe.src = TUTORIAL_URL;
+    tutorialVideo.src = TUTORIAL_URL;
+    tutorialVideo.load();
+
     tutorialOverlay.classList.add('open');
     document.body.style.overflow = 'hidden';
   });
 
   function closeTutorial() {
     tutorialOverlay.classList.remove('open');
-    tutorialIframe.src = ''; // para o vídeo ao fechar
+
+    tutorialVideo.pause();
+    tutorialVideo.src = '';
+
     document.body.style.overflow = '';
   }
 
   tutorialClose.addEventListener('click', closeTutorial);
+
   tutorialOverlay.addEventListener('click', e => {
     if (e.target === tutorialOverlay) closeTutorial();
   });
+
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') closeTutorial();
   });
-  
+
   // ---------- CONFIGURE AQUI a URL do backend Flask ----------
   // Troque a porta se necessário (ex: 'http://localhost:5001')
-  const API_BASE = '';
-
   const params = new URLSearchParams(window.location.search);
   const palavraUrl = params.get('word');
 
 
 
   // ── API / Tradutor ────────────────────────────────────────
-  const API_BASE = 'http://localhost:5000';
+  const API_BASE = '';
 
   let ultimaEntrada  = '';
   let ultimaSugestao = '';
