@@ -1,6 +1,27 @@
 <h1 align="center"> 💻 TRADULIBRAS: CONVERSAÇÃO ENTRE SURDOS E NÃO SURDOS VIA APLICATIVO MOBILE </h1>
-<p> O projeto Tradulibras é uma aplicação web desenvolvida com o objetivo de oferecer um tradutor de texto integrado com a API AWS Translate. Este projeto permite que os usuários traduzam texto de um idioma para outro de forma rápida e eficiente. A interface é projetada para ser intuitiva e amigável, oferecendo também recursos adicionais como login, logout e um menu interativo. </p>
+<h2> 📌 Sobre o projeto </h2>
+<p> O TraduLibras é uma aplicação voltada à inclusão e acessibilidade, desenvolvida para realizar a tradução de textos em português para Libras (Língua Brasileira de Sinais), atendendo tanto pessoas surdas quanto não surdas.
 
+O sistema realiza o processamento do texto de entrada, identificando palavras e expressões a partir de uma base de aproximadamente 5.000 expressões em Libras e utilizando técnicas de Processamento de Linguagem Natural (PLN) e similaridade de cosseno para encontrar correspondências entre o texto informado e os conteúdos cadastrados.
+
+Após a identificação das expressões, o sistema associa cada resultado ao seu respectivo conteúdo visual em Libras, permitindo a reprodução da tradução por meio de um intérprete virtual.
+
+Atualmente, o projeto apresenta mais de 80% de acurácia nos testes realizados com a base disponível, utilizando similaridade de cosseno como uma das principais técnicas para comparação semântica dos textos.
+</p>
+
+<h2> ⚙️ Principais funcionalidades</h2>
+<p> 
+<h3> • Tradução de textos em português para Libras;</h3>
+<h3> • Processamento e normalização do texto de entrada;</h3>
+<h3> • Busca e correspondência de palavras e expressões na base de dados;</h3>
+<h3> • Cálculo de similaridade utilizando similaridade de cosseno;</h3>
+<h3> • Utilização de técnicas de Processamento de Linguagem Natural (PLN);</h3>
+<h3> • Associação das expressões encontradas aos respectivos conteúdos em Libras;</h3>
+<h3> • Reprodução das traduções por meio de animações/vídeos de Libras;</h3>
+<h3> • Glossário organizado por segmentos;</h3>
+<h3> • Interface desenvolvida com foco em acessibilidade e usabilidade.</h3>
+
+O projeto encontra-se em desenvolvimento, com foco na evolução do processo de tradução, aumento da precisão das correspondências e ampliação da base de expressões em Libras. </p>
 <h2> 🛠 Tecnologias </h2>
 
 <h3 align="left">
@@ -24,42 +45,3 @@
     <a href="https://aws.amazon.com/pt/translate/">🔗 AWS Translate</a>
 </h3>
 <p align="left">📝 Para os serviços de tradução de texto.</p>
-
-
-<h2> 🛠 Configuração e Instalação </h2>
-
-<p> 1- Clone o repositório </p>
-
-```
-git clone https://github.com/GabrielGeribola/Tradulibras.git
-```
-<p>2- Instale as dependências, acesse a pasta do projeto e abra no vscode, no terminal dele faça: </p>
-
-```
-npm install
-```
-
-<p>3- Configure as variáveis de ambiente no arquivo '.env:'</p>
-
-```
-AWS_ACCESS_KEY_ID=your_access_key_id
-AWS_SECRET_ACCESS_KEY=your_secret_access_key
-AWS_REGION=your_aws_region
-```
-
-<p>4- Inicie a aplicação: </p>
-
-```
-npm run dev
-```
-
-
-<h2>💡 Como funciona</h3>
-<p>- O usuário acessa a aplicação e é direcionado para a página inicial.</p>
-<p>- Na página inicial, o usuário pode digitar um texto no campo designado e efetuar a tradução. </p>
-<p>- O sistema faz uma chamada à API AWS Translate e exibe a tradução na tela.</p>
-<p>- O usuário pode fazer login para acessar funcionalidades personalizadas (como acessar as apostilas e video aulas disponiveis).</p>
-
-
-<h2> Licença </h2>
-<p>Este projeto está licenciado sob a MIT License. Veja o arquivo <a href="https://github.com/GabrielGeribola/ProjetoTraduLibras?tab=MIT-1-ov-file#readme">LICENSE</a> para mais detalhes. </p>
