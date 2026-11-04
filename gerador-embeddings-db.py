@@ -6,7 +6,7 @@ import json
 # Conectar ao banco de dados
 def connect_to_db():
     return mysql.connector.connect(
-        host="db-tradulibras.crywgwekuqzx.us-east-1.rds.amazonaws.com",
+        host="db",
         user="tradulibras",
         password="Tradulibras2024",
         database="app_tradu_embedding"
@@ -21,7 +21,7 @@ def gerar_embeddings(expressao):
 
 # Atualizar as embeddings no banco
 def update_embeddings(cursor):
-    cursor.execute("SELECT id_word, description FROM words_sl_br")
+    cursor.execute("SELECT id_word, description FROM words_sl_br WHERE embedding IS NULL")
     rows = cursor.fetchall()
 
     for row in rows:

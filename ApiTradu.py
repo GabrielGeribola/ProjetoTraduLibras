@@ -1,27 +1,30 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 import mysql.connector
 import numpy as np
 import json
 from sklearn.metrics.pairwise import cosine_similarity
 from Levenshtein import distance as levenshtein_distance
-from nltk.stem import WordNetLemmatizer
+import spacy
 from sentence_transformers import SentenceTransformer
-import nltk
 import os
 import tempfile
 from werkzeug.utils import secure_filename
 from pydub import AudioSegment
 import speech_recognition as sr
 
-# Baixar dados NLTK
-nltk.download('wordnet')
-nltk.download('punkt')
-
 app = Flask(__name__)
 CORS(app)
 
-lemmatizer = WordNetLemmatizer()
+# Carregar modelo spaCy para português (Análise Sintática / POS Tagging)
+# Certifique-se de rodar: python -m spacy download pt_core_news_sm
+try:
+    nlp = spacy.load("pt_core_news_sm")
+except OSError:
+    import os
+    os.system("python -m spacy download pt_core_news_sm")
+    nlp = spacy.load("pt_core_news_sm")
+
 model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
 
 def connect_to_db():
@@ -34,6 +37,8 @@ def connect_to_db():
 
 def gerar_embeddings(texto):
     tokens = texto.split()
+    if not tokens:
+        return np.zeros(384) # Dimensão do MiniLM-L6-v2
     vetores = [model.encode(token) for token in tokens]
     return np.mean(vetores, axis=0)
 
@@ -44,22 +49,91 @@ def get_expressions_and_embeddings(cursor):
     embeddings = [np.array(json.loads(row[1])) for row in data]
     return expressions, np.array(embeddings)
 
-def lemmatize_expression(expression):
-    words = expression.split()
-    lemmatized_words = [lemmatizer.lemmatize(word.lower()) for word in words]
-    return ' '.join(lemmatized_words)
+def portugues_para_glosa_libras(frase_portugues):
+    """
+    Converte a frase em português para a estrutura gramatical aproximada de Libras (Glosa).
+    Remove artigos, preposições vazias e reorganiza elementos (ex: Tópico/Tempo + Objeto + Verbo).
+    """
+    doc = nlp(frase_portugues.lower())
+    
+    tempos = []
+    sujeitos = []
+    objetos = []
+    verbos = []
+    outros = []
 
-def find_most_similar_expression(user_input_embedding, embeddings, expressions):
-    similarity_scores = cosine_similarity([user_input_embedding], embeddings)
+    for token in doc:
+        # Ignorar pontuações, determinantes (artigos) e preposições puras de ligação
+        if token.pos_ in ["PUNCT", "DET"] or token.dep_ == "case":
+            continue
+            
+        lema = token.lemma_
+        
+        if token.dep_ in ["nsubj", "nsubj:pass"]:
+            sujeitos.append(lema)
+        elif token.dep_ in ["obj", "iobj", "obl"]:
+            objetos.append(lema)
+        elif token.pos_ == "VERB":
+            verbos.append(lema)
+        elif token.dep_ in ["advmod"] and ("ontem" in lema or "amanhã" in lema or "hoje" in lema):
+            tempos.append(lema)
+        else:
+            outros.append(lema)
+
+    # Ordem básica aproximada em Libras: [Tempo] + [Objeto/Tópico] + [Sujeito] + [Verbo]
+    glosa_tokens = tempos + objetos + sujeitos + outros + verbos
+    return " ".join([t for t in glosa_tokens if t])
+
+def encontrar_melhor_sinal(termo, expressions, embeddings, cursor):
+    """Busca o melhor match no banco para um termo isolado da glosa."""
+    if not expressions or len(embeddings) == 0:
+        return None, 0.0
+
+    # Tenta match exato/embedding
+    embedding_termo = model.encode(termo)
+    similarity_scores = cosine_similarity([embedding_termo], embeddings)
     max_score_index = np.argmax(similarity_scores)
-    max_similarity = similarity_scores[0][max_score_index]
-    return expressions[max_score_index], max_similarity
+    score = similarity_scores[0][max_score_index]
+    
+    if score >= 0.7:
+        return expressions[max_score_index], float(score)
+        
+    # Fallback Levenshtein para o termo
+    distancias = [levenshtein_distance(termo, expr.lower()) for expr in expressions]
+    min_idx = np.argmin(distancias)
+    if distancias[min_idx] <= 2:
+        return expressions[min_idx], 0.0
 
-def find_closest_expression_levenshtein(user_input, expressions):
-    lemmatized_input = lemmatize_expression(user_input)
-    distances = [levenshtein_distance(lemmatized_input, lemmatize_expression(expr)) for expr in expressions]
-    min_distance_index = np.argmin(distances)
-    return expressions[min_distance_index], distances[min_distance_index]
+    return None, 0.0
+
+def processar_traducao_frase(cursor, frase_usuario):
+    expressions, embeddings = get_expressions_and_embeddings(cursor)
+    
+    # 1. Converter frase em estrutura de Libras (Glosa)
+    glosa = portugues_para_glosa_libras(frase_usuario)
+    termos_glosa = glosa.split()
+    
+    sequencia_animacoes = []
+    
+    # 2. Mapear cada termo da glosa para um sinal cadastrado no banco
+    for termo in termos_glosa:
+        sinal_encontrado, score = encontrar_melhor_sinal(termo, expressions, embeddings, cursor)
+        if sinal_encontrado:
+            url = find_animation_url(cursor, sinal_encontrado)
+            if url:
+                sequencia_animacoes.append({
+                    'termo_original': termo,
+                    'expressao_libras': sinal_encontrado,
+                    'url': url,
+                    'score': score
+                })
+
+    return {
+        'frase_original': frase_usuario,
+        'glosa_gerada': glosa,
+        'traducao_encontrada': len(sequencia_animacoes) > 0,
+        'sequencia': sequencia_animacoes
+    }
 
 def find_animation_url(cursor, expression):
     cursor.execute("""
@@ -72,102 +146,57 @@ def find_animation_url(cursor, expression):
     result = cursor.fetchone()
     return result[0] if result else None
 
-def esta_na_lista_de_exclusao(cursor, entrada, sugestao):
-    cursor.execute("""
-        SELECT 1 FROM exclusoes
-        WHERE input_text = %s AND expressao_excluida = %s
-    """, (entrada.lower(), sugestao.lower()))
-    return cursor.fetchone() is not None
-
-def registrar_feedback(cursor, entrada, sugestao, score, foi_util):
-    cursor.execute("""
-        INSERT INTO feedback_log (input_text, expressao_sugerida, score, foi_util)
-        VALUES (%s, %s, %s, %s)
-    """, (entrada.lower(), sugestao.lower(), float(score), foi_util))
-
-    cursor.execute("""
-        SELECT COUNT(*) FROM feedback_log
-        WHERE input_text = %s AND expressao_sugerida = %s AND foi_util = FALSE
-    """, (entrada.lower(), sugestao.lower()))
-    rejeicoes = cursor.fetchone()[0]
-
-    if rejeicoes >= 3:
-        cursor.execute("""
-            INSERT IGNORE INTO exclusoes (input_text, expressao_excluida)
-            VALUES (%s, %s)
-        """, (entrada.lower(), sugestao.lower()))
-
-# ----------------- Função de transcrição (escopo global) -----------------
 def transcrever_audio_caminho(file_path):
-    """
-    Transcreve áudio usando speech_recognition + Google Web Speech API.
-    Recebe um arquivo .wav (convertido previamente).
-    Retorna texto transcrito ou None.
-    """
     r = sr.Recognizer()
     try:
         with sr.AudioFile(file_path) as source:
             audio = r.record(source)
-        texto = r.recognize_google(audio, language='pt-BR')
-        return texto
-    except sr.UnknownValueError:
-        return None
-    except sr.RequestError as e:
-        print("Erro na API do Google Speech:", e)
-        return None
+        return r.recognize_google(audio, language='pt-BR')
     except Exception as e:
-        print("Erro inesperado em transcrever_audio_caminho:", e)
+        print("Erro na transcrição:", e)
         return None
 
-# ----------------- Função que reaproveita lógica de sugestão -----------------
-def buscar_sugestao_por_texto(user_input):
+# ----------------- Rota de Tradução de Frases/Texto -----------------
+@app.route('/api/sugestao', methods=['POST'])
+def sugestao():
+    data = request.get_json()
+    user_input = data.get('texto')
+    
+    if not user_input:
+        return jsonify({'mensagem': 'Nenhum texto fornecido.', 'status': 'error'}), 400
+
     db = connect_to_db()
     cursor = db.cursor()
     try:
-        expressions, embeddings = get_expressions_and_embeddings(cursor)
-        user_input_lem = lemmatize_expression(user_input)
-        embedding_input = gerar_embeddings(user_input_lem)
-        sugestao_expr, score = find_most_similar_expression(embedding_input, embeddings, expressions)
-
-        if sugestao_expr and not esta_na_lista_de_exclusao(cursor, user_input, sugestao_expr):
-            url = find_animation_url(cursor, sugestao_expr)
-            nivel_conf = 'alta' if score >= 0.8 else ('baixa' if score >= 0.6 else 'nenhuma')
-            if nivel_conf != 'nenhuma':
-                return {
-                    'expressao': sugestao_expr,
-                    'score': float(score),
-                    'nivel_confianca': nivel_conf,
-                    'url': url
-                }
-
-        # Fallback Levenshtein
-        closest_expr, dist = find_closest_expression_levenshtein(user_input, expressions)
-        if dist <= 2 and not esta_na_lista_de_exclusao(cursor, user_input, closest_expr):
-            url = find_animation_url(cursor, closest_expr)
-            return {
-                'expressao': closest_expr,
-                'score': 0.0,
-                'nivel_confianca': 'resultado por proximidade de escrita',
-                'url': url
-            }
-
-        return {'mensagem': 'not_found', 'status': 'not_found'}
+        resultado = processar_traducao_frase(cursor, user_input)
+        
+        if resultado['traducao_encontrada']:
+            return jsonify({
+                'status': 'success',
+                'frase_original': resultado['frase_original'],
+                'glosa': resultado['glosa_gerada'],
+                'sequencia': resultado['sequencia']
+            }), 200
+        else:
+            return jsonify({
+                'mensagem': 'Não foi possível montar a sentença em Libras com os sinais disponíveis.',
+                'status': 'not_found',
+                'sugestao_link': '/sugestoes'
+            }), 404
+            
     except Exception as e:
-        return {'erro': str(e), 'mensagem': 'error', 'status': 'error'}
+        return jsonify({'erro': str(e), 'mensagem': 'Erro interno no processamento.', 'status': 'error'}), 500
     finally:
         cursor.close()
         db.close()
 
-# ----------------- Rota /api/transcrever -----------------
+# ----------------- Rota de Áudio ajustada para Frases -----------------
 @app.route('/api/transcrever', methods=['POST'])
 def transcrever():
     if 'file' not in request.files:
         return jsonify({'mensagem': 'Nenhum arquivo enviado.'}), 400
 
     f = request.files['file']
-    if f.filename == '':
-        return jsonify({'mensagem': 'Arquivo sem nome.'}), 400
-
     filename = secure_filename(f.filename)
     tmp_dir = tempfile.mkdtemp(prefix='uploads_')
     input_path = os.path.join(tmp_dir, filename)
@@ -175,140 +204,31 @@ def transcrever():
 
     try:
         f.save(input_path)
+        audio = AudioSegment.from_file(input_path)
+        audio.export(output_path, format='wav')
 
-        # Converter webm/ogg/mp3 → wav (pydub + ffmpeg)
-        try:
-            audio = AudioSegment.from_file(input_path)
-            audio.export(output_path, format='wav')
-        except Exception as e:
-            print("Erro na conversão de áudio:", e)
-            return jsonify({'mensagem': 'Erro ao converter o áudio.'}), 500
-
-        # Transcrever com SpeechRecognition (Google)
         texto = transcrever_audio_caminho(output_path)
         if not texto:
             return jsonify({'mensagem': 'Não foi possível transcrever o áudio.'}), 500
 
-        # Buscar sugestão com o texto transcrito
-        sugestao_result = buscar_sugestao_por_texto(texto)
-        response_payload = {'texto': texto}
-
-        if sugestao_result and sugestao_result.get('expressao'):
-            response_payload.update(sugestao_result)
-            return jsonify(response_payload), 200
-        else:
-            response_payload.update({
-                'mensagem': 'Transcrição concluída, mas nenhuma expressão encontrada.',
-                'sugestao_link': '/sugestoes'
-            })
-            return jsonify(response_payload), 404
+        db = connect_to_db()
+        cursor = db.cursor()
+        try:
+            resultado = processar_traducao_frase(cursor, texto)
+            resultado['texto_transcrito'] = texto
+            return jsonify(resultado), 200
+        finally:
+            cursor.close()
+            db.close()
 
     except Exception as e:
         return jsonify({'mensagem': 'Erro ao processar arquivo: ' + str(e)}), 500
-
     finally:
-        # apagar os arquivos temporários
-        try:
-            for path in [input_path, output_path]:
-                if os.path.exists(path):
-                    os.remove(path)
-            if os.path.exists(tmp_dir):
-                os.rmdir(tmp_dir)
-        except Exception as e:
-            print('Erro ao limpar arquivos temporários:', e)
-
-# ----------------- Rota /api/sugestao (mantida) -----------------
-@app.route('/api/sugestao', methods=['POST'])
-def sugestao():
-    user_input = request.json.get('texto')
-    db = connect_to_db()
-    cursor = db.cursor()
-    try:
-        expressions, embeddings = get_expressions_and_embeddings(cursor)
-        user_input_lem = lemmatize_expression(user_input)
-        embedding_input = gerar_embeddings(user_input_lem)
-        sugestao_expr, score = find_most_similar_expression(embedding_input, embeddings, expressions)
-
-        if sugestao_expr and not esta_na_lista_de_exclusao(cursor, user_input, sugestao_expr):
-            url = find_animation_url(cursor, sugestao_expr)
-            nivel_conf = 'alta' if score >= 0.8 else ('baixa' if score >= 0.6 else 'nenhuma')
-            if nivel_conf != 'nenhuma':
-                return jsonify({
-                    'expressao': sugestao_expr,
-                    'score': score,
-                    'nivel_confianca': nivel_conf,
-                    'url': url
-                })
-
-        # Tentar Levenshtein como fallback
-        closest_expr, dist = find_closest_expression_levenshtein(user_input, expressions)
-        if dist <= 2 and not esta_na_lista_de_exclusao(cursor, user_input, closest_expr):
-            url = find_animation_url(cursor, closest_expr)
-            return jsonify({
-                'expressao': closest_expr,
-                'score': 0.0,
-                'nivel_confianca': 'resultado por proximidade de escrita',
-                'url': url
-            })
-
-        mensagem = (
-            "🤔 Hmm, não encontramos uma correspondência exata para sua busca...\n\n"
-            "Mas não se preocupe! Você pode:\n"
-            "✨ Tentar outra palavra ou expressão\n"
-            "🔍 Verificar a grafia\n"
-            "📚 Visitar nossa página de sugestões para encontrar outras inspirações!\n\n"
-        )
-        
-        return jsonify({
-            'mensagem': mensagem,
-            'status': 'not_found',
-            'sugestao_link': '/sugestoes'
-        }), 404
-        
-    except Exception as e:
-        return jsonify({
-            'erro': str(e),
-            'mensagem': '😅 Oops! Algo inesperado aconteceu...',
-            'status': 'error'
-        }), 500
-    finally:
-        cursor.close()
-        db.close()
-
-# ----------------- Rota /api/feedback (mantida) -----------------
-@app.route('/api/feedback', methods=['POST'])
-def feedback():
-    data = request.json
-    entrada = data.get('entrada')
-    sugestao = data.get('sugestao')
-    score = data.get('score', 0.0)
-    foi_util = data.get('foi_util', False)
-
-    db = connect_to_db()
-    cursor = db.cursor()
-    try:
-        registrar_feedback(cursor, entrada, sugestao, score, foi_util)
-        db.commit()
-        if foi_util:
-            mensagem = "🎉 Oba! Ficamos felizes que ajudamos! \n Obrigado pelo feedback positivo!"
-        else:
-            mensagem = "😔 Poxa, Seu feedback é muito importante para nós e estamos trabalhando para melhorar, sentimos muito que não foi útil dessa vez... \n Por favor, tente novamente com outra palavra ou expressão."
-        
-        return jsonify({
-            'mensagem': mensagem,
-            'status': 'success'
-        })
-    
-    except Exception as e:
-        db.rollback()
-        return jsonify({
-            'erro': str(e),
-            'mensagem': 'Ocorreu um erro ao processar seu feedback',
-            'status': 'error'
-        }), 500
-    finally:
-        cursor.close()
-        db.close()
+        for path in [input_path, output_path]:
+            if os.path.exists(path):
+                os.remove(path)
+        if os.path.exists(tmp_dir):
+            os.rmdir(tmp_dir)
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=False)
