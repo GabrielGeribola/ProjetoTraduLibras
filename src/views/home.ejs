@@ -87,7 +87,6 @@
         <button class="btn-home" type="submit" title="Enviar">›</button>
       </form>
     </div>
-
 <script>
   // ── Vídeo Tutorial ────────────────────────────────────────
   const TUTORIAL_URL =
@@ -125,20 +124,21 @@
     if (e.key === 'Escape') closeTutorial();
   });
 
-  // ---------- CONFIGURE AQUI a URL do backend Flask ----------
-  // Troque a porta se necessário (ex: 'http://localhost:5001')
+
+  // ── API / Tradutor ────────────────────────────────────────
+
   const params = new URLSearchParams(window.location.search);
   const palavraUrl = params.get('word');
 
-
-
-  // ── API / Tradutor ────────────────────────────────────────
   const API_BASE = '';
 
   let ultimaEntrada  = '';
   let ultimaSugestao = '';
   let ultimoScore    = 0.0;
   let currentStream  = null;
+
+
+  // ── Elementos da página ───────────────────────────────────
 
   const resultDiv     = document.getElementById('result');
   const feedbackDiv   = document.getElementById('feedback');
@@ -151,169 +151,979 @@
   const recordBtn     = document.getElementById('recordBtn');
   const chatRecordBtn = document.getElementById('chatRecordBtn');
 
+
+  // ── Adiciona mensagem no chat ─────────────────────────────
+
   function appendMessage(content, sender = 'user', asHtml = false) {
+
     const msg = document.createElement('div');
+
     msg.classList.add('chat-bubble', sender);
-    if (sender === 'bot' && asHtml) { msg.innerHTML = content; }
-    else { msg.textContent = content; }
+
+    if (sender === 'bot' && asHtml) {
+      msg.innerHTML = content;
+    } else {
+      msg.textContent = content;
+    }
+
     chatContainer.appendChild(msg);
+
     chatContainer.scrollTop = chatContainer.scrollHeight;
+
+    // IMPORTANTE:
+    // Retornamos o elemento criado para podermos
+    // encontrar o vídeo daquela mensagem específica.
+    return msg;
   }
 
- 
 
-  // --- Envio de texto pelo input (inicial) ---
+  // ── Sequência de animações ────────────────────────────────
+
+  function iniciarSequenciaAnimacoes(video, termoEl, sequencia) {
+
+    if (!video || !sequencia || sequencia.length === 0) {
+      return;
+    }
+
+    let indiceAtual = 0;
+
+
+    // Função responsável por reproduzir a animação atual
+    function reproduzirAnimacaoAtual() {
+
+      const animacao = sequencia[indiceAtual];
+
+      if (!animacao || !animacao.url) {
+        return;
+      }
+
+
+      // Troca o vídeo
+      video.src = animacao.url;
+
+      video.load();
+
+
+      // Mostra o sinal que está sendo reproduzido
+      if (termoEl) {
+
+        termoEl.textContent =
+          animacao.expressao_libras ||
+          animacao.termo_original ||
+          '';
+      }
+
+
+      // Reproduz automaticamente
+      video.play().catch(error => {
+
+        console.warn(
+          'O navegador bloqueou a reprodução automática:',
+          error
+        );
+
+      });
+
+    }
+
+
+    // Quando um vídeo terminar
+    video.addEventListener('ended', function () {
+
+      // Vai para o próximo
+      indiceAtual++;
+
+
+      // Se chegou ao final da frase,
+      // volta para o primeiro sinal.
+      if (indiceAtual >= sequencia.length) {
+
+        indiceAtual = 0;
+
+      }
+
+
+      // Reproduz o próximo vídeo
+      reproduzirAnimacaoAtual();
+
+    });
+
+
+    // Começa pelo primeiro vídeo
+    reproduzirAnimacaoAtual();
+  }
+
+
+
+  // ── Envio de texto pelo input inicial ─────────────────────
+
   searchForm.addEventListener('submit', async function (event) {
+
     event.preventDefault();
-    const inputText = document.getElementById('input_text').value.trim();
-    if (!inputText) return;
+
+    const inputText =
+      document.getElementById('input_text').value.trim();
+
+    if (!inputText) {
+      return;
+    }
+
+
     homeContent.style.display = 'none';
+
     chatWrapper.style.display = 'block';
+
     chatInput.value = inputText;
-    chatForm.dispatchEvent(new Event('submit'));
+
+    chatForm.dispatchEvent(
+      new Event('submit')
+    );
+
   });
+
+
+
+  // ── Tradução pelo chat ────────────────────────────────────
 
   chatForm.addEventListener('submit', async function (event) {
+
     event.preventDefault();
+
+
     const inputText = chatInput.value.trim();
-    if (!inputText) return;
-    ultimaEntrada = inputText;
-    appendMessage(inputText, 'user');
-    chatInput.value = '';
-    try {
-      const response = await fetch(`${API_BASE}/api/sugestao`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ texto: inputText })
-      });
-      let data;
-      try { data = await response.json(); }
-      catch (err) { appendMessage('Erro do servidor ao buscar sugestão.', 'bot'); return; }
-      if (response.ok) {
-        ultimaSugestao = data.expressao;
-        ultimoScore    = data.score ?? 0.0;
-        const botMessage = `
-          <p><strong>${data.expressao}</strong></p>
-          <p>Nível de confiança: ${data.nivel_confianca}</p>
-          <div class="video-container">
-            <video controls>
-              <source src="${data.url}" type="video/mp4">
-              Seu navegador não suporta vídeo.
-            </video>
-          </div>
-          <div class="feedback-inline">
-            <span>Esse era o resultado esperado?</span>
-            <button onclick="enviarFeedback(true)">👍</button>
-            <button onclick="enviarFeedback(false)">👎</button>
-          </div>`;
-        appendMessage(botMessage, 'bot', true);
-      } else {
-        appendMessage(data.mensagem || 'Erro ao buscar expressão.', 'bot');
-      }
-    } catch (err) {
-      appendMessage('Erro de rede ao buscar expressão.', 'bot');
+
+    if (!inputText) {
+      return;
     }
+
+
+    ultimaEntrada = inputText;
+
+
+    // Mostra o que o usuário digitou
+    appendMessage(
+      inputText,
+      'user'
+    );
+
+
+    chatInput.value = '';
+
+
+    try {
+
+      const response = await fetch(
+        `${API_BASE}/api/sugestao`,
+        {
+          method: 'POST',
+
+          headers: {
+            'Content-Type': 'application/json'
+          },
+
+          body: JSON.stringify({
+            texto: inputText
+          })
+        }
+      );
+
+
+      let data;
+
+
+      try {
+
+        data = await response.json();
+
+      } catch (err) {
+
+        appendMessage(
+          'Erro do servidor ao buscar sugestão.',
+          'bot'
+        );
+
+        return;
+      }
+
+
+
+      // ── RESPOSTA COM SUCESSO ───────────────────────────────
+
+      if (response.ok) {
+
+
+        // Verifica se a API retornou a sequência
+        const sequencia = data.sequencia || [];
+
+
+        if (sequencia.length === 0) {
+
+          appendMessage(
+            'A tradução foi processada, mas nenhuma animação foi encontrada.',
+            'bot'
+          );
+
+          return;
+        }
+
+
+        // Guarda informações para o feedback
+        ultimaSugestao = data.glosa || '';
+
+        ultimoScore =
+          sequencia[0]?.score ?? 0.0;
+
+
+
+        // ── HTML da resposta ────────────────────────────────
+
+        const botMessage = `
+
+          <div class="traducao-resultado">
+
+            <p>
+              <strong>Frase:</strong>
+              ${data.frase_original || inputText}
+            </p>
+
+
+            <p>
+              <strong>Glosa:</strong>
+              ${data.glosa || ''}
+            </p>
+
+
+            <div class="video-container">
+
+              <video
+                class="video-libras"
+                controls
+                playsinline>
+                Seu navegador não suporta vídeo.
+              </video>
+
+
+              <p class="termo-atual">
+
+                Sinal:
+                <strong class="termo-animacao"></strong>
+
+              </p>
+
+            </div>
+
+
+            <div class="feedback-inline">
+
+              <span>
+                Esse era o resultado esperado?
+              </span>
+
+              <button
+                onclick="enviarFeedback(true)">
+                👍
+              </button>
+
+              <button
+                onclick="enviarFeedback(false)">
+                👎
+              </button>
+
+            </div>
+
+          </div>
+
+        `;
+
+
+
+        // Adiciona a mensagem no chat
+        const botMessageElement =
+          appendMessage(
+            botMessage,
+            'bot',
+            true
+          );
+
+
+
+        // ── Localiza o vídeo dessa mensagem ─────────────────
+
+        const video =
+          botMessageElement.querySelector(
+            '.video-libras'
+          );
+
+
+        const termo =
+          botMessageElement.querySelector(
+            '.termo-animacao'
+          );
+
+
+
+        // ── Inicia a sequência ──────────────────────────────
+
+        iniciarSequenciaAnimacoes(
+          video,
+          termo,
+          sequencia
+        );
+
+
+      } else {
+
+
+        // ── ERRO DA API ────────────────────────────────────
+
+        appendMessage(
+          data.mensagem ||
+          'Erro ao buscar expressão.',
+          'bot'
+        );
+
+      }
+
+
+    } catch (err) {
+
+
+      console.error(
+        'Erro na requisição:',
+        err
+      );
+
+
+      appendMessage(
+        'Erro de rede ao buscar expressão.',
+        'bot'
+      );
+
+    }
+
   });
+
+
+
+  // ── Feedback ──────────────────────────────────────────────
 
   async function enviarFeedback(foiUtil) {
+
     try {
-      const response = await fetch(`${API_BASE}/api/feedback`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ entrada: ultimaEntrada, sugestao: ultimaSugestao, score: ultimoScore, foi_util: foiUtil })
-      });
+
+      const response = await fetch(
+        `${API_BASE}/api/feedback`,
+        {
+          method: 'POST',
+
+          headers: {
+            'Content-Type': 'application/json'
+          },
+
+          body: JSON.stringify({
+
+            entrada: ultimaEntrada,
+
+            sugestao: ultimaSugestao,
+
+            score: ultimoScore,
+
+            foi_util: foiUtil
+
+          })
+
+        }
+      );
+
+
       let data;
-      try { data = await response.json(); } catch (err) { appendMessage('Erro ao enviar feedback.', 'bot'); return; }
-      appendMessage(data.mensagem || 'Feedback recebido!', 'bot');
-    } catch (err) { appendMessage('Erro ao enviar feedback.', 'bot'); }
+
+
+      try {
+
+        data = await response.json();
+
+      } catch (err) {
+
+        appendMessage(
+          'Erro ao enviar feedback.',
+          'bot'
+        );
+
+        return;
+      }
+
+
+      appendMessage(
+        data.mensagem ||
+        'Feedback recebido!',
+        'bot'
+      );
+
+
+    } catch (err) {
+
+      appendMessage(
+        'Erro ao enviar feedback.',
+        'bot'
+      );
+
+    }
+
   }
 
-  // Gravação tela inicial
+
+
+  // ── Gravação de áudio da tela inicial ─────────────────────
+
   recordBtn.addEventListener('click', async () => {
-    recordBtn.disabled = true; recordBtn.textContent = '🎙️ Gravando...';
+
+    recordBtn.disabled = true;
+
+    recordBtn.textContent = '🎙️ Gravando...';
+
+
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+      const stream =
+        await navigator.mediaDevices.getUserMedia({
+          audio: true
+        });
+
+
       currentStream = stream;
-      const mediaRecorder = new MediaRecorder(stream);
+
+
+      const mediaRecorder =
+        new MediaRecorder(stream);
+
+
       const chunks = [];
-      mediaRecorder.ondataavailable = e => chunks.push(e.data);
+
+
+      mediaRecorder.ondataavailable =
+        e => chunks.push(e.data);
+
+
+
       mediaRecorder.onstop = async () => {
-        try { if (currentStream) { currentStream.getTracks().forEach(t => t.stop()); currentStream = null; } } catch(e){}
-        const blob = new Blob(chunks, { type: 'audio/webm' });
-        const formData = new FormData();
-        formData.append('file', blob, 'recording.webm');
-        appendMessage('Enviando áudio para transcrição...', 'bot');
+
+
+        try {
+
+          if (currentStream) {
+
+            currentStream
+              .getTracks()
+              .forEach(t => t.stop());
+
+            currentStream = null;
+
+          }
+
+        } catch (e) {}
+
+
+
+        const blob =
+          new Blob(
+            chunks,
+            {
+              type: 'audio/webm'
+            }
+          );
+
+
+        const formData =
+          new FormData();
+
+
+        formData.append(
+          'file',
+          blob,
+          'recording.webm'
+        );
+
+
+        appendMessage(
+          'Enviando áudio para transcrição...',
+          'bot'
+        );
+
+
         let response;
-        try { response = await fetch(`${API_BASE}/api/transcrever`, { method: 'POST', body: formData }); }
-        catch (err) { appendMessage('Erro de rede ao enviar áudio.', 'bot'); recordBtn.disabled = false; recordBtn.textContent = '🎤 Gravar Áudio'; return; }
-        if (!response.ok) { appendMessage('Erro ao transcrever (status ' + response.status + ')', 'bot'); recordBtn.disabled = false; recordBtn.textContent = '🎤 Gravar Áudio'; return; }
+
+
+        try {
+
+          response =
+            await fetch(
+              `${API_BASE}/api/transcrever`,
+              {
+                method: 'POST',
+                body: formData
+              }
+            );
+
+
+        } catch (err) {
+
+          appendMessage(
+            'Erro de rede ao enviar áudio.',
+            'bot'
+          );
+
+          recordBtn.disabled = false;
+
+          recordBtn.textContent =
+            '🎤 Gravar Áudio';
+
+          return;
+        }
+
+
+
+        if (!response.ok) {
+
+          appendMessage(
+            'Erro ao transcrever (status ' +
+            response.status +
+            ')',
+            'bot'
+          );
+
+          recordBtn.disabled = false;
+
+          recordBtn.textContent =
+            '🎤 Gravar Áudio';
+
+          return;
+
+        }
+
+
+
         let data;
-        try { data = await response.json(); } catch (err) { appendMessage('Resposta inválida do servidor.', 'bot'); recordBtn.disabled = false; recordBtn.textContent = '🎤 Gravar Áudio'; return; }
-        if (data.texto) {
-          homeContent.style.display = 'none'; chatWrapper.style.display = 'block';
-          chatInput.value = data.texto;
-          appendMessage(`Transcrição: "${data.texto}"`, 'bot');
-          setTimeout(() => chatForm.dispatchEvent(new Event('submit')), 100);
-        } else { appendMessage(data.mensagem || 'Não foi possível transcrever o áudio.', 'bot'); }
-        recordBtn.disabled = false; recordBtn.textContent = '🎤 Gravar Áudio';
+
+
+        try {
+
+          data =
+            await response.json();
+
+        } catch (err) {
+
+          appendMessage(
+            'Resposta inválida do servidor.',
+            'bot'
+          );
+
+          recordBtn.disabled = false;
+
+          recordBtn.textContent =
+            '🎤 Gravar Áudio';
+
+          return;
+        }
+
+
+
+        // A API retorna texto_transcrito
+        if (data.texto_transcrito) {
+
+
+          homeContent.style.display =
+            'none';
+
+
+          chatWrapper.style.display =
+            'block';
+
+
+          chatInput.value =
+            data.texto_transcrito;
+
+
+          appendMessage(
+            `Transcrição: "${data.texto_transcrito}"`,
+            'bot'
+          );
+
+
+          setTimeout(() => {
+
+            chatForm.dispatchEvent(
+              new Event('submit')
+            );
+
+          }, 100);
+
+
+        } else {
+
+
+          appendMessage(
+            data.mensagem ||
+            'Não foi possível transcrever o áudio.',
+            'bot'
+          );
+
+        }
+
+
+
+        recordBtn.disabled = false;
+
+        recordBtn.textContent =
+          '🎤 Gravar Áudio';
+
       };
+
+
+
       mediaRecorder.start();
-      appendMessage('🎤 Gravando áudio por 5 segundos...', 'bot');
-      setTimeout(() => { if (mediaRecorder.state !== 'inactive') mediaRecorder.stop(); }, 5000);
-    } catch (err) { appendMessage('Permissão negada ou erro ao acessar microfone.', 'bot'); recordBtn.disabled = false; recordBtn.textContent = '🎤 Gravar Áudio'; }
+
+
+      appendMessage(
+        '🎤 Gravando áudio por 5 segundos...',
+        'bot'
+      );
+
+
+      setTimeout(() => {
+
+        if (
+          mediaRecorder.state !==
+          'inactive'
+        ) {
+
+          mediaRecorder.stop();
+
+        }
+
+      }, 5000);
+
+
+
+    } catch (err) {
+
+
+      appendMessage(
+        'Permissão negada ou erro ao acessar microfone.',
+        'bot'
+      );
+
+
+      recordBtn.disabled = false;
+
+      recordBtn.textContent =
+        '🎤 Gravar Áudio';
+
+    }
+
   });
 
-  // Gravação no chat
+
+
+  // ── Gravação de áudio no chat ─────────────────────────────
+
   chatRecordBtn.addEventListener('click', async () => {
-    chatRecordBtn.disabled = true; chatRecordBtn.textContent = '🎙️';
+
+    chatRecordBtn.disabled = true;
+
+    chatRecordBtn.textContent = '🎙️';
+
+
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+      const stream =
+        await navigator.mediaDevices.getUserMedia({
+          audio: true
+        });
+
+
       currentStream = stream;
-      const mediaRecorder = new MediaRecorder(stream);
+
+
+      const mediaRecorder =
+        new MediaRecorder(stream);
+
+
       const chunks = [];
-      mediaRecorder.ondataavailable = e => chunks.push(e.data);
+
+
+      mediaRecorder.ondataavailable =
+        e => chunks.push(e.data);
+
+
+
       mediaRecorder.onstop = async () => {
-        try { currentStream.getTracks().forEach(t => t.stop()); currentStream = null; } catch(e){}
-        const blob = new Blob(chunks, { type: 'audio/webm' });
-        const formData = new FormData();
-        formData.append('file', blob, 'chat_recording.webm');
-        appendMessage('Enviando áudio para transcrição...', 'bot');
+
+
+        try {
+
+          if (currentStream) {
+
+            currentStream
+              .getTracks()
+              .forEach(t => t.stop());
+
+            currentStream = null;
+
+          }
+
+        } catch (e) {}
+
+
+
+        const blob =
+          new Blob(
+            chunks,
+            {
+              type: 'audio/webm'
+            }
+          );
+
+
+        const formData =
+          new FormData();
+
+
+        formData.append(
+          'file',
+          blob,
+          'chat_recording.webm'
+        );
+
+
+        appendMessage(
+          'Enviando áudio para transcrição...',
+          'bot'
+        );
+
+
         let response;
-        try { response = await fetch(`${API_BASE}/api/transcrever`, { method: 'POST', body: formData }); }
-        catch (err) { appendMessage('Erro de rede ao enviar áudio.', 'bot'); chatRecordBtn.disabled = false; chatRecordBtn.textContent = '🎤'; return; }
-        if (!response.ok) { appendMessage('Erro ao transcrever (status ' + response.status + ')', 'bot'); chatRecordBtn.disabled = false; chatRecordBtn.textContent = '🎤'; return; }
+
+
+        try {
+
+          response =
+            await fetch(
+              `${API_BASE}/api/transcrever`,
+              {
+                method: 'POST',
+                body: formData
+              }
+            );
+
+
+        } catch (err) {
+
+          appendMessage(
+            'Erro de rede ao enviar áudio.',
+            'bot'
+          );
+
+          chatRecordBtn.disabled = false;
+
+          chatRecordBtn.textContent =
+            '🎤';
+
+          return;
+
+        }
+
+
+
+        if (!response.ok) {
+
+          appendMessage(
+            'Erro ao transcrever (status ' +
+            response.status +
+            ')',
+            'bot'
+          );
+
+          chatRecordBtn.disabled = false;
+
+          chatRecordBtn.textContent =
+            '🎤';
+
+          return;
+
+        }
+
+
+
         let data;
-        try { data = await response.json(); } catch (err) { appendMessage('Resposta inválida do servidor.', 'bot'); chatRecordBtn.disabled = false; chatRecordBtn.textContent = '🎤'; return; }
-        if (data.texto) {
-          homeContent.style.display = 'none'; chatWrapper.style.display = 'block';
-          chatInput.value = data.texto;
-          appendMessage(`Transcrição: "${data.texto}"`, 'bot');
-          setTimeout(() => chatForm.dispatchEvent(new Event('submit')), 100);
-        } else { appendMessage(data.mensagem || 'Não foi possível transcrever o áudio.', 'bot'); }
-        chatRecordBtn.disabled = false; chatRecordBtn.textContent = '🎤';
+
+
+        try {
+
+          data =
+            await response.json();
+
+        } catch (err) {
+
+          appendMessage(
+            'Resposta inválida do servidor.',
+            'bot'
+          );
+
+          chatRecordBtn.disabled = false;
+
+          chatRecordBtn.textContent =
+            '🎤';
+
+          return;
+
+        }
+
+
+
+        // A API retorna texto_transcrito
+        if (data.texto_transcrito) {
+
+
+          homeContent.style.display =
+            'none';
+
+
+          chatWrapper.style.display =
+            'block';
+
+
+          chatInput.value =
+            data.texto_transcrito;
+
+
+          appendMessage(
+            `Transcrição: "${data.texto_transcrito}"`,
+            'bot'
+          );
+
+
+          setTimeout(() => {
+
+            chatForm.dispatchEvent(
+              new Event('submit')
+            );
+
+          }, 100);
+
+
+        } else {
+
+
+          appendMessage(
+            data.mensagem ||
+            'Não foi possível transcrever o áudio.',
+            'bot'
+          );
+
+        }
+
+
+
+        chatRecordBtn.disabled = false;
+
+        chatRecordBtn.textContent =
+          '🎤';
+
       };
+
+
+
       mediaRecorder.start();
-      appendMessage('🎤 Gravando áudio por 5 segundos...', 'bot');
-      setTimeout(() => { if (mediaRecorder.state !== 'inactive') mediaRecorder.stop(); }, 5000);
-    } catch (err) { appendMessage('Permissão negada ou erro ao acessar microfone.', 'bot'); chatRecordBtn.disabled = false; chatRecordBtn.textContent = '🎤'; }
+
+
+      appendMessage(
+        '🎤 Gravando áudio por 5 segundos...',
+        'bot'
+      );
+
+
+      setTimeout(() => {
+
+        if (
+          mediaRecorder.state !==
+          'inactive'
+        ) {
+
+          mediaRecorder.stop();
+
+        }
+
+      }, 5000);
+
+
+
+    } catch (err) {
+
+
+      appendMessage(
+        'Permissão negada ou erro ao acessar microfone.',
+        'bot'
+      );
+
+
+      chatRecordBtn.disabled = false;
+
+      chatRecordBtn.textContent =
+        '🎤';
+
+    }
+
   });
 
-     // Verifica se veio palavra pela URL
- let autoTraducaoExecutada = false;
 
-window.addEventListener('DOMContentLoaded', () => {
-  if (autoTraducaoExecutada) return;
-  const params = new URLSearchParams(window.location.search);
-  const word = params.get('word');
 
-  if (word) {
+  // ── Tradução automática pela URL ──────────────────────────
 
-    autoTraducaoExecutada = true;
-    document.getElementById('input_text').value = word;
-    document.getElementById('searchForm')
-      .dispatchEvent(new Event('submit'));
-  }
-});
+  let autoTraducaoExecutada = false;
+
+
+  window.addEventListener(
+    'DOMContentLoaded',
+    () => {
+
+      if (autoTraducaoExecutada) {
+        return;
+      }
+
+
+      const params =
+        new URLSearchParams(
+          window.location.search
+        );
+
+
+      const word =
+        params.get('word');
+
+
+      if (word) {
+
+
+        autoTraducaoExecutada = true;
+
+
+        document.getElementById(
+          'input_text'
+        ).value = word;
+
+
+        document.getElementById(
+          'searchForm'
+        ).dispatchEvent(
+          new Event('submit')
+        );
+
+      }
+
+    }
+  );
+
 </script>
 </main>
 </body>
