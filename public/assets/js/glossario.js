@@ -6,7 +6,14 @@
   const API_BASE = ['localhost', '127.0.0.1'].includes(window.location.hostname)
     ? 'http://localhost:5000'
     : '';
-  const ORDEM_CATEGORIAS = ['Alimentos', 'Animais', 'Educação', 'Saúde', 'Outros'];
+  // Mesma ordem de scripts/gerar_glossario.py (que gera as categorias do glossario.json)
+  const ORDEM_CATEGORIAS = [
+    'Alimentos e bebidas', 'Animais', 'Natureza', 'Corpo e saúde',
+    'Pessoas, família e profissões', 'Sentimentos e emoções', 'Lugares', 'Objetos',
+    'Tempo e datas', 'Comunicação e linguagem', 'Educação e conhecimento',
+    'Sociedade, trabalho e dinheiro', 'Números e quantidades', 'Alfabeto',
+    'Ações (verbos)', 'Qualidades (adjetivos)', 'Expressões', 'Outros',
+  ];
   const LIMITE_RESULTADOS = 200;
 
   const container = document.getElementById('glossario-container');
