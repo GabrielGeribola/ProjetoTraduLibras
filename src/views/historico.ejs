@@ -1,0 +1,50 @@
+<%- include('includes/head') %>
+<%- include('includes/navbar') %>
+
+<div class="historico-container">
+  <div class="historico-title">Histórico</div>
+  <p class="historico-subtitulo">Suas traduções, da mais recente para a mais antiga.</p>
+
+  <%- include('includes/messages') %>
+
+  <% if (erroCarregar) { %>
+    <p class="historico-vazio">Não foi possível carregar seu histórico agora. Tente novamente em instantes.</p>
+
+  <% } else if (itens.length === 0) { %>
+    <div class="historico-vazio">
+      <p>Você ainda não fez nenhuma tradução.<br>Tudo o que você traduzir aparece aqui.</p>
+      <a href="/home" class="btn-topic">Fazer uma tradução</a>
+    </div>
+
+  <% } else { %>
+    <ul class="historico-lista">
+      <% itens.forEach(function (item) {
+           const traducao = item.traducao;
+           if (!traducao) return;
+           const data = new Date(item.data_traducao).toLocaleString('pt-BR', {
+             timeZone: 'America/Sao_Paulo', dateStyle: 'short', timeStyle: 'short'
+           });
+      %>
+        <li class="historico-item">
+          <div class="historico-info">
+            <p class="historico-texto"><%= traducao.texto_original %></p>
+            <% if (traducao.glosa) { %>
+              <p class="historico-glosa">Glosa: <%= traducao.glosa %></p>
+            <% } %>
+            <span class="historico-data"><%= data %></span>
+          </div>
+
+          <div class="historico-acoes">
+            <a href="/home?word=<%= encodeURIComponent(traducao.texto_original) %>" class="btn-topic">Traduzir de novo</a>
+            <form method="POST" action="/historico/<%= item.id_historico %>/excluir"
+                  onsubmit="return confirm('Remover esta tradução do histórico?');">
+              <button type="submit" class="btn-excluir" aria-label="Remover do histórico">Excluir</button>
+            </form>
+          </div>
+        </li>
+      <% }); %>
+    </ul>
+  <% } %>
+</div>
+
+<%- include('includes/footer') %>

@@ -72,7 +72,8 @@ app.use(routes);
   .then(() => console.log("Banco de dados sincronizado com sucesso!"))
   .catch((error) => console.error("Erro ao sincronizar o banco de dados:", error));*/
 
-const PORT = process.env.PORT || 3306;
+// 3000 é a porta exposta no Dockerfile.node (3306 é a porta do MySQL)
+const PORT = process.env.PORT || 3000;
 
 async function startServer() {
   try {

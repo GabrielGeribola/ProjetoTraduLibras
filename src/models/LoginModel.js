@@ -32,7 +32,8 @@ class Login {
       return;
     }
 
-    this.User = { 
+    // Guarda na sessão só o necessário (nunca a senha)
+    this.User = {
       id: user.id,
       email: user.email
     };

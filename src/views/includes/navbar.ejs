@@ -76,6 +76,16 @@
     <img src="https://assetstradulibras.s3.us-east-1.amazonaws.com/imgs/icon-traducao.png" class="nav-icon" alt=""/>
     <span class="link-text">Tradução</span>
   </a>
+  <% if (user) { %>
+    <a href="/historico" class="nav-link">
+      <svg class="nav-icon" viewBox="-4 -4 32 32" fill="none" stroke="#000" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M3 12a9 9 0 1 0 3-6.7"/>
+        <polyline points="3 3 3 8 8 8"/>
+        <polyline points="12 7 12 12 15.5 14"/>
+      </svg>
+      <span class="link-text">Histórico</span>
+    </a>
+  <% } %>
   <a href="/sugestoes" class="nav-link">
     <img src="https://assetstradulibras.s3.us-east-1.amazonaws.com/imgs/icon-sugestoes.png" class="nav-icon" alt=""/>
     <span class="link-text">Glossário</span>
