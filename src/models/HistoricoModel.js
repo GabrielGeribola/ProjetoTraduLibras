@@ -18,6 +18,15 @@ const Historico = sequelize.define('Historico', {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
+  // Glosa e sequência que este usuário viu (sql/historico_v2.sql)
+  glosa: {
+    type: DataTypes.STRING(500),
+    allowNull: true,
+  },
+  sequencia: {
+    type: DataTypes.JSON,
+    allowNull: true,
+  },
   data_traducao: {
     type: DataTypes.DATE,
     allowNull: false,

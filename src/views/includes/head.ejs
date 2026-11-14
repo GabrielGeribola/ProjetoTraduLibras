@@ -3,13 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
-      rel="stylesheet">
-  <link rel="stylesheet" href="/css/styleteste.css">
-
+  <meta name="csrf-token" content="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
   <title>Tradulibras</title>
+
+  <script>
+    // Aplica tema e tamanho de fonte salvos antes de pintar a página (evita o "piscar" do modo escuro)
+    (function () {
+      try {
+        if (localStorage.getItem('theme') === 'dark') {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+        var tamanho = localStorage.getItem('fontSize');
+        if (tamanho) document.documentElement.setAttribute('data-font-size', tamanho);
+      } catch (e) { /* armazenamento indisponível: usa o padrão */ }
+    })();
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Serif+Display:ital@0;1&display=swap">
+  <link rel="stylesheet" href="/css/styleteste.css">
 </head>
 
-
-<body>
+<body<% if (typeof bodyClass !== 'undefined' && bodyClass) { %> class="<%= bodyClass %>"<% } %>>

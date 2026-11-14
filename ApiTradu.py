@@ -296,6 +296,9 @@ def glossario():
     palavras = {}
     for expr in expressions:
         rotulo = " ".join(expr.split())
+        # Algumas descrições no banco são nomes de arquivo (ex.: "casa.mp4"): não exibe no glossário
+        if rotulo.lower().endswith(('.mp4', '.webm', '.gif', '.mov')):
+            continue
         if rotulo and expr in urls:
             palavras.setdefault(rotulo.lower(), rotulo)  # sem repetição, ignorando maiúsculas/espaços
     lista = sorted(palavras.values(), key=str.lower)

@@ -18,6 +18,8 @@ CREATE TABLE IF NOT EXISTS historico (
   id_historico    INT      NOT NULL AUTO_INCREMENT,
   id_usuario      INT      NOT NULL,
   id_traducao     INT      NOT NULL,
+  glosa           VARCHAR(500)      DEFAULT NULL,  -- glosa vista por este usuário (ver historico_v2.sql)
+  sequencia       JSON              DEFAULT NULL,
   data_traducao   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id_historico),
   KEY idx_historico_usuario_data (id_usuario, data_traducao),

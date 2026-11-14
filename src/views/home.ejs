@@ -1,1157 +1,531 @@
 <%- include('includes/head'); %>
 
-<body>
-  <main>
-    <%- include('includes/navbar'); %>
+<main>
+  <%- include('includes/navbar'); %>
 
-    <!-- Modal de Vídeo Tutorial -->
-    <div class="tutorial-overlay" id="tutorialOverlay">
-      <div class="tutorial-modal">
-        <div class="tutorial-modal-header">
-          <span>📹 Vídeo Tutorial</span>
-          <button class="tutorial-close" id="tutorialClose" aria-label="Fechar">✕</button>
-        </div>
-        <div class="tutorial-video-wrap">
-          <video
-            id="tutorialVideo"
-            controls
-            autoplay
-            playsinline
-            style="width:100%; border-radius:12px;">
-          </video>
-        </div>
-        <p class="tutorial-caption">Aprenda a usar o TraduLibras em poucos minutos.</p>
+  <!-- Modal de Vídeo Tutorial -->
+  <div class="tutorial-overlay" id="tutorialOverlay" role="dialog" aria-modal="true" aria-labelledby="tutorialTitulo">
+    <div class="tutorial-modal">
+      <div class="tutorial-modal-header">
+        <span id="tutorialTitulo">📹 Vídeo Tutorial</span>
+        <button class="tutorial-close" id="tutorialClose" aria-label="Fechar tutorial">✕</button>
       </div>
+      <div class="tutorial-video-wrap">
+        <video id="tutorialVideo" controls playsinline></video>
+      </div>
+      <p class="tutorial-caption">Aprenda a usar o TraduLibras em poucos minutos.</p>
+    </div>
+  </div>
+
+  <div class="container-home" id="homeContent">
+
+    <!-- Cabeçalho com título e botão tutorial -->
+    <div class="home-header-row">
+      <h2 class="translate-home">TRADUTOR</h2>
+      <button class="btn-tutorial" id="btnTutorial" aria-label="Abrir vídeo tutorial">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"/>
+          <polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/>
+        </svg>
+        Tutorial
+      </button>
     </div>
 
-    <div class="container-home" id="homeContent">
-
-      <!-- Cabeçalho com título e botão tutorial -->
-      <div class="home-header-row">
-        <h2 class="translate-home">TRADUTOR</h2>
-        <button class="btn-tutorial" id="btnTutorial" aria-label="Abrir vídeo tutorial">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"/>
-            <polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/>
-          </svg>
-          Tutorial
-        </button>
-      </div>
-
-      <div class="digite-expressao">
-        <p>Digite uma palavra ou expressão ou grave sua voz:</p>
-      </div>
-
-      <form id="searchForm" class="input-group">
-        <input type="text" class="input-home" id="input_text" name="input_text" placeholder="Exemplo: Abraço">
-        <button class="btn-home" type="submit">&gt;</button>
-        <button type="button" class="btn-home" id="recordBtn">🎤 Gravar Áudio</button>
-      </form>
-
-      <div class="resultado" id="result"></div>
-
-      <div class="feedback-container" id="feedback" style="display: none;">
-        <p>Esse era o resultado esperado?</p>
-        <div class="feedback-buttons">
-          <button onclick="enviarFeedback(true)" class="btn-feedback btn-sim">👍 Sim</button>
-          <button onclick="enviarFeedback(false)" class="btn-feedback btn-nao">👎 Não</button>
-        </div>
-      </div>
-
-      <div class="buttons-cards">
-        <a href="/home" class="card-traduzir">
-          <p class="icon-traduzir">🔁</p>
-          <h3 class="title-card">Traduzir</h3>
-          <p class="descricao-card">Converta palavras em Libras de forma rápida e intuitiva.</p>
-        </a>
-        <a href="/cursos" class="card-aprender">
-          <p class="icon-aprender">📖</p>
-          <h3 class="title-card">Aprender</h3>
-          <p class="descricao-card">Descubra novos sinais e amplie seu conhecimento em Libras.</p>
-        </a>
-        <a href="/sugestoes" class="card-incluir">
-          <p class="icon-incluir">🤗</p>
-          <h3 class="title-card">Incluir</h3>
-          <p class="descricao-card">Facilite a comunicação e torne o diálogo mais acessível.</p>
-        </a>
-      </div>
+    <div class="digite-expressao">
+      <p id="instrucaoTraducao">Digite uma palavra ou expressão ou grave sua voz:</p>
     </div>
 
-    <!-- Chat dinâmico (inicia escondido) -->
-    <div id="chatWrapper" style="display: none">
-      <div class="chat-container" id="chatContainer"></div>
+    <form id="searchForm" class="input-group">
+      <label for="input_text" class="sr-only">Palavra ou frase para traduzir</label>
+      <input type="text" class="input-home" id="input_text" name="input_text"
+             placeholder="Exemplo: Abraço" maxlength="300" autocomplete="off"
+             aria-describedby="instrucaoTraducao">
+      <button class="btn-home" type="submit" id="searchSubmit" aria-label="Traduzir">&gt;</button>
+      <button type="button" class="btn-home" id="recordBtn" aria-label="Gravar áudio por 5 segundos">
+        🎤 <span class="btn-label">Gravar Áudio</span>
+      </button>
+    </form>
 
-      <form id="chatForm" class="chat-input-container" style="display:flex; gap:8px; align-items:center;">
-        <input type="text" class="input-home" id="chat_input" name="chat_input" placeholder="Digite aqui..." style="flex:1;">
-        <button type="button" class="btn-home" id="chatRecordBtn" title="Gravar áudio no chat">🎤</button>
-        <button class="btn-home" type="submit" title="Enviar">›</button>
-      </form>
+    <div class="buttons-cards">
+      <a href="/home" class="card-traduzir">
+        <p class="icon-traduzir" aria-hidden="true">🔁</p>
+        <h3 class="title-card">Traduzir</h3>
+        <p class="descricao-card">Converta palavras em Libras de forma rápida e intuitiva.</p>
+      </a>
+      <a href="/cursos" class="card-aprender">
+        <p class="icon-aprender" aria-hidden="true">📖</p>
+        <h3 class="title-card">Aprender</h3>
+        <p class="descricao-card">Descubra novos sinais e amplie seu conhecimento em Libras.</p>
+      </a>
+      <a href="/sugestoes" class="card-incluir">
+        <p class="icon-incluir" aria-hidden="true">🤗</p>
+        <h3 class="title-card">Incluir</h3>
+        <p class="descricao-card">Facilite a comunicação e torne o diálogo mais acessível.</p>
+      </a>
     </div>
+  </div>
+
+  <!-- Chat de tradução (aparece após a primeira tradução) -->
+  <section id="chatWrapper" aria-label="Conversa de tradução">
+    <div class="chat-container" id="chatContainer" role="log" aria-live="polite" aria-relevant="additions"></div>
+
+    <form id="chatForm" class="chat-input-container">
+      <label for="chat_input" class="sr-only">Nova palavra ou frase para traduzir</label>
+      <input type="text" class="input-home" id="chat_input" name="chat_input"
+             placeholder="Digite aqui..." maxlength="300" autocomplete="off">
+      <button type="button" class="btn-home" id="chatRecordBtn" aria-label="Gravar áudio por 5 segundos">🎤</button>
+      <button class="btn-home" type="submit" id="chatSubmit" aria-label="Traduzir">›</button>
+    </form>
+  </section>
+</main>
+
 <script>
-  // ── Vídeo Tutorial ────────────────────────────────────────
-  const TUTORIAL_URL =
-    'https://assetstradulibras.s3.us-east-1.amazonaws.com/imgs/tutorial_tradulibras_com_som.mp4';
+(() => {
+  'use strict';
 
-  const btnTutorial     = document.getElementById('btnTutorial');
-  const tutorialOverlay = document.getElementById('tutorialOverlay');
-  const tutorialClose   = document.getElementById('tutorialClose');
-  const tutorialVideo   = document.getElementById('tutorialVideo');
-
-  btnTutorial.addEventListener('click', () => {
-    tutorialVideo.src = TUTORIAL_URL;
-    tutorialVideo.load();
-
-    tutorialOverlay.classList.add('open');
-    document.body.style.overflow = 'hidden';
-  });
-
-  function closeTutorial() {
-    tutorialOverlay.classList.remove('open');
-
-    tutorialVideo.pause();
-    tutorialVideo.src = '';
-
-    document.body.style.overflow = '';
-  }
-
-  tutorialClose.addEventListener('click', closeTutorial);
-
-  tutorialOverlay.addEventListener('click', e => {
-    if (e.target === tutorialOverlay) closeTutorial();
-  });
-
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') closeTutorial();
-  });
-
-
-  // ── API / Tradutor ────────────────────────────────────────
-
-  const params = new URLSearchParams(window.location.search);
-  const palavraUrl = params.get('word');
-
+  // ── Configuração ──────────────────────────────────────────
   // Em localhost a API Python roda separada na porta 5000; no servidor, /api é repassado pelo proxy
   const API_BASE = ['localhost', '127.0.0.1'].includes(window.location.hostname)
     ? 'http://localhost:5000'
     : '';
-
-  // ── Histórico (somente usuário logado) ───────────────────
   const USUARIO_LOGADO = <%= (typeof user !== 'undefined' && user) ? 'true' : 'false' %>;
+  const CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]')?.content || '';
+  const TEMPO_LIMITE_MS = 30000;
+  const DURACAO_GRAVACAO_MS = 5000;
 
-  // Salva a tradução no histórico do usuário. Se falhar, a tradução continua normalmente.
+  // ── Elementos ─────────────────────────────────────────────
+  const homeContent   = document.getElementById('homeContent');
+  const chatWrapper   = document.getElementById('chatWrapper');
+  const chatContainer = document.getElementById('chatContainer');
+  const searchForm    = document.getElementById('searchForm');
+  const searchInput   = document.getElementById('input_text');
+  const searchSubmit  = document.getElementById('searchSubmit');
+  const chatForm      = document.getElementById('chatForm');
+  const chatInput     = document.getElementById('chat_input');
+  const chatSubmit    = document.getElementById('chatSubmit');
+  const recordBtn     = document.getElementById('recordBtn');
+  const chatRecordBtn = document.getElementById('chatRecordBtn');
+  const botoesAudio   = [recordBtn, chatRecordBtn];
+  botoesAudio.forEach((b) => { b.dataset.conteudoOriginal = b.innerHTML; });
+
+  let traduzindo = false;
+  let gravando = false;
+  let playerAtivo = null;
+
+  // ── Vídeo tutorial ────────────────────────────────────────
+  const TUTORIAL_URL = 'https://assetstradulibras.s3.us-east-1.amazonaws.com/imgs/tutorial_tradulibras_com_som.mp4';
+  const tutorialOverlay = document.getElementById('tutorialOverlay');
+  const tutorialVideo   = document.getElementById('tutorialVideo');
+
+  document.getElementById('btnTutorial').addEventListener('click', () => {
+    if (playerAtivo) playerAtivo.pausar();
+    tutorialVideo.src = TUTORIAL_URL;
+    tutorialVideo.load();
+    tutorialVideo.play().catch(() => {});
+    tutorialOverlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  });
+
+  function fecharTutorial() {
+    if (!tutorialOverlay.classList.contains('open')) return;
+    tutorialOverlay.classList.remove('open');
+    tutorialVideo.pause();
+    tutorialVideo.removeAttribute('src');
+    tutorialVideo.load();
+    document.body.style.overflow = '';
+  }
+  document.getElementById('tutorialClose').addEventListener('click', fecharTutorial);
+  tutorialOverlay.addEventListener('click', (e) => { if (e.target === tutorialOverlay) fecharTutorial(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') fecharTutorial(); });
+
+  // ── Utilitários de DOM (sempre textContent: nada de HTML vindo do usuário/API) ──
+  function criar(tag, { classe, texto, atributos } = {}, filhos = []) {
+    const elemento = document.createElement(tag);
+    if (classe) elemento.className = classe;
+    if (texto !== undefined) elemento.textContent = texto;
+    if (atributos) Object.entries(atributos).forEach(([k, v]) => elemento.setAttribute(k, v));
+    filhos.forEach((filho) => elemento.append(filho));
+    return elemento;
+  }
+
+  function mostrarChat() {
+    homeContent.hidden = true;
+    chatWrapper.classList.add('is-active');
+  }
+
+  function rolarParaFim() {
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+  }
+
+  function adicionarMensagem(conteudo, remetente = 'bot', classeExtra) {
+    const msg = criar('div', { classe: `chat-bubble ${remetente}` });
+    if (classeExtra) msg.classList.add(classeExtra);
+    if (conteudo instanceof Node) msg.append(conteudo);
+    else msg.textContent = conteudo;
+    chatContainer.append(msg);
+    rolarParaFim();
+    return msg;
+  }
+
+  function mensagemCarregando(texto) {
+    const conteudo = criar('span', { classe: 'carregando-conteudo' }, [
+      criar('span', { classe: 'carregando-pontos', atributos: { 'aria-hidden': 'true' } },
+        [criar('span'), criar('span'), criar('span')]),
+      criar('span', { texto }),
+    ]);
+    return adicionarMensagem(conteudo, 'bot', 'carregando');
+  }
+
+  function atualizarBloqueios() {
+    const ocupado = traduzindo || gravando;
+    [searchInput, searchSubmit, chatInput, chatSubmit].forEach((e) => { e.disabled = ocupado; });
+    botoesAudio.forEach((b) => { b.disabled = ocupado; });
+  }
+
+  // ── Chamada à API com tempo limite ────────────────────────
+  async function chamarApi(caminho, opcoes) {
+    const controle = new AbortController();
+    const timer = setTimeout(() => controle.abort(), TEMPO_LIMITE_MS);
+    try {
+      const resposta = await fetch(`${API_BASE}${caminho}`, { ...opcoes, signal: controle.signal });
+      let dados = null;
+      try { dados = await resposta.json(); } catch (e) { dados = null; }
+      return { ok: resposta.ok, status: resposta.status, dados };
+    } catch (erro) {
+      return { ok: false, status: 0, dados: null, tipo: erro.name === 'AbortError' ? 'tempo' : 'rede' };
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  // Mensagens claras para cada tipo de falha
+  function mostrarErro(resultado) {
+    const { status, dados, tipo } = resultado;
+
+    if (tipo === 'tempo') {
+      return adicionarMensagem('A tradução está demorando mais que o normal. Tente novamente em instantes.', 'bot', 'erro');
+    }
+    if (tipo === 'rede') {
+      return adicionarMensagem('Não foi possível conectar ao serviço de tradução. Verifique sua conexão e tente novamente.', 'bot', 'erro');
+    }
+    if (status === 404 && dados && dados.codigo === 'SEM_SINAIS') {
+      const conteudo = criar('span', {}, [
+        'Ainda não temos sinais para essa frase. Veja as palavras disponíveis no ',
+        criar('a', { texto: 'Glossário', atributos: { href: dados.sugestao_link || '/sugestoes' } }),
+        '.',
+      ]);
+      return adicionarMensagem(conteudo, 'bot', 'erro');
+    }
+    if (status >= 500 || !dados) {
+      return adicionarMensagem('O serviço de tradução está com problemas agora. Tente novamente em alguns minutos.', 'bot', 'erro');
+    }
+    return adicionarMensagem(dados.mensagem || 'Não foi possível processar o pedido.', 'bot', 'erro');
+  }
+
+  // ── Player dos sinais ─────────────────────────────────────
+  // Dois <video> alternados: enquanto um toca, o outro já carrega o próximo sinal (sem pausa entre sinais).
+  // A sequência toca uma vez; depois aparece "Repetir".
+  function criarPlayer(palco, termoEl, botaoPausa, botaoRepetir, sequencia) {
+    let [atual, proximo] = palco.querySelectorAll('video');
+    const total = sequencia.length;
+    let indice = 0;
+    let terminou = false;
+
+    function carregar(video, i) {
+      if (video.dataset.indice === String(i)) return;
+      video.dataset.indice = String(i);
+      video.src = sequencia[i].url;
+      video.load();
+    }
+
+    function atualizarTermo(i) {
+      const item = sequencia[i];
+      termoEl.replaceChildren(
+        `Sinal ${i + 1} de ${total}: `,
+        criar('strong', { texto: item.expressao_libras || item.termo_original || '' }),
+      );
+    }
+
+    function tocar(i) {
+      indice = i;
+      terminou = false;
+      botaoRepetir.hidden = true;
+      botaoPausa.hidden = false;
+      botaoPausa.textContent = '⏸ Pausar';
+      carregar(atual, i);
+      atual.classList.add('is-visible');
+      proximo.classList.remove('is-visible');
+      atualizarTermo(i);
+      atual.play().catch(() => {
+        // Navegador bloqueou o autoplay: o usuário inicia pelo botão
+        botaoPausa.textContent = '▶ Reproduzir';
+      });
+      if (i + 1 < total) carregar(proximo, i + 1);
+    }
+
+    function avancar(evento) {
+      if (evento.target !== atual) return;
+      if (indice + 1 < total) {
+        [atual, proximo] = [proximo, atual];
+        tocar(indice + 1);
+      } else {
+        terminou = true;
+        botaoPausa.hidden = true;
+        botaoRepetir.hidden = false;
+      }
+    }
+
+    [atual, proximo].forEach((video) => {
+      video.addEventListener('ended', avancar);
+      video.addEventListener('error', avancar); // vídeo indisponível: pula para o próximo sinal
+    });
+
+    const controle = {
+      iniciar() { tocar(0); },
+      pausar() {
+        atual.pause();
+        if (!terminou) botaoPausa.textContent = '▶ Continuar';
+      },
+      alternar() {
+        if (atual.paused) {
+          ativar(controle);
+          atual.play().catch(() => {});
+          botaoPausa.textContent = '⏸ Pausar';
+        } else {
+          controle.pausar();
+        }
+      },
+      repetir() {
+        ativar(controle);
+        // garante que o primeiro sinal seja recarregado no player visível
+        atual.dataset.indice = '';
+        tocar(0);
+      },
+    };
+
+    botaoPausa.addEventListener('click', () => controle.alternar());
+    botaoRepetir.addEventListener('click', () => controle.repetir());
+    return controle;
+  }
+
+  // Só um player toca por vez: ao iniciar um, o anterior é pausado
+  function ativar(player) {
+    if (playerAtivo && playerAtivo !== player) playerAtivo.pausar();
+    playerAtivo = player;
+  }
+
+  // ── Resposta da tradução ──────────────────────────────────
+  function renderTraducao(dados, entrada) {
+    const sequencia = dados.sequencia || [];
+    const termo = criar('p', { classe: 'termo-atual' });
+    const palco = criar('div', { classe: 'video-stage' }, [
+      criar('video', { classe: 'video-libras', atributos: { muted: '', playsinline: '', preload: 'auto', 'aria-label': 'Vídeo do sinal em Libras' } }),
+      criar('video', { classe: 'video-libras', atributos: { muted: '', playsinline: '', preload: 'auto', 'aria-hidden': 'true' } }),
+    ]);
+    palco.querySelectorAll('video').forEach((v) => { v.muted = true; });
+
+    const botaoPausa = criar('button', { classe: 'btn-player', texto: '⏸ Pausar', atributos: { type: 'button' } });
+    const botaoRepetir = criar('button', { classe: 'btn-player', texto: '↻ Repetir', atributos: { type: 'button' } });
+    botaoRepetir.hidden = true;
+
+    const feedback = criarFeedback({
+      entrada,
+      sugestao: dados.glosa || '',
+      score: sequencia[0]?.score ?? 0,
+    });
+
+    const resultado = criar('div', { classe: 'traducao-resultado' }, [
+      criar('p', {}, [criar('strong', { texto: 'Frase: ' }), dados.frase_original || entrada]),
+      criar('p', { classe: 'traducao-glosa' }, [criar('strong', { texto: 'Glosa: ' }), dados.glosa || '']),
+      criar('div', { classe: 'video-container' }, [
+        palco,
+        termo,
+        criar('div', { classe: 'player-controles' }, [botaoPausa, botaoRepetir]),
+      ]),
+      feedback,
+    ]);
+
+    adicionarMensagem(resultado, 'bot', 'resposta-traducao');
+
+    const player = criarPlayer(palco, termo, botaoPausa, botaoRepetir, sequencia);
+    ativar(player);
+    player.iniciar();
+  }
+
+  // ── Feedback (cada resposta envia os próprios dados) ──────
+  function criarFeedback(dadosFeedback) {
+    const pergunta = criar('span', { texto: 'Esse era o resultado esperado?' });
+    const sim = criar('button', { texto: '👍', atributos: { type: 'button', 'aria-label': 'Sim, era o esperado' } });
+    const nao = criar('button', { texto: '👎', atributos: { type: 'button', 'aria-label': 'Não era o esperado' } });
+    const caixa = criar('div', { classe: 'feedback-inline' }, [
+      pergunta,
+      criar('span', { classe: 'feedback-botoes' }, [sim, nao]),
+    ]);
+
+    async function enviar(foiUtil) {
+      sim.disabled = true;
+      nao.disabled = true;
+      const r = await chamarApi('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...dadosFeedback, foi_util: foiUtil }),
+      });
+      if (r.ok) {
+        pergunta.textContent = 'Obrigado pelo feedback!';
+        adicionarMensagem(r.dados?.mensagem || 'Feedback recebido!', 'bot');
+      } else {
+        sim.disabled = false;
+        nao.disabled = false;
+        mostrarErro(r);
+      }
+    }
+
+    sim.addEventListener('click', () => enviar(true));
+    nao.addEventListener('click', () => enviar(false));
+    return caixa;
+  }
+
+  // ── Histórico (somente usuário logado) ────────────────────
+  // Salva a tradução no histórico. Se falhar, a tradução continua normalmente.
   function salvarHistorico(texto, glosa, sequencia) {
     if (!USUARIO_LOGADO || !texto) return;
-
     fetch('/historico', {
       method: 'POST',
       credentials: 'same-origin',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': CSRF_TOKEN },
       body: JSON.stringify({
         texto,
         glosa: glosa || '',
         sequencia: (sequencia || []).map((item) => ({
           termo_original: item.termo_original,
           expressao_libras: item.expressao_libras,
-          url: item.url
-        }))
-      })
+          url: item.url,
+        })),
+      }),
     }).catch((err) => console.warn('Não foi possível salvar no histórico:', err));
   }
 
-  let ultimaEntrada  = '';
-  let ultimaSugestao = '';
-  let ultimoScore    = 0.0;
-  let currentStream  = null;
-
-
-  // ── Elementos da página ───────────────────────────────────
-
-  const resultDiv     = document.getElementById('result');
-  const feedbackDiv   = document.getElementById('feedback');
-  const homeContent   = document.getElementById('homeContent');
-  const chatWrapper   = document.getElementById('chatWrapper');
-  const chatContainer = document.getElementById('chatContainer');
-  const searchForm    = document.getElementById('searchForm');
-  const chatForm      = document.getElementById('chatForm');
-  const chatInput     = document.getElementById('chat_input');
-  const recordBtn     = document.getElementById('recordBtn');
-  const chatRecordBtn = document.getElementById('chatRecordBtn');
-
-
-  // ── Adiciona mensagem no chat ─────────────────────────────
-
-  function appendMessage(content, sender = 'user', asHtml = false) {
-
-    const msg = document.createElement('div');
-
-    msg.classList.add('chat-bubble', sender);
-
-    if (sender === 'bot' && asHtml) {
-      msg.innerHTML = content;
+  function tratarResultadoTraducao(resultado, entrada) {
+    const { ok, dados } = resultado;
+    if (ok && dados && dados.status === 'success' && (dados.sequencia || []).length > 0) {
+      renderTraducao(dados, entrada);
+      salvarHistorico(entrada, dados.glosa, dados.sequencia);
     } else {
-      msg.textContent = content;
+      mostrarErro(resultado);
     }
-
-    chatContainer.appendChild(msg);
-
-    chatContainer.scrollTop = chatContainer.scrollHeight;
-
-    // IMPORTANTE:
-    // Retornamos o elemento criado para podermos
-    // encontrar o vídeo daquela mensagem específica.
-    return msg;
   }
 
+  // ── Tradução por texto ────────────────────────────────────
+  async function traduzirTexto(textoBruto) {
+    const texto = (textoBruto || '').trim();
+    if (!texto || traduzindo || gravando) return;
 
-  // ── Sequência de animações ────────────────────────────────
-
-  function iniciarSequenciaAnimacoes(video, termoEl, sequencia) {
-
-    if (!video || !sequencia || sequencia.length === 0) {
-      return;
-    }
-
-    let indiceAtual = 0;
-
-
-    // Função responsável por reproduzir a animação atual
-    function reproduzirAnimacaoAtual() {
-
-      const animacao = sequencia[indiceAtual];
-
-      if (!animacao || !animacao.url) {
-        return;
-      }
-
-
-      // Troca o vídeo
-      video.src = animacao.url;
-
-      video.load();
-
-
-      // Mostra o sinal que está sendo reproduzido
-      if (termoEl) {
-
-        termoEl.textContent =
-          animacao.expressao_libras ||
-          animacao.termo_original ||
-          '';
-      }
-
-
-      // Reproduz automaticamente
-      video.play().catch(error => {
-
-        console.warn(
-          'O navegador bloqueou a reprodução automática:',
-          error
-        );
-
-      });
-
-    }
-
-
-    // Quando um vídeo terminar
-    video.addEventListener('ended', function () {
-
-      // Vai para o próximo
-      indiceAtual++;
-
-
-      // Se chegou ao final da frase,
-      // volta para o primeiro sinal.
-      if (indiceAtual >= sequencia.length) {
-
-        indiceAtual = 0;
-
-      }
-
-
-      // Reproduz o próximo vídeo
-      reproduzirAnimacaoAtual();
-
-    });
-
-
-    // Começa pelo primeiro vídeo
-    reproduzirAnimacaoAtual();
-  }
-
-
-
-  // ── Envio de texto pelo input inicial ─────────────────────
-
-  searchForm.addEventListener('submit', async function (event) {
-
-    event.preventDefault();
-
-    const inputText =
-      document.getElementById('input_text').value.trim();
-
-    if (!inputText) {
-      return;
-    }
-
-
-    homeContent.style.display = 'none';
-
-    chatWrapper.style.display = 'block';
-
-    chatInput.value = inputText;
-
-    chatForm.dispatchEvent(
-      new Event('submit')
-    );
-
-  });
-
-
-
-  // ── Tradução pelo chat ────────────────────────────────────
-
-  chatForm.addEventListener('submit', async function (event) {
-
-    event.preventDefault();
-
-
-    const inputText = chatInput.value.trim();
-
-    if (!inputText) {
-      return;
-    }
-
-
-    ultimaEntrada = inputText;
-
-
-    // Mostra o que o usuário digitou
-    appendMessage(
-      inputText,
-      'user'
-    );
-
-
+    mostrarChat();
+    adicionarMensagem(texto, 'user');
+    searchInput.value = '';
     chatInput.value = '';
 
+    traduzindo = true;
+    atualizarBloqueios();
+    const carregando = mensagemCarregando('Traduzindo…');
 
     try {
-
-      const response = await fetch(
-        `${API_BASE}/api/sugestao`,
-        {
-          method: 'POST',
-
-          headers: {
-            'Content-Type': 'application/json'
-          },
-
-          body: JSON.stringify({
-            texto: inputText
-          })
-        }
-      );
-
-
-      let data;
-
-
-      try {
-
-        data = await response.json();
-
-      } catch (err) {
-
-        appendMessage(
-          'Erro do servidor ao buscar sugestão.',
-          'bot'
-        );
-
-        return;
-      }
-
-
-
-      // ── RESPOSTA COM SUCESSO ───────────────────────────────
-
-      if (response.ok) {
-
-
-        // Verifica se a API retornou a sequência
-        const sequencia = data.sequencia || [];
-
-
-        if (sequencia.length === 0) {
-
-          appendMessage(
-            'A tradução foi processada, mas nenhuma animação foi encontrada.',
-            'bot'
-          );
-
-          return;
-        }
-
-
-        // Guarda informações para o feedback
-        ultimaSugestao = data.glosa || '';
-
-        ultimoScore =
-          sequencia[0]?.score ?? 0.0;
-
-        salvarHistorico(ultimaEntrada, data.glosa, sequencia);
-
-
-
-        // ── HTML da resposta ────────────────────────────────
-
-        const botMessage = `
-
-          <div class="traducao-resultado">
-
-            <p>
-              <strong>Frase:</strong>
-              ${data.frase_original || inputText}
-            </p>
-
-
-            <p>
-              <strong>Glosa:</strong>
-              ${data.glosa || ''}
-            </p>
-
-
-            <div class="video-container">
-
-              <video
-                class="video-libras"
-                controls
-                playsinline>
-                Seu navegador não suporta vídeo.
-              </video>
-
-
-              <p class="termo-atual">
-
-                Sinal:
-                <strong class="termo-animacao"></strong>
-
-              </p>
-
-            </div>
-
-
-            <div class="feedback-inline">
-
-              <span>
-                Esse era o resultado esperado?
-              </span>
-
-              <button
-                onclick="enviarFeedback(true)">
-                👍
-              </button>
-
-              <button
-                onclick="enviarFeedback(false)">
-                👎
-              </button>
-
-            </div>
-
-          </div>
-
-        `;
-
-
-
-        // Adiciona a mensagem no chat
-        const botMessageElement =
-          appendMessage(
-            botMessage,
-            'bot',
-            true
-          );
-
-
-
-        // ── Localiza o vídeo dessa mensagem ─────────────────
-
-        const video =
-          botMessageElement.querySelector(
-            '.video-libras'
-          );
-
-
-        const termo =
-          botMessageElement.querySelector(
-            '.termo-animacao'
-          );
-
-
-
-        // ── Inicia a sequência ──────────────────────────────
-
-        iniciarSequenciaAnimacoes(
-          video,
-          termo,
-          sequencia
-        );
-
-
-      } else {
-
-
-        // ── ERRO DA API ────────────────────────────────────
-
-        appendMessage(
-          data.mensagem ||
-          'Erro ao buscar expressão.',
-          'bot'
-        );
-
-      }
-
-
-    } catch (err) {
-
-
-      console.error(
-        'Erro na requisição:',
-        err
-      );
-
-
-      appendMessage(
-        'Erro de rede ao buscar expressão.',
-        'bot'
-      );
-
+      const resultado = await chamarApi('/api/sugestao', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ texto }),
+      });
+      carregando.remove();
+      tratarResultadoTraducao(resultado, texto);
+    } finally {
+      carregando.remove();
+      traduzindo = false;
+      atualizarBloqueios();
+      chatInput.focus();
     }
-
-  });
-
-
-
-  // ── Feedback ──────────────────────────────────────────────
-
-  async function enviarFeedback(foiUtil) {
-
-    try {
-
-      const response = await fetch(
-        `${API_BASE}/api/feedback`,
-        {
-          method: 'POST',
-
-          headers: {
-            'Content-Type': 'application/json'
-          },
-
-          body: JSON.stringify({
-
-            entrada: ultimaEntrada,
-
-            sugestao: ultimaSugestao,
-
-            score: ultimoScore,
-
-            foi_util: foiUtil
-
-          })
-
-        }
-      );
-
-
-      let data;
-
-
-      try {
-
-        data = await response.json();
-
-      } catch (err) {
-
-        appendMessage(
-          'Erro ao enviar feedback.',
-          'bot'
-        );
-
-        return;
-      }
-
-
-      appendMessage(
-        data.mensagem ||
-        'Feedback recebido!',
-        'bot'
-      );
-
-
-    } catch (err) {
-
-      appendMessage(
-        'Erro ao enviar feedback.',
-        'bot'
-      );
-
-    }
-
   }
 
+  searchForm.addEventListener('submit', (e) => { e.preventDefault(); traduzirTexto(searchInput.value); });
+  chatForm.addEventListener('submit', (e) => { e.preventDefault(); traduzirTexto(chatInput.value); });
 
+  // ── Tradução por áudio (um único fluxo para os dois botões) ──
+  function extensaoDoAudio(mimeType) {
+    if (mimeType.includes('mp4')) return 'm4a';
+    if (mimeType.includes('ogg')) return 'ogg';
+    return 'webm';
+  }
 
-  // ── Gravação de áudio da tela inicial ─────────────────────
+  async function gravarAudio(botao) {
+    if (traduzindo || gravando) return;
+    mostrarChat();
 
-  recordBtn.addEventListener('click', async () => {
-
-    recordBtn.disabled = true;
-
-    recordBtn.textContent = '🎙️ Gravando...';
-
-
+    let stream;
     try {
-
-      const stream =
-        await navigator.mediaDevices.getUserMedia({
-          audio: true
-        });
-
-
-      currentStream = stream;
-
-
-      const mediaRecorder =
-        new MediaRecorder(stream);
-
-
-      const chunks = [];
-
-
-      mediaRecorder.ondataavailable =
-        e => chunks.push(e.data);
-
-
-
-      mediaRecorder.onstop = async () => {
-
-
-        try {
-
-          if (currentStream) {
-
-            currentStream
-              .getTracks()
-              .forEach(t => t.stop());
-
-            currentStream = null;
-
-          }
-
-        } catch (e) {}
-
-
-
-        const blob =
-          new Blob(
-            chunks,
-            {
-              type: 'audio/webm'
-            }
-          );
-
-
-        const formData =
-          new FormData();
-
-
-        formData.append(
-          'file',
-          blob,
-          'recording.webm'
-        );
-
-
-        appendMessage(
-          'Enviando áudio para transcrição...',
-          'bot'
-        );
-
-
-        let response;
-
-
-        try {
-
-          response =
-            await fetch(
-              `${API_BASE}/api/transcrever`,
-              {
-                method: 'POST',
-                body: formData
-              }
-            );
-
-
-        } catch (err) {
-
-          appendMessage(
-            'Erro de rede ao enviar áudio.',
-            'bot'
-          );
-
-          recordBtn.disabled = false;
-
-          recordBtn.textContent =
-            '🎤 Gravar Áudio';
-
-          return;
-        }
-
-
-
-        if (!response.ok) {
-
-          appendMessage(
-            'Erro ao transcrever (status ' +
-            response.status +
-            ')',
-            'bot'
-          );
-
-          recordBtn.disabled = false;
-
-          recordBtn.textContent =
-            '🎤 Gravar Áudio';
-
-          return;
-
-        }
-
-
-
-        let data;
-
-
-        try {
-
-          data =
-            await response.json();
-
-        } catch (err) {
-
-          appendMessage(
-            'Resposta inválida do servidor.',
-            'bot'
-          );
-
-          recordBtn.disabled = false;
-
-          recordBtn.textContent =
-            '🎤 Gravar Áudio';
-
-          return;
-        }
-
-
-
-        // A API retorna texto_transcrito
-        if (data.texto_transcrito) {
-
-
-          homeContent.style.display =
-            'none';
-
-
-          chatWrapper.style.display =
-            'block';
-
-
-          chatInput.value =
-            data.texto_transcrito;
-
-
-          appendMessage(
-            `Transcrição: "${data.texto_transcrito}"`,
-            'bot'
-          );
-
-
-          setTimeout(() => {
-
-            chatForm.dispatchEvent(
-              new Event('submit')
-            );
-
-          }, 100);
-
-
-        } else {
-
-
-          appendMessage(
-            data.mensagem ||
-            'Não foi possível transcrever o áudio.',
-            'bot'
-          );
-
-        }
-
-
-
-        recordBtn.disabled = false;
-
-        recordBtn.textContent =
-          '🎤 Gravar Áudio';
-
-      };
-
-
-
-      mediaRecorder.start();
-
-
-      appendMessage(
-        '🎤 Gravando áudio por 5 segundos...',
-        'bot'
-      );
-
-
-      setTimeout(() => {
-
-        if (
-          mediaRecorder.state !==
-          'inactive'
-        ) {
-
-          mediaRecorder.stop();
-
-        }
-
-      }, 5000);
-
-
-
-    } catch (err) {
-
-
-      appendMessage(
-        'Permissão negada ou erro ao acessar microfone.',
-        'bot'
-      );
-
-
-      recordBtn.disabled = false;
-
-      recordBtn.textContent =
-        '🎤 Gravar Áudio';
-
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch (e) {
+      adicionarMensagem('Não foi possível acessar o microfone. Verifique a permissão do navegador.', 'bot', 'erro');
+      return;
     }
 
-  });
+    gravando = true;
+    atualizarBloqueios();
+    botao.classList.add('gravando');
+    botao.textContent = '🎙️';
 
-
-
-  // ── Gravação de áudio no chat ─────────────────────────────
-
-  chatRecordBtn.addEventListener('click', async () => {
-
-    chatRecordBtn.disabled = true;
-
-    chatRecordBtn.textContent = '🎙️';
-
-
+    const partes = [];
+    let tipo = 'audio/webm';
+    let aviso = null;
+    let gravou = false;
     try {
-
-      const stream =
-        await navigator.mediaDevices.getUserMedia({
-          audio: true
-        });
-
-
-      currentStream = stream;
-
-
-      const mediaRecorder =
-        new MediaRecorder(stream);
-
-
-      const chunks = [];
-
-
-      mediaRecorder.ondataavailable =
-        e => chunks.push(e.data);
-
-
-
-      mediaRecorder.onstop = async () => {
-
-
-        try {
-
-          if (currentStream) {
-
-            currentStream
-              .getTracks()
-              .forEach(t => t.stop());
-
-            currentStream = null;
-
-          }
-
-        } catch (e) {}
-
-
-
-        const blob =
-          new Blob(
-            chunks,
-            {
-              type: 'audio/webm'
-            }
-          );
-
-
-        const formData =
-          new FormData();
-
-
-        formData.append(
-          'file',
-          blob,
-          'chat_recording.webm'
-        );
-
-
-        appendMessage(
-          'Enviando áudio para transcrição...',
-          'bot'
-        );
-
-
-        let response;
-
-
-        try {
-
-          response =
-            await fetch(
-              `${API_BASE}/api/transcrever`,
-              {
-                method: 'POST',
-                body: formData
-              }
-            );
-
-
-        } catch (err) {
-
-          appendMessage(
-            'Erro de rede ao enviar áudio.',
-            'bot'
-          );
-
-          chatRecordBtn.disabled = false;
-
-          chatRecordBtn.textContent =
-            '🎤';
-
-          return;
-
-        }
-
-
-
-        if (!response.ok) {
-
-          appendMessage(
-            'Erro ao transcrever (status ' +
-            response.status +
-            ')',
-            'bot'
-          );
-
-          chatRecordBtn.disabled = false;
-
-          chatRecordBtn.textContent =
-            '🎤';
-
-          return;
-
-        }
-
-
-
-        let data;
-
-
-        try {
-
-          data =
-            await response.json();
-
-        } catch (err) {
-
-          appendMessage(
-            'Resposta inválida do servidor.',
-            'bot'
-          );
-
-          chatRecordBtn.disabled = false;
-
-          chatRecordBtn.textContent =
-            '🎤';
-
-          return;
-
-        }
-
-
-
-        // A API retorna texto_transcrito
-        if (data.texto_transcrito) {
-
-
-          homeContent.style.display =
-            'none';
-
-
-          chatWrapper.style.display =
-            'block';
-
-
-          chatInput.value =
-            data.texto_transcrito;
-
-
-          appendMessage(
-            `Transcrição: "${data.texto_transcrito}"`,
-            'bot'
-          );
-
-
-          setTimeout(() => {
-
-            chatForm.dispatchEvent(
-              new Event('submit')
-            );
-
-          }, 100);
-
-
-        } else {
-
-
-          appendMessage(
-            data.mensagem ||
-            'Não foi possível transcrever o áudio.',
-            'bot'
-          );
-
-        }
-
-
-
-        chatRecordBtn.disabled = false;
-
-        chatRecordBtn.textContent =
-          '🎤';
-
-      };
-
-
-
-      mediaRecorder.start();
-
-
-      appendMessage(
-        '🎤 Gravando áudio por 5 segundos...',
-        'bot'
-      );
-
-
-      setTimeout(() => {
-
-        if (
-          mediaRecorder.state !==
-          'inactive'
-        ) {
-
-          mediaRecorder.stop();
-
-        }
-
-      }, 5000);
-
-
-
-    } catch (err) {
-
-
-      appendMessage(
-        'Permissão negada ou erro ao acessar microfone.',
-        'bot'
-      );
-
-
-      chatRecordBtn.disabled = false;
-
-      chatRecordBtn.textContent =
-        '🎤';
-
+      const recorder = new MediaRecorder(stream);
+      recorder.ondataavailable = (e) => { if (e.data.size) partes.push(e.data); };
+      const terminou = new Promise((resolve) => { recorder.onstop = resolve; });
+      recorder.start();
+      aviso = mensagemCarregando('Gravando por 5 segundos… fale agora.');
+      setTimeout(() => { if (recorder.state !== 'inactive') recorder.stop(); }, DURACAO_GRAVACAO_MS);
+      await terminou;
+      tipo = recorder.mimeType || tipo;
+      gravou = partes.length > 0;
+    } catch (e) {
+      console.warn('Falha na gravação:', e);
+    } finally {
+      stream.getTracks().forEach((t) => t.stop());
+      if (aviso) aviso.remove();
+      botao.classList.remove('gravando');
+      botao.innerHTML = botao.dataset.conteudoOriginal;
     }
 
-  });
-
-
-
-  // ── Tradução automática pela URL ──────────────────────────
-
-  let autoTraducaoExecutada = false;
-
-
-  window.addEventListener(
-    'DOMContentLoaded',
-    () => {
-
-      if (autoTraducaoExecutada) {
-        return;
-      }
-
-
-      const params =
-        new URLSearchParams(
-          window.location.search
-        );
-
-
-      const word =
-        params.get('word');
-
-
-      if (word) {
-
-
-        autoTraducaoExecutada = true;
-
-
-        document.getElementById(
-          'input_text'
-        ).value = word;
-
-
-        document.getElementById(
-          'searchForm'
-        ).dispatchEvent(
-          new Event('submit')
-        );
-
-      }
-
+    if (!gravou) {
+      adicionarMensagem('Não foi possível gravar o áudio neste navegador.', 'bot', 'erro');
+      gravando = false;
+      atualizarBloqueios();
+      return;
     }
-  );
 
+    const formData = new FormData();
+    formData.append('file', new Blob(partes, { type: tipo }), `gravacao.${extensaoDoAudio(tipo)}`);
+
+    const carregando = mensagemCarregando('Transcrevendo e traduzindo…');
+    try {
+      // /api/transcrever já devolve a tradução: não é preciso chamar /api/sugestao de novo
+      const resultado = await chamarApi('/api/transcrever', { method: 'POST', body: formData });
+      carregando.remove();
+      const transcrito = resultado.dados?.texto_transcrito;
+      if (transcrito) adicionarMensagem(`🎤 ${transcrito}`, 'user');
+      tratarResultadoTraducao(resultado, transcrito || '');
+    } finally {
+      carregando.remove();
+      gravando = false;
+      atualizarBloqueios();
+    }
+  }
+
+  botoesAudio.forEach((botao) => botao.addEventListener('click', () => gravarAudio(botao)));
+
+  // ── Tradução automática pela URL (?word=) ─────────────────
+  const palavraUrl = new URLSearchParams(window.location.search).get('word');
+  if (palavraUrl) traduzirTexto(palavraUrl.slice(0, 300));
+})();
 </script>
-</main>
-</body>
+
+<%- include('includes/footer'); %>

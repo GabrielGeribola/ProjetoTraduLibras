@@ -1,11 +1,6 @@
-// Rota para a página inicial (index)
-exports.index = (req, res) => {
-  res.render('index');
-};
-
-// Rota para a página home
+// Rota para a página home (tradutor)
 exports.home = (req, res) => {
-  res.render('home', {originalText: '', translatedText: ''});
+  res.render('home');
 };
 
 // Rota para a página de ajuda
@@ -21,16 +16,6 @@ exports.sugestao = (req, res) => {
 //rota para a pagina de sobre
 exports.sobre = (req, res) => {
   res.render('sobre'); // Renderiza o arquivo sobre.ejs
-};
-
-// Rota para a página inicial (index)
-exports.index = (req, res) => {
-  res.render('index');
-};
-
-// Rota para a página home
-exports.home = (req, res) => {
-  res.render('home', {originalText: '', translatedText: ''});
 };
 
 // Rota para a página de cursos
@@ -318,10 +303,4 @@ exports.cursos = (req, res) => {
   ];
 
   res.render('cursos', { artigos, videos });
-};
-
-
-// Rota para a página de ajuda
-exports.ajuda = (req, res) => {
-  res.render('ajuda'); // Renderiza o arquivo ajuda.ejs
 };

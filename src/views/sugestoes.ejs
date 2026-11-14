@@ -1,14 +1,21 @@
 <%- include('includes/head') %>
 <%- include('includes/navbar') %>
 <div class="sugestoes-container">
-  <div class="sugestoes-title">Glossário</div>
+  <h1 class="sugestoes-title">Glossário</h1>
+  <p class="glossario-subtitle">Palavras e expressões com sinal disponível. Clique em uma para ver a tradução.</p>
+
+  <label for="glossario-busca" class="sr-only">Buscar palavra no glossário</label>
+  <input type="search" id="glossario-busca" class="input-home glossario-busca"
+         placeholder="Buscar palavra..." autocomplete="off" maxlength="100">
+  <p id="glossario-status" class="glossario-status" role="status" aria-live="polite">Carregando glossário…</p>
 
   <div class="scroll-area">
+    <div id="glossario-resultados" class="glossario-grupo glossario-resultados" hidden></div>
     <div id="glossario-container"></div>
   </div>
 
   <div class="sugestoes-image">
-    <img src="https://cdn-icons-png.flaticon.com/512/6614/6614671.png" alt="Sugestões">
+    <img src="https://cdn-icons-png.flaticon.com/512/6614/6614671.png" alt="" aria-hidden="true">
   </div>
 </div>
 

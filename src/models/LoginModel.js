@@ -1,7 +1,5 @@
-const { Model, DataTypes,} = require('sequelize');
 const validator = require('validator');
 const bcryptjs = require('bcryptjs');
-const sequelize = require('../config/database');
 const User = require('./UserModel');
 
 
