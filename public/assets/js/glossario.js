@@ -25,10 +25,26 @@
     .normalize('NFD').replace(/[̀-ͯ]/g, '')
     .toLowerCase().replace(/\s+/g, ' ').trim();
 
+  // Padroniza a exibição: só a primeira letra maiúscula ("ABOCANHAR" -> "Abocanhar"),
+  // mantendo letras do alfabeto ("letra b" -> "Letra B") e "Libras" em maiúscula.
+  // O link continua usando o texto original do banco.
+  function formatarRotulo(label) {
+    const texto = label.replace(/_/g, ' ').replace(/\s+/g, ' ').trim().toLocaleLowerCase('pt-BR');
+    if (/^\p{L}$/u.test(texto)) return texto.toLocaleUpperCase('pt-BR');
+    const palavras = texto.split(' ').map((p, i, todas) => {
+      if (p === 'libras') return 'Libras';
+      const anterior = todas[i - 1];
+      if (p.length === 1 && /^(letra|lestra)$/.test(anterior || '')) return p.toLocaleUpperCase('pt-BR');
+      return p;
+    });
+    const frase = palavras.join(' ');
+    return frase.charAt(0).toLocaleUpperCase('pt-BR') + frase.slice(1);
+  }
+
   function criarTag(palavra) {
     const link = document.createElement('a');
     link.className = 'glossario-tag';
-    link.textContent = palavra.label;
+    link.textContent = formatarRotulo(palavra.label);
     link.href = `/home?word=${encodeURIComponent(palavra.label)}`;
     return link;
   }
