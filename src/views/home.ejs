@@ -136,7 +136,7 @@
     : '';
 
   // ── Histórico (somente usuário logado) ───────────────────
-  const USUARIO_LOGADO = <%= (typeof usuario !== 'undefined' && usuario) ? 'true' : 'false' %>;
+  const USUARIO_LOGADO = <%= (typeof user !== 'undefined' && user) ? 'true' : 'false' %>;
 
   // Salva a tradução no histórico do usuário. Se falhar, a tradução continua normalmente.
   function salvarHistorico(texto, glosa, sequencia) {

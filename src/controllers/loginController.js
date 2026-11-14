@@ -8,7 +8,6 @@ exports.index = (req, res) => {
 
 exports.register = async (req, res) => {
   try {
-    console.log(req.body);
     const login = new Login(req.body);
     await login.register();
 

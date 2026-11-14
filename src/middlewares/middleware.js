@@ -1,9 +1,8 @@
 exports.middlewareGlobal = (req, res, next) => {
   res.locals.errors= req.flash('errors');
   res.locals.success= req.flash('success');
-  res.locals.user = req.session.user;
-  // Usado pela navbar para mostrar "Sair" e "Histórico" quando há alguém logado
-  res.locals.usuario = req.session.user || null;
+  // Usado pela navbar ("Sair" e "Histórico") e pela home para saber se há alguém logado
+  res.locals.user = req.session.user || null;
   next();
 }
 
@@ -22,13 +21,13 @@ exports.loginRequired = (req, res, next) => {
 }
 
 exports.checkCsrfError = (err, req, res, next) => {
-  if(err) {
-     res.render('404')
-    console.log(err);
+  if (err && err.code === 'EBADCSRFTOKEN') {
+      return res.status(403).render('404');
   }
 
- next();
+  next(err);
 };
+
 
 //exports.csrfMiddleware = (req, res, next) => {
 //  res.locals.csrfToken = req.csrfToken();
