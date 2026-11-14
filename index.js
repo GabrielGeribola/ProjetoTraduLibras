@@ -32,10 +32,7 @@ const sessionOptions = session({
   saveUninitialized: false,
 });
 
-app.use((req, res, next) => {
-  res.locals.usuario = req.session?.usuario || null;
-  next();
-});
+// res.locals.usuario é definido no middlewareGlobal, depois que a sessão é carregada
 
 // Inicializa o armazenamento da sessão antes de usar no aplicativo
 
@@ -64,5 +61,5 @@ app.use(cors());
   .catch((error) => console.error("Erro ao sincronizar o banco de dados:", error));*/
 
 app.listen(3000, () => {
-  console.log("Servidor iniciado na porta 3306: http://localhost:3306")
+  console.log("Servidor iniciado na porta 3000: http://localhost:3000")
 });

@@ -41,6 +41,9 @@ class Login extends Model {
       this.User = null;
       return;
     }
+
+    // Guarda na sessão só o necessário (nunca a senha)
+    this.User = { id: user.id, email: user.email };
   }
 
   async register() {
@@ -56,13 +59,14 @@ class Login extends Model {
 
 
 
-      this.User = await User.create(dados)
-      .then(() => {
-        console.log('Cadastro do usuario feito com sucesso')
-      }).catch(() => {
-        console.log("Erro ao criar novo usuário: ", e)
-        this.errors.push("Erro ao criar novo usuário.")
-    });
+    try {
+      const novo = await User.create(dados);
+      this.User = { id: novo.id, email: novo.email };
+      console.log('Cadastro do usuario feito com sucesso');
+    } catch (e) {
+      console.log("Erro ao criar novo usuário: ", e);
+      this.errors.push("Erro ao criar novo usuário.");
+    }
 
   }
     //Valição pra conferir se o usuário já existe

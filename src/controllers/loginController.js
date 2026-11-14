@@ -20,9 +20,9 @@ exports.register = async (req, res) => {
     return;
   }
 
-  req.flash('success', 'Seu usuário foi criado com sucesso.');
+  req.flash('success', 'Seu usuário foi criado com sucesso. Faça login para continuar.');
   req.session.save(function() {
-    return res.redirect('/home');
+    return res.redirect('/login');
     });
   } catch (e) {
     console.log(e);
@@ -45,11 +45,19 @@ exports.login = async (req, res) => {
     return;
   }
 
-  req.flash('success', 'Login realizado com sucesso.');
-  req.session.user = login.User;
-  req.session.save(function() {
-    return res.redirect('/home');
+  // Gera uma sessão nova no login, para não reaproveitar a sessão anônima de antes
+  req.session.regenerate(function(err) {
+    if (err) {
+      console.log(err);
+      return res.render('404');
+    }
+
+    req.session.user = login.User;
+    req.flash('success', 'Login realizado com sucesso.');
+    req.session.save(function() {
+      return res.redirect('/home');
     });
+  });
   } catch (e) {
     console.log(e);
     res.render('404');
@@ -58,8 +66,12 @@ exports.login = async (req, res) => {
 };
 
 exports.logout = function (req,res) {
-  req.session.destroy();
-  res.redirect('/')
+  // Só redireciona depois que a sessão foi apagada do banco
+  req.session.destroy(function (err) {
+    if (err) console.log('Erro ao encerrar sessão:', err);
+    res.clearCookie('connect.sid');
+    res.redirect('/');
+  });
 }
 
 exports.registerPage = (req, res) => {

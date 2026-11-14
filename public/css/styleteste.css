@@ -692,6 +692,32 @@ form:hover { transform:scale(1.005); }
 .sugestoes-image { text-align:center; margin-top:28px; }
 .sugestoes-image img { width:180px; opacity:.7; }
 
+/* ============================================================
+   PÁGINA HISTÓRICO
+   ============================================================ */
+.historico-container { width:90%; max-width:760px; margin:80px auto 40px; background: var(--surface); border-radius:18px; padding:32px; box-shadow:0 6px 24px rgba(55,55,53,.09); border:1.5px solid var(--border); transition:background .35s, border-color .35s; }
+.historico-title { font-family:'DM Serif Display',serif; font-style:italic; text-align:center; font-size:2.2rem; color: var(--text-dark); margin-bottom:24px; border-bottom:3px solid var(--orange); padding-bottom:14px; }
+.historico-subtitulo { text-align:center; color: var(--text-muted); font-size:15px; margin:-10px 0 20px; }
+.historico-lista { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:12px; }
+.historico-item { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:16px 18px; background: var(--surface-2); border:1.5px solid var(--border); border-radius:12px; transition:border-color .2s, background .35s; }
+.historico-item:hover { border-color: var(--orange); }
+.historico-info { flex:1; min-width:0; }
+.historico-texto { margin:0 0 4px; font-size:17px; font-weight:600; color: var(--text-dark); overflow-wrap:anywhere; }
+.historico-glosa { margin:0 0 6px; font-size:14px; color: var(--text-muted); text-transform:uppercase; letter-spacing:.03em; overflow-wrap:anywhere; }
+.historico-data { font-size:13px; color: var(--text-muted); }
+.historico-acoes { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+.historico-acoes form { margin:0; }
+.btn-excluir { padding:8px 14px; background:transparent; color: var(--text-muted); border:1.5px solid var(--border); border-radius:8px; font-family:inherit; font-size:14px; font-weight:600; cursor:pointer; transition:color .2s, border-color .2s; }
+.btn-excluir:hover { color:#c0392b; border-color:#c0392b; }
+.historico-vazio { text-align:center; color: var(--text-muted); padding:24px 0; line-height:1.7; }
+.historico-vazio .btn-topic { margin-top:14px; }
+
+@media (max-width: 600px) {
+  .historico-container { width:auto; margin:72px 12px 16px; padding:22px 16px; }
+  .historico-item { flex-direction:column; align-items:stretch; }
+  .historico-acoes { justify-content:flex-end; }
+}
+
 
 /* ============================================================
    PÁGINA GLOSSÁRIO

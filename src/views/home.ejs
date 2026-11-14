@@ -130,7 +130,33 @@
   const params = new URLSearchParams(window.location.search);
   const palavraUrl = params.get('word');
 
-  const API_BASE = '';
+  // Em localhost a API Python roda separada na porta 5000; no servidor, /api é repassado pelo proxy
+  const API_BASE = ['localhost', '127.0.0.1'].includes(window.location.hostname)
+    ? 'http://localhost:5000'
+    : '';
+
+  // ── Histórico (somente usuário logado) ───────────────────
+  const USUARIO_LOGADO = <%= (typeof usuario !== 'undefined' && usuario) ? 'true' : 'false' %>;
+
+  // Salva a tradução no histórico do usuário. Se falhar, a tradução continua normalmente.
+  function salvarHistorico(texto, glosa, sequencia) {
+    if (!USUARIO_LOGADO || !texto) return;
+
+    fetch('/historico', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        texto,
+        glosa: glosa || '',
+        sequencia: (sequencia || []).map((item) => ({
+          termo_original: item.termo_original,
+          expressao_libras: item.expressao_libras,
+          url: item.url
+        }))
+      })
+    }).catch((err) => console.warn('Não foi possível salvar no histórico:', err));
+  }
 
   let ultimaEntrada  = '';
   let ultimaSugestao = '';
@@ -372,6 +398,8 @@
 
         ultimoScore =
           sequencia[0]?.score ?? 0.0;
+
+        salvarHistorico(ultimaEntrada, data.glosa, sequencia);
 
 
 

@@ -9,6 +9,8 @@ import spacy
 from sentence_transformers import SentenceTransformer
 import os
 import tempfile
+import threading
+import time
 from werkzeug.utils import secure_filename
 from pydub import AudioSegment
 import speech_recognition as sr
@@ -34,6 +36,62 @@ def connect_to_db():
         password=os.getenv("DB_PASS", "Tradulibras2024"),
         database=os.getenv("DB_NAME", "app_tradu_embedding")
     )
+
+# ----------------- Cache dos sinais em memória -----------------
+# A tabela words_sl_br tem ~8.600 sinais com embeddings (~66 MB em JSON).
+# Baixar isso do banco a cada tradução levava 20s ou mais, então carregamos uma vez
+# e atualizamos em segundo plano a cada CACHE_TTL_SEGUNDOS (padrão: 1 hora).
+CACHE_TTL_SEGUNDOS = int(os.getenv("CACHE_TTL_SEGUNDOS", "3600"))
+
+_cache_sinais = None  # (expressions, embeddings, urls_por_expressao, carregado_em)
+_cache_lock = threading.Lock()
+_cache_atualizando = threading.Event()
+
+def carregar_cache_sinais():
+    global _cache_sinais
+    inicio = time.time()
+    db = connect_to_db()
+    cursor = db.cursor()
+    try:
+        expressions, embeddings = get_expressions_and_embeddings(cursor)
+        cursor.execute("""
+            SELECT w.description, a.url
+            FROM words_sl_br w
+            JOIN animation_sl_br a ON w.id_animation = a.id_animation
+        """)
+        urls = {}
+        for descricao, url in cursor.fetchall():
+            urls.setdefault(descricao, url)  # mantém o primeiro, como o antigo "LIMIT 1"
+    finally:
+        cursor.close()
+        db.close()
+
+    _cache_sinais = (expressions, embeddings, urls, time.time())
+    print(f"[cache] {len(expressions)} sinais carregados em {time.time() - inicio:.1f}s")
+
+def _atualizar_cache_em_segundo_plano():
+    try:
+        carregar_cache_sinais()
+    except Exception as e:
+        print("[cache] Erro ao atualizar, mantendo os dados atuais:", e)
+    finally:
+        _cache_atualizando.clear()
+
+def obter_cache_sinais():
+    # Primeira carga: bloqueia (só acontece se a API não carregou na inicialização)
+    if _cache_sinais is None:
+        with _cache_lock:
+            if _cache_sinais is None:
+                carregar_cache_sinais()
+
+    expressions, embeddings, urls, carregado_em = _cache_sinais
+
+    # Cache vencido: atualiza em segundo plano e continua respondendo com os dados atuais
+    if time.time() - carregado_em > CACHE_TTL_SEGUNDOS and not _cache_atualizando.is_set():
+        _cache_atualizando.set()
+        threading.Thread(target=_atualizar_cache_em_segundo_plano, daemon=True).start()
+
+    return expressions, embeddings, urls
 
 def gerar_embeddings(texto):
     tokens = texto.split()
@@ -84,7 +142,7 @@ def portugues_para_glosa_libras(frase_portugues):
     glosa_tokens = tempos + objetos + sujeitos + outros + verbos
     return " ".join([t for t in glosa_tokens if t])
 
-def encontrar_melhor_sinal(termo, expressions, embeddings, cursor):
+def encontrar_melhor_sinal(termo, expressions, embeddings):
     """Busca o melhor match no banco para um termo isolado da glosa."""
     if not expressions or len(embeddings) == 0:
         return None, 0.0
@@ -106,9 +164,9 @@ def encontrar_melhor_sinal(termo, expressions, embeddings, cursor):
 
     return None, 0.0
 
-def processar_traducao_frase(cursor, frase_usuario):
-    expressions, embeddings = get_expressions_and_embeddings(cursor)
-    
+def processar_traducao_frase(frase_usuario):
+    expressions, embeddings, urls = obter_cache_sinais()
+
     # 1. Converter frase em estrutura de Libras (Glosa)
     glosa = portugues_para_glosa_libras(frase_usuario)
     termos_glosa = glosa.split()
@@ -117,9 +175,9 @@ def processar_traducao_frase(cursor, frase_usuario):
     
     # 2. Mapear cada termo da glosa para um sinal cadastrado no banco
     for termo in termos_glosa:
-        sinal_encontrado, score = encontrar_melhor_sinal(termo, expressions, embeddings, cursor)
+        sinal_encontrado, score = encontrar_melhor_sinal(termo, expressions, embeddings)
         if sinal_encontrado:
-            url = find_animation_url(cursor, sinal_encontrado)
+            url = urls.get(sinal_encontrado)
             if url:
                 sequencia_animacoes.append({
                     'termo_original': termo,
@@ -165,11 +223,9 @@ def sugestao():
     if not user_input:
         return jsonify({'mensagem': 'Nenhum texto fornecido.', 'status': 'error'}), 400
 
-    db = connect_to_db()
-    cursor = db.cursor()
     try:
-        resultado = processar_traducao_frase(cursor, user_input)
-        
+        resultado = processar_traducao_frase(user_input)
+
         if resultado['traducao_encontrada']:
             return jsonify({
                 'status': 'success',
@@ -186,6 +242,51 @@ def sugestao():
             
     except Exception as e:
         return jsonify({'erro': str(e), 'mensagem': 'Erro interno no processamento.', 'status': 'error'}), 500
+
+# ----------------- Feedback -----------------
+def registrar_feedback(cursor, entrada, sugestao, score, foi_util):
+    cursor.execute("""
+        INSERT INTO feedback_log (input_text, expressao_sugerida, score, foi_util)
+        VALUES (%s, %s, %s, %s)
+    """, (entrada, sugestao, float(score), foi_util))
+
+    # Após 3 rejeições da mesma sugestão para a mesma entrada, ela é marcada como exclusão
+    cursor.execute("""
+        SELECT COUNT(*) FROM feedback_log
+        WHERE input_text = %s AND expressao_sugerida = %s AND foi_util = FALSE
+    """, (entrada, sugestao))
+    rejeicoes = cursor.fetchone()[0]
+
+    if rejeicoes >= 3:
+        cursor.execute("""
+            INSERT IGNORE INTO exclusoes (input_text, expressao_excluida)
+            VALUES (%s, %s)
+        """, (entrada, sugestao))
+
+@app.route('/api/feedback', methods=['POST'])
+def feedback():
+    data = request.get_json(silent=True) or {}
+    entrada = (data.get('entrada') or '').strip().lower()
+    sugestao = (data.get('sugestao') or '').strip().lower()
+    score = data.get('score') or 0.0
+    foi_util = bool(data.get('foi_util', False))
+
+    if not entrada or not sugestao:
+        return jsonify({'mensagem': 'Faça uma tradução antes de enviar o feedback.', 'status': 'error'}), 400
+
+    db = connect_to_db()
+    cursor = db.cursor()
+    try:
+        registrar_feedback(cursor, entrada, sugestao, score, foi_util)
+        db.commit()
+        if foi_util:
+            mensagem = "🎉 Oba! Ficamos felizes que ajudamos! \n Obrigado pelo feedback positivo!"
+        else:
+            mensagem = "😔 Poxa, sentimos muito que não foi útil dessa vez. Seu feedback é muito importante e estamos trabalhando para melhorar. \n Por favor, tente novamente com outra palavra ou expressão."
+        return jsonify({'mensagem': mensagem, 'status': 'success'}), 200
+    except Exception as e:
+        db.rollback()
+        return jsonify({'erro': str(e), 'mensagem': 'Ocorreu um erro ao processar seu feedback', 'status': 'error'}), 500
     finally:
         cursor.close()
         db.close()
@@ -211,15 +312,9 @@ def transcrever():
         if not texto:
             return jsonify({'mensagem': 'Não foi possível transcrever o áudio.'}), 500
 
-        db = connect_to_db()
-        cursor = db.cursor()
-        try:
-            resultado = processar_traducao_frase(cursor, texto)
-            resultado['texto_transcrito'] = texto
-            return jsonify(resultado), 200
-        finally:
-            cursor.close()
-            db.close()
+        resultado = processar_traducao_frase(texto)
+        resultado['texto_transcrito'] = texto
+        return jsonify(resultado), 200
 
     except Exception as e:
         return jsonify({'mensagem': 'Erro ao processar arquivo: ' + str(e)}), 500
@@ -231,4 +326,7 @@ def transcrever():
             os.rmdir(tmp_dir)
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=5000, debug=False)
+    # Carrega os sinais antes de aceitar requisições, para a primeira tradução já ser rápida
+    print("[cache] Carregando sinais do banco (pode levar ~30s)...")
+    carregar_cache_sinais()
+    app.run(host="0.0.0.0", port=5000, debug=False, threaded=True)

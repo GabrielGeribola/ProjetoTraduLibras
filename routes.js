@@ -2,6 +2,8 @@ const express = require('express');
 const route = express.Router();
 const homeController = require('./src/controllers/homeController');
 const loginController = require('./src/controllers/loginController');
+const historicoController = require('./src/controllers/historicoController');
+const { loginRequired } = require('./src/middlewares/middleware');
 
 
 // Rotas da home
@@ -28,6 +30,11 @@ route.get('/logout', loginController.logout);
 // Registro
 route.get('/register', loginController.registerPage);
 route.post('/register', loginController.register);
+
+// Histórico de traduções (somente usuário logado)
+route.get('/historico', loginRequired, historicoController.index);
+route.post('/historico', historicoController.salvar); // responde 401 em JSON se não estiver logado
+route.post('/historico/:id/excluir', loginRequired, historicoController.excluir);
 
 // Rotas de tradução
 // route.get('/translate', (req, res) => res.render('home', { originalText: '', translatedText: '' }));
