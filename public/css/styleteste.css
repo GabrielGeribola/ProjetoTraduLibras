@@ -983,3 +983,179 @@ form:hover { transform:scale(1.005); }
   .glossario-page-title { font-size: 1.8rem; }
   .glossario-categoria-titulo { font-size: 1.1rem; }
 }
+
+/* ============================================================
+   PÁGINA PLANOS
+   ============================================================ */
+.planos-container { max-width:1120px; margin:0 auto; padding:84px 24px 56px; }
+
+.planos-cabecalho { text-align:center; margin-bottom:26px; }
+.planos-titulo {
+  font-family:'DM Serif Display',serif; font-style:italic; font-weight:400; font-size:2.6rem;
+  color: var(--text-dark); display:inline-block; padding-bottom:12px; border-bottom:3px solid var(--orange);
+}
+.planos-subtitulo { margin:14px auto 0; max-width:560px; font-size:1.05rem; color: var(--text-muted); }
+
+/* Seletor de ciclo (segmentado) */
+.ciclo-wrapper { display:flex; justify-content:center; margin-bottom:40px; }
+.ciclo-seletor {
+  display:inline-flex; gap:4px; padding:5px; border-radius:999px;
+  background: var(--surface); border:1.5px solid var(--border); box-shadow:0 2px 10px rgba(55,55,53,.06);
+}
+.ciclo-opcao {
+  display:inline-flex; align-items:center; gap:6px; padding:10px 18px; border:0; border-radius:999px;
+  background:transparent; color: var(--text-muted); font-family:inherit; font-size:0.9375rem; font-weight:600;
+  cursor:pointer; transition:background .2s, color .2s;
+}
+.ciclo-opcao:hover { color: var(--text-dark); }
+.ciclo-opcao[aria-checked="true"] { background: var(--orange); color: var(--bg); }
+.ciclo-opcao:focus-visible { outline:3px solid var(--orange); outline-offset:2px; }
+.ciclo-desconto {
+  font-size:0.75rem; font-weight:700; padding:2px 7px; border-radius:999px;
+  background: var(--peach); color: var(--charcoal);
+}
+.ciclo-opcao[aria-checked="true"] .ciclo-desconto { background: var(--bg); color: var(--orange-dark); }
+[data-theme="dark"] .ciclo-opcao[aria-checked="true"] .ciclo-desconto { color: var(--orange); }
+
+/* Grid: 1 coluna no celular, 3 colunas da mesma altura a partir de 768px */
+.planos-grid { display:grid; grid-template-columns:1fr; gap:22px; align-items:stretch; }
+.plano-card {
+  position:relative; display:flex; flex-direction:column; min-width:0;
+  padding:30px 24px 24px; border-radius:18px;
+  background: var(--surface); border:1.5px solid var(--border);
+  box-shadow:0 6px 24px rgba(55,55,53,.08); transition:background .35s, border-color .35s;
+}
+.plano-destaque { border:2px solid var(--orange); box-shadow:0 14px 36px rgba(244,147,64,.22); }
+.plano-selo {
+  position:absolute; top:-14px; left:50%; transform:translateX(-50%); white-space:nowrap;
+  padding:5px 14px; border-radius:999px; background: var(--orange); color: var(--bg);
+  font-size:0.8125rem; font-weight:700; letter-spacing:.03em; text-transform:uppercase;
+}
+.plano-nome { font-family:'DM Serif Display',serif; font-style:italic; font-weight:400; font-size:1.75rem; color: var(--text-dark); }
+.plano-publico { margin-top:6px; font-size:0.9375rem; color: var(--text-muted); min-height:2.9em; }
+
+.plano-precos { margin:18px 0 20px; padding-bottom:18px; border-bottom:1.5px solid var(--border); }
+.plano-preco[hidden] { display:none; }
+.plano-preco-riscado { display:block; font-size:0.9375rem; color: var(--text-muted); }
+.plano-preco-linha { display:flex; align-items:baseline; flex-wrap:wrap; gap:4px; margin:2px 0 4px; color: var(--text-dark); }
+.plano-preco-valor { font-size:2.4rem; font-weight:700; line-height:1.1; color: var(--text-dark); letter-spacing:-.01em; }
+.plano-preco-valor.plano-preco-consulta { font-size:1.9rem; }
+.plano-preco-periodo { font-size:1rem; font-weight:600; color: var(--text-muted); }
+.plano-preco-detalhe { font-size:0.875rem; color: var(--text-muted); }
+.plano-destaque .plano-preco-detalhe { color: var(--orange-dark); font-weight:600; }
+[data-theme="dark"] .plano-destaque .plano-preco-detalhe { color: var(--orange); }
+
+.plano-recursos { list-style:none; margin:0 0 24px; padding:0; display:flex; flex-direction:column; gap:10px; }
+.plano-recursos li {
+  position:relative; padding-left:28px; font-size:0.9375rem; line-height:1.5; color: var(--text-dark); overflow-wrap:anywhere;
+}
+.plano-recursos li::before {
+  content:'✓'; position:absolute; left:0; top:0;
+  width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  background: var(--peach); color: var(--orange-dark); font-size:0.75rem; font-weight:700;
+}
+[data-theme="dark"] .plano-recursos li::before { color: var(--orange); }
+.token-info {
+  display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; margin-left:4px;
+  border-radius:50%; border:1.5px solid var(--orange); color: var(--orange-dark);
+  font-size:0.75rem; font-weight:700; text-decoration:none; vertical-align:middle;
+}
+[data-theme="dark"] .token-info { color: var(--orange); }
+.token-marcador { white-space:nowrap; }
+.token-info:hover, .token-info:focus-visible { background: var(--orange); color: var(--bg); outline:none; }
+
+/* Botões dos planos */
+.plano-botao {
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  padding:13px 20px; border-radius:12px; border:2px solid var(--orange);
+  background: var(--orange); color: var(--bg); font-family:inherit; font-size:0.9375rem; font-weight:700;
+  text-decoration:none; text-align:center; cursor:pointer;
+  transition:background .2s, color .2s, transform .15s, box-shadow .2s;
+}
+.plano-botao:hover { background: var(--orange-dark); border-color: var(--orange-dark); transform:translateY(-1px); box-shadow:0 4px 16px rgba(244,147,64,.3); }
+.plano-botao:focus-visible { outline:3px solid var(--orange); outline-offset:3px; }
+.plano-botao-secundario { background:transparent; color: var(--orange-dark); }
+[data-theme="dark"] .plano-botao-secundario { color: var(--orange); }
+.plano-botao-secundario:hover { background: var(--orange); color: var(--bg); }
+.plano-card .plano-botao { margin-top:auto; width:100%; }
+.plano-botao.copiado { background:#2e7d4f; border-color:#2e7d4f; color:#fff; }
+
+/* Aviso sobre tokens: destacado, com texto em tamanho normal */
+.planos-tokens {
+  display:flex; gap:16px; align-items:flex-start; margin:34px 0 0; padding:20px 22px; border-radius:14px;
+  background: var(--surface); border:1.5px solid var(--border); border-left:5px solid var(--orange);
+  color: var(--text-dark); scroll-margin-top:90px;
+}
+.planos-tokens:focus { outline:none; box-shadow:0 0 0 3px rgba(244,147,64,.35); }
+.planos-tokens-icone {
+  flex-shrink:0; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  background: var(--orange); color: var(--bg); font-family:'DM Serif Display',serif; font-style:italic; font-size:1.25rem; font-weight:700;
+}
+.planos-tokens h2 { font-family:'DM Sans',sans-serif; font-size:1.125rem; font-weight:700; color: var(--text-dark); margin-bottom:6px; }
+.planos-tokens p { font-size:1rem; line-height:1.65; color: var(--text-dark); }
+.planos-tokens-exemplo { margin-top:6px; color: var(--text-muted) !important; }
+
+/* Destaque social: ONGs */
+.planos-ong {
+  display:flex; align-items:center; gap:22px; margin-top:28px; padding:24px 26px; border-radius:18px;
+  background:linear-gradient(135deg, var(--peach) 0%, var(--surface) 100%); border:1.5px solid var(--orange);
+}
+.planos-ong-selo {
+  flex-shrink:0; padding:12px 16px; border-radius:14px; background: var(--orange); color: var(--bg);
+  font-size:1.375rem; font-weight:800; line-height:1; text-align:center; letter-spacing:.02em;
+}
+.planos-ong-texto { flex:1; min-width:0; }
+.planos-ong-texto h2 { font-family:'DM Serif Display',serif; font-style:italic; font-weight:400; font-size:1.5rem; color: var(--text-dark); }
+.planos-ong-texto p { margin-top:4px; color: var(--text-dark); opacity:.85; }
+.planos-ong .plano-botao { flex-shrink:0; }
+
+/* Contato comercial único */
+.planos-contato {
+  margin:28px auto 0; max-width:640px; padding:30px 26px; border-radius:18px; text-align:center;
+  background: var(--surface); border:1.5px solid var(--border); box-shadow:0 6px 24px rgba(55,55,53,.08);
+  scroll-margin-top:90px;
+}
+.planos-contato:focus { outline:none; }
+.planos-contato h2 { font-family:'DM Serif Display',serif; font-style:italic; font-weight:400; font-size:1.75rem; color: var(--text-dark); margin-bottom:8px; }
+.planos-contato > p { color: var(--text-muted); }
+.planos-email { margin:14px 0 4px; }
+.planos-email a { font-size:1.375rem; font-weight:700; color: var(--orange-dark); text-decoration:none; overflow-wrap:anywhere; }
+[data-theme="dark"] .planos-email a { color: var(--orange); }
+.planos-email a:hover { text-decoration:underline; }
+.planos-assunto { font-size:0.875rem; }
+.planos-contato-acoes { display:flex; justify-content:center; flex-wrap:wrap; gap:12px; margin-top:18px; }
+.planos-contato-acoes .plano-botao { min-width:190px; }
+.planos-contato-realce { animation:realceContato 1.4s ease; }
+@keyframes realceContato { 0%,100% { box-shadow:0 6px 24px rgba(55,55,53,.08); } 30% { box-shadow:0 0 0 4px var(--orange); } }
+
+@media (min-width:768px) {
+  .planos-grid { grid-template-columns:repeat(3, minmax(0, 1fr)); gap:18px; }
+}
+@media (min-width:1024px) {
+  .planos-grid { gap:26px; }
+  .plano-destaque { transform:translateY(-10px); }
+}
+@media (min-width:768px) and (max-width:1023px) {
+  .plano-card { padding:28px 16px 20px; }
+  .plano-preco-valor { font-size:2rem; }
+  .plano-preco-valor.plano-preco-consulta { font-size:1.5rem; }
+}
+@media (max-width:767px) {
+  .plano-destaque { order:-1; } /* Enterprise aparece primeiro no celular */
+  .plano-publico { min-height:0; }
+  .planos-ong { flex-direction:column; text-align:center; }
+  .planos-ong .plano-botao { width:100%; }
+}
+@media (max-width:600px) {
+  .planos-container { padding:72px 12px 40px; }
+  .planos-titulo { font-size:2.1rem; }
+  .ciclo-seletor { width:100%; justify-content:space-between; }
+  .ciclo-opcao { flex:1; justify-content:center; padding:10px 8px; font-size:0.875rem; flex-wrap:wrap; gap:3px; }
+  .planos-tokens { flex-direction:column; gap:10px; padding:18px 16px; }
+  .planos-contato { padding:24px 16px; }
+  .planos-contato-acoes .plano-botao { width:100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .planos-contato-realce { animation:none; }
+  .plano-botao:hover { transform:none; }
+}

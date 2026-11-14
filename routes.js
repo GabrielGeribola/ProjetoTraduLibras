@@ -12,6 +12,7 @@ route.get('/cursos', homeController.cursos);
 route.get('/ajuda', homeController.ajuda);
 route.get('/sugestoes', homeController.sugestao);
 route.get('/sobre', homeController.sobre);
+route.get('/planos', homeController.planos);
 
 // Login (com limite de tentativas)
 route.get('/login', loginController.index);
