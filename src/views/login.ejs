@@ -1,14 +1,12 @@
-<%- include('includes/head'); %>
+<%- include('includes/head', { bodyClass: 'page-centered' }); %>
 <%- include('includes/navbar'); %>
 
-<body class="page-centered">
   <div class="container">
 
-    
       <div class="logo-boasvindas-login">
         <img src="https://assetstradulibras.s3.us-east-1.amazonaws.com/imgs/logo-clara.png" alt="Logo TraduLibras" class="img-fluid" />
       </div>
-    
+
       <div >
         <div >
           <%- include('includes/messages'); %>
@@ -17,19 +15,18 @@
             <h4 class="entrar">Entrar</h4>
 
             <form action="/login" method="POST">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
               <div class="form-group">
-                <label class="diminutivo">Digite seu email</label>
+                <label class="diminutivo" for="login_email">Digite seu email</label>
                 <br>
-                <input type="email" class="form-control" name="email" placeholder="Email" required>
+                <input type="email" class="form-control" id="login_email" name="email" placeholder="Email" autocomplete="email" required>
               </div>
 
               <div class="form-group">
-                <label class="diminutivo">Digite sua senha</label>
+                <label class="diminutivo" for="login_senha">Digite sua senha</label>
                 <br>
-                <input type="password" class="form-control" name="password" placeholder="Senha" required>
+                <input type="password" class="form-control" id="login_senha" name="password" placeholder="Senha" autocomplete="current-password" required>
               </div>
-
-              
 
               <button type="submit" class="btn-btn-primary botaoacessar">Acessar</button>
             </form>
@@ -40,7 +37,6 @@
           </div>
         </div>
       </div>
-    </div>
   </div>
 
 <%- include('includes/footer'); %>

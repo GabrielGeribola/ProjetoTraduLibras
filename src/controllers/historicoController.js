@@ -75,10 +75,13 @@ exports.salvar = async (req, res) => {
   try {
     const traducao = await buscarOuCriarTraducao(texto, glosa, sequencia);
 
-    // id_usuario vem sempre da sessão, nunca do que o navegador envia
+    // id_usuario vem sempre da sessão, nunca do que o navegador envia.
+    // Glosa e sequência ficam no registro do usuário: um valor adulterado só afeta o próprio histórico.
     const item = await Historico.create({
       id_usuario: usuario.id,
       id_traducao: traducao.id_traducao,
+      glosa,
+      sequencia,
     });
 
     return res.status(201).json({ status: 'success', id_historico: item.id_historico });

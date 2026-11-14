@@ -1,0 +1,107 @@
+<%- include('includes/head') %>
+<%- include('includes/navbar') %>
+
+<main class="planos-container">
+
+  <div class="planos-cabecalho">
+    <h1 class="planos-titulo">Planos</h1>
+    <p class="planos-subtitulo">Escolha o plano ideal para você ou para sua organização. Comece grátis e evolua quando precisar.</p>
+  </div>
+
+  <!-- Seletor de ciclo de cobrança -->
+  <div class="ciclo-wrapper">
+    <div class="ciclo-seletor" id="cicloSeletor" role="radiogroup" aria-label="Ciclo de cobrança">
+      <% ciclos.forEach((ciclo, i) => { %>
+        <button type="button" class="ciclo-opcao" role="radio" data-ciclo="<%= ciclo.id %>"
+                aria-checked="<%= i === 0 ? 'true' : 'false' %>" tabindex="<%= i === 0 ? 0 : -1 %>">
+          <span class="ciclo-rotulo"><%= ciclo.rotulo %></span>
+          <% if (ciclo.desconto) { %><span class="ciclo-desconto">-<%= ciclo.desconto %>%</span><% } %>
+        </button>
+      <% }); %>
+    </div>
+  </div>
+  <p class="sr-only" id="cicloAnuncio" aria-live="polite"></p>
+
+  <!-- Cards dos planos -->
+  <section class="planos-grid" aria-label="Planos disponíveis">
+    <% planos.forEach((plano) => { %>
+      <article class="plano-card<%= plano.destaque ? ' plano-destaque' : '' %>" aria-labelledby="plano-<%= plano.id %>">
+        <% if (plano.destaque) { %><span class="plano-selo"><%= plano.destaque %></span><% } %>
+
+        <h2 class="plano-nome" id="plano-<%= plano.id %>"><%= plano.nome %></h2>
+        <p class="plano-publico"><%= plano.publico %></p>
+
+        <div class="plano-precos">
+          <% plano.exibicao.forEach((preco, i) => { %>
+            <div class="plano-preco" data-ciclo="<%= preco.ciclo %>"<%= i === 0 ? '' : ' hidden' %>>
+              <% if (preco.riscado) { %>
+                <s class="plano-preco-riscado"><span class="sr-only">Preço cheio: </span><%= preco.riscado %></s>
+              <% } %>
+              <p class="plano-preco-linha">
+                <span class="plano-preco-valor<%= plano.precos ? '' : ' plano-preco-consulta' %>"><%= preco.valor %></span>
+                <% if (preco.periodo) { %><span class="plano-preco-periodo"><%= preco.periodo %></span><% } %>
+              </p>
+              <p class="plano-preco-detalhe"><%= preco.detalhe %></p>
+            </div>
+          <% }); %>
+        </div>
+
+        <ul class="plano-recursos">
+          <% plano.recursos.forEach((recurso) => { const partes = Array.isArray(recurso) ? recurso : recurso.partes; %>
+            <li><% partes.forEach((parte) => { %><% if (parte.b) { %><strong><%= parte.t %></strong><% } else { %><%= parte.t %><% } %><% }); %><% if (recurso.token) { %><span class="token-marcador">*<a href="#tokens" class="token-info" aria-label="O que é um token?" title="O que é um token?">ⓘ</a></span><% } %>
+            </li>
+          <% }); %>
+        </ul>
+
+        <% if (plano.cta.href) { %>
+          <a href="<%= plano.cta.href %>" class="plano-botao plano-botao-secundario"><%= plano.cta.texto %></a>
+        <% } else { %>
+          <a href="#contato" class="plano-botao<%= plano.destaque ? '' : ' plano-botao-secundario' %> js-contato"
+             data-assunto="<%= plano.cta.assunto %>"<%= plano.cta.comCiclo ? ' data-com-ciclo' : '' %>><%= plano.cta.texto %></a>
+        <% } %>
+      </article>
+    <% }); %>
+  </section>
+
+  <!-- O que é um token (aviso em destaque, não em letra miúda) -->
+  <aside class="planos-tokens" id="tokens" tabindex="-1" aria-labelledby="tokensTitulo">
+    <span class="planos-tokens-icone" aria-hidden="true">i</span>
+    <div>
+      <h2 id="tokensTitulo">* O que é um token?</h2>
+      <p>
+        Na nossa plataforma, <strong>cada token equivale a 1 (uma) palavra</strong> inserida para tradução (por texto ou voz).
+        No plano Free, há um limite de <strong><%= limitePalavrasFree %> palavras</strong> processadas por tradução,
+        enquanto nos planos Enterprise e Customized você pode traduzir textos completos sem restrição de tamanho.
+      </p>
+      <p class="planos-tokens-exemplo">Exemplo: “Eu gosto de café” = <strong>4 tokens</strong>.</p>
+    </div>
+  </aside>
+
+  <!-- Destaque social: ONGs -->
+  <section class="planos-ong" aria-labelledby="ongTitulo">
+    <span class="planos-ong-selo">50% OFF</span>
+    <div class="planos-ong-texto">
+      <h2 id="ongTitulo">ONGs têm 50% de desconto em qualquer plano</h2>
+      <p>Acreditamos que a comunicação é um direito de todos. Se a sua organização é uma ONG, fale com a gente para ativar o desconto.</p>
+    </div>
+    <a href="#contato" class="plano-botao js-contato" data-assunto="Desconto para ONG">Solicitar desconto</a>
+  </section>
+
+  <!-- Contato comercial único (Enterprise, Customized e ONGs) -->
+  <% const mailtoPadrao = 'mailto:' + emailComercial + '?subject=' + encodeURIComponent('Planos TraduLibras'); %>
+  <section class="planos-contato" id="contato" tabindex="-1" aria-labelledby="contatoTitulo">
+    <h2 id="contatoTitulo">Fale com o time comercial</h2>
+    <p>Para contratar os planos Enterprise ou Customized, ou solicitar o desconto para ONGs, envie um e-mail para:</p>
+    <p class="planos-email"><a href="<%= mailtoPadrao %>" id="emailLink"><%= emailComercial %></a></p>
+    <p class="planos-assunto" id="contatoAssunto">Assunto: Planos TraduLibras</p>
+    <div class="planos-contato-acoes">
+      <a href="<%= mailtoPadrao %>" class="plano-botao" id="emailEnviar">✉ Enviar e-mail</a>
+      <button type="button" class="plano-botao plano-botao-secundario" id="emailCopiar" data-email="<%= emailComercial %>">Copiar e-mail</button>
+    </div>
+    <p class="sr-only" id="copiaAnuncio" aria-live="polite"></p>
+  </section>
+
+</main>
+
+<script src="/assets/js/planos.js"></script>
+<%- include('includes/footer') %>

@@ -28,17 +28,18 @@
         <li class="historico-item">
           <div class="historico-info">
             <p class="historico-texto"><%= traducao.texto_original %></p>
-            <% if (traducao.glosa) { %>
-              <p class="historico-glosa">Glosa: <%= traducao.glosa %></p>
+            <% const glosa = item.glosa || traducao.glosa; %>
+            <% if (glosa) { %>
+              <p class="historico-glosa">Glosa: <%= glosa %></p>
             <% } %>
             <span class="historico-data"><%= data %></span>
           </div>
 
           <div class="historico-acoes">
             <a href="/home?word=<%= encodeURIComponent(traducao.texto_original) %>" class="btn-topic">Traduzir de novo</a>
-            <form method="POST" action="/historico/<%= item.id_historico %>/excluir"
-                  onsubmit="return confirm('Remover esta tradução do histórico?');">
-              <button type="submit" class="btn-excluir" aria-label="Remover do histórico">Excluir</button>
+            <form method="POST" action="/historico/<%= item.id_historico %>/excluir" class="form-excluir">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <button type="submit" class="btn-excluir" aria-label="Remover do histórico: <%= traducao.texto_original %>">Excluir</button>
             </form>
           </div>
         </li>
@@ -46,5 +47,13 @@
     </ul>
   <% } %>
 </div>
+
+<script>
+  document.querySelectorAll('.form-excluir').forEach((form) => {
+    form.addEventListener('submit', (e) => {
+      if (!confirm('Remover esta tradução do histórico?')) e.preventDefault();
+    });
+  });
+</script>
 
 <%- include('includes/footer') %>

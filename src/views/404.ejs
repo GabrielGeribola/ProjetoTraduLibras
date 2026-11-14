@@ -1,22 +1,14 @@
 <%- include('includes/head'); %>
-<%- include('includes/nav'); %>
+<%- include('includes/navbar'); %>
 
-<div class="container">
-  <div class="row">
-    <div class="col-lg-2"></div>
-
-    <div class="header">
-      <header>Tradulibras</header>
-    </div>
-    <div class="col-lg-8 my-5, home">
-          <h1 class="display-1 text-center, erro">Error 404!</h1>
-          <p class="text-center lead, erro">A página que você procura não existe ou está em manutenção</p>
-          <img src="/public/imgs/Spinner@1x-2.6s-200px-200px.gif" alt="">
-
-    </div>
-
-    <div class="col-lg-2"></div>
-  </div>
+<div class="faq-container erro-pagina">
+  <div class="faq-title"><%= typeof titulo !== 'undefined' ? titulo : 'Página não encontrada' %></div>
+  <p class="erro-mensagem">
+    <%= typeof mensagem !== 'undefined' ? mensagem : 'A página que você procura não existe ou mudou de endereço.' %>
+  </p>
+  <p class="erro-acoes">
+    <a href="/home" class="btn-topic">Voltar para o tradutor</a>
+  </p>
 </div>
 
 <%- include('includes/footer'); %>

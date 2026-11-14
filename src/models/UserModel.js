@@ -1,6 +1,5 @@
 const Sequelize = require('sequelize');
 const db =require('../config/database');
-const { tableName } = require('./LoginModel');
 
 const User = db.define('Usuarios_testes', {
     id: {
