@@ -79,6 +79,9 @@
   </section>
 </main>
 
+<%# Sinais que o usuário logado marcou como incorretos (JSON seguro para <script>) %>
+<script type="application/json" id="dadosExclusoes"><%- JSON.stringify(typeof exclusoes !== 'undefined' ? exclusoes : []).replace(/</g, '\\u003c') %></script>
+
 <script>
 (() => {
   'use strict';
@@ -111,6 +114,33 @@
   let traduzindo = false;
   let gravando = false;
   let playerAtivo = null;
+
+  // ── Sinais ocultados (resultado do feedback negativo) ─────
+  // Logado: vêm do banco e valem em qualquer dispositivo.
+  // Visitante: ficam só nesta aba do navegador (sessionStorage) e somem ao fechá-la.
+  // Nos dois casos são enviados junto com cada tradução e só mudam o resultado de quem votou.
+  const CHAVE_SESSAO = 'tradulibras:sinaisOcultos';
+  const exclusoes = new Map();
+  const normalizar = (t) => String(t || '').replace(/\s+/g, ' ').trim().toLowerCase();
+
+  function guardarExclusoes(lista) {
+    (lista || []).forEach((item) => {
+      const termo = normalizar(item.termo);
+      const expressao = normalizar(item.expressao);
+      if (termo && expressao) exclusoes.set(`${termo}\u0000${expressao}`, { termo, expressao });
+    });
+  }
+  const listaExclusoes = () => [...exclusoes.values()];
+
+  if (USUARIO_LOGADO) {
+    try { guardarExclusoes(JSON.parse(document.getElementById('dadosExclusoes').textContent)); } catch (e) { /* sem dados */ }
+  } else {
+    try { guardarExclusoes(JSON.parse(sessionStorage.getItem(CHAVE_SESSAO) || '[]')); } catch (e) { /* armazenamento indisponível */ }
+  }
+
+  function salvarNaSessao() {
+    try { sessionStorage.setItem(CHAVE_SESSAO, JSON.stringify(listaExclusoes())); } catch (e) { /* armazenamento indisponível */ }
+  }
 
   // ── Vídeo tutorial ────────────────────────────────────────
   const TUTORIAL_URL = 'https://assetstradulibras.s3.us-east-1.amazonaws.com/imgs/tutorial_tradulibras_com_som.mp4';
@@ -328,11 +358,7 @@
     const botaoRepetir = criar('button', { classe: 'btn-player', texto: '↻ Repetir', atributos: { type: 'button' } });
     botaoRepetir.hidden = true;
 
-    const feedback = criarFeedback({
-      entrada,
-      sugestao: dados.glosa || '',
-      score: sequencia[0]?.score ?? 0,
-    });
+    const feedback = criarFeedback({ texto: entrada, glosa: dados.glosa || '', sequencia });
 
     const resultado = criar('div', { classe: 'traducao-resultado' }, [
       criar('p', {}, [criar('strong', { texto: 'Frase: ' }), dados.frase_original || entrada]),
@@ -352,40 +378,154 @@
     player.iniciar();
   }
 
-  // ── Feedback (cada resposta envia os próprios dados) ──────
-  function criarFeedback(dadosFeedback) {
-    const pergunta = criar('span', { texto: 'Esse era o resultado esperado?' });
-    const sim = criar('button', { texto: '👍', atributos: { type: 'button', 'aria-label': 'Sim, era o esperado' } });
-    const nao = criar('button', { texto: '👎', atributos: { type: 'button', 'aria-label': 'Não era o esperado' } });
-    const caixa = criar('div', { classe: 'feedback-inline' }, [
-      pergunta,
-      criar('span', { classe: 'feedback-botoes' }, [sim, nao]),
-    ]);
-
-    async function enviar(foiUtil) {
-      sim.disabled = true;
-      nao.disabled = true;
-      const r = await chamarApi('/api/feedback', {
+  // ── Feedback ──────────────────────────────────────────────
+  // 👍 registra que a tradução ajudou. 👎 pergunta qual sinal estava errado:
+  // os sinais marcados deixam de ser usados nas próximas traduções DESTE usuário.
+  async function enviarFeedbackServidor(corpo) {
+    try {
+      const resposta = await fetch('/feedback', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...dadosFeedback, foi_util: foiUtil }),
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': CSRF_TOKEN },
+        body: JSON.stringify(corpo),
+      });
+      const dados = await resposta.json().catch(() => null);
+      return { ok: resposta.ok, status: resposta.status, dados };
+    } catch (e) {
+      return { ok: false, status: 0, dados: null };
+    }
+  }
+
+  function avisoSessao() {
+    return criar('span', { classe: 'feedback-aviso' }, [
+      'Como você não entrou na sua conta, isso vale só nesta sessão. ',
+      criar('a', { texto: 'Entrar', atributos: { href: '/login' } }),
+      ' ou ',
+      criar('a', { texto: 'criar conta', atributos: { href: '/register' } }),
+      ' para guardar.',
+    ]);
+  }
+
+  function criarFeedback({ texto, glosa, sequencia }) {
+    const pergunta = criar('span', { classe: 'feedback-pergunta', texto: 'Esse era o resultado esperado?' });
+    const sim = criar('button', { texto: '👍', atributos: { type: 'button', 'aria-label': 'Sim, era o esperado' } });
+    const nao = criar('button', { texto: '👎', atributos: { type: 'button', 'aria-label': 'Não era o esperado', 'aria-expanded': 'false' } });
+    const linha = criar('div', { classe: 'feedback-inline' }, [pergunta, criar('span', { classe: 'feedback-botoes' }, [sim, nao])]);
+
+    // Sinais da resposta, sem repetição, na mesma ordem do player ("Sinal 1 de 3...")
+    const vistos = new Set();
+    const sinais = [];
+    sequencia.forEach((item, i) => {
+      const termo = normalizar(item.termo_original);
+      const expressao = normalizar(item.expressao_libras);
+      const chave = `${termo}\u0000${expressao}`;
+      if (!termo || !expressao || vistos.has(chave)) return;
+      vistos.add(chave);
+      sinais.push({ termo, expressao, rotulo: `${i + 1}. ${item.expressao_libras}` });
+    });
+
+    const chips = sinais.map((s) => {
+      const chip = criar('button', {
+        classe: 'feedback-chip',
+        texto: s.rotulo,
+        atributos: { type: 'button', 'aria-pressed': 'false', title: `Termo da glosa: ${s.termo}` },
+      });
+      chip.addEventListener('click', () => {
+        const marcado = chip.getAttribute('aria-pressed') !== 'true';
+        chip.setAttribute('aria-pressed', String(marcado));
+        enviarDetalhe.textContent = marcado || chips.some((c) => c.getAttribute('aria-pressed') === 'true')
+          ? 'Enviar' : 'Enviar sem marcar';
+      });
+      return chip;
+    });
+    const enviarDetalhe = criar('button', { classe: 'btn-player btn-player-primario', texto: 'Enviar sem marcar', atributos: { type: 'button' } });
+    const cancelar = criar('button', { classe: 'btn-player', texto: 'Cancelar', atributos: { type: 'button' } });
+    const detalhe = criar('div', { classe: 'feedback-detalhe' }, [
+      criar('p', { texto: 'Qual sinal não ficou certo? Toque para marcar:' }),
+      criar('div', { classe: 'feedback-sinais' }, chips),
+      criar('div', { classe: 'feedback-acoes' }, [enviarDetalhe, cancelar]),
+    ]);
+    detalhe.hidden = true;
+
+    const status = criar('div', { classe: 'feedback-status', atributos: { role: 'status' } });
+    const caixa = criar('div', { classe: 'feedback-caixa' }, [linha, detalhe, status]);
+
+    function bloquear(sim_) { [sim, nao, enviarDetalhe, cancelar, ...chips].forEach((b) => { b.disabled = sim_; }); }
+
+    function concluir(foiUtil, marcados) {
+      linha.hidden = true;
+      detalhe.hidden = true;
+      const partes = [];
+      if (foiUtil) {
+        partes.push(criar('p', { texto: 'Obrigado! Que bom que a tradução ajudou. 💙' }));
+      } else if (marcados.length > 0) {
+        const nomes = marcados.map((s) => s.expressao.toUpperCase()).join(', ');
+        partes.push(criar('p', {
+          texto: marcados.length === 1
+            ? `Entendido. Nas suas próximas traduções não vamos mais usar o sinal ${nomes}.`
+            : `Entendido. Nas suas próximas traduções não vamos mais usar os sinais ${nomes}.`,
+        }));
+        const repetir = criar('button', { classe: 'btn-player btn-player-primario', texto: '↻ Traduzir de novo', atributos: { type: 'button' } });
+        repetir.addEventListener('click', () => traduzirTexto(texto));
+        partes.push(repetir);
+      } else {
+        partes.push(criar('p', { texto: 'Obrigado pelo retorno! Ele nos ajuda a melhorar as traduções.' }));
+      }
+      if (USUARIO_LOGADO && !foiUtil && marcados.length > 0) {
+        partes.push(criar('span', { classe: 'feedback-aviso' }, [
+          'Você pode desfazer isso em ', criar('a', { texto: 'Histórico', atributos: { href: '/historico#sinais-ocultos' } }), '.',
+        ]));
+      }
+      if (!USUARIO_LOGADO) partes.push(avisoSessao());
+      status.replaceChildren(...partes);
+    }
+
+    async function enviar(foiUtil, marcados = []) {
+      if (!USUARIO_LOGADO) {
+        guardarExclusoes(marcados);
+        salvarNaSessao();
+        return concluir(foiUtil, marcados);
+      }
+
+      bloquear(true);
+      status.textContent = 'Enviando…';
+      const r = await enviarFeedbackServidor({
+        texto,
+        glosa,
+        foi_util: foiUtil,
+        sinais_incorretos: marcados.map(({ termo, expressao }) => ({ termo, expressao })),
       });
       if (r.ok) {
-        pergunta.textContent = 'Obrigado pelo feedback!';
-        adicionarMensagem(r.dados?.mensagem || 'Feedback recebido!', 'bot');
-      } else {
-        sim.disabled = false;
-        nao.disabled = false;
-        mostrarErro(r);
+        guardarExclusoes(r.dados?.exclusoes || marcados);
+        return concluir(foiUtil, marcados);
       }
+      bloquear(false);
+      status.textContent = r.status === 401 || r.status === 403
+        ? 'Sua sessão expirou. Recarregue a página e tente novamente.'
+        : (r.dados?.mensagem || 'Não foi possível enviar o feedback agora. Tente novamente.');
     }
 
     sim.addEventListener('click', () => enviar(true));
-    nao.addEventListener('click', () => enviar(false));
+    nao.addEventListener('click', () => {
+      if (sinais.length === 0) return enviar(false);
+      const abrir = detalhe.hidden;
+      detalhe.hidden = !abrir;
+      nao.setAttribute('aria-expanded', String(abrir));
+      if (abrir) chips[0].focus();
+    });
+    cancelar.addEventListener('click', () => {
+      detalhe.hidden = true;
+      nao.setAttribute('aria-expanded', 'false');
+      nao.focus();
+    });
+    enviarDetalhe.addEventListener('click', () => {
+      const marcados = sinais.filter((_, i) => chips[i].getAttribute('aria-pressed') === 'true');
+      enviar(false, marcados);
+    });
     return caixa;
   }
 
-  // ── Histórico (somente usuário logado) ────────────────────
+  // ── Histórico (somente usuário logado; visitantes veem o convite em /historico) ──
   // Salva a tradução no histórico. Se falhar, a tradução continua normalmente.
   function salvarHistorico(texto, glosa, sequencia) {
     if (!USUARIO_LOGADO || !texto) return;
@@ -433,7 +573,7 @@
       const resultado = await chamarApi('/api/sugestao', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ texto }),
+        body: JSON.stringify({ texto, exclusoes: listaExclusoes() }),
       });
       carregando.remove();
       tratarResultadoTraducao(resultado, texto);
@@ -504,6 +644,7 @@
 
     const formData = new FormData();
     formData.append('file', new Blob(partes, { type: tipo }), `gravacao.${extensaoDoAudio(tipo)}`);
+    formData.append('exclusoes', JSON.stringify(listaExclusoes()));
 
     const carregando = mensagemCarregando('Transcrevendo e traduzindo…');
     try {

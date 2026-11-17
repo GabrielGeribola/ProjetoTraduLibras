@@ -23,6 +23,7 @@ log = logging.getLogger("api_tradu")
 # Limites de entrada
 LIMITE_TEXTO = 300                      # caracteres por tradução
 LIMITE_UPLOAD_BYTES = 5 * 1024 * 1024   # áudio de até 5 MB
+LIMITE_EXCLUSOES = 200                  # sinais ocultados pelo usuário enviados por tradução
 EXTENSOES_AUDIO = {"webm", "ogg", "m4a", "mp4", "mp3", "wav", "aac"}
 
 app = Flask(__name__)
@@ -154,40 +155,55 @@ def portugues_para_glosa_libras(frase_portugues):
     glosa_tokens = tempos + objetos + sujeitos + outros + verbos
     return " ".join([t for t in glosa_tokens if t])
 
-def encontrar_melhor_sinal(termo, expressions, embeddings):
-    """Busca o melhor match no banco para um termo isolado da glosa."""
+def normalizar_sinal(texto):
+    """Forma usada para comparar sinais: minúsculo e sem espaços repetidos."""
+    return " ".join(texto.split()).lower()
+
+def encontrar_melhor_sinal(termo, expressions, embeddings, ocultos=frozenset()):
+    """
+    Busca o melhor match no banco para um termo isolado da glosa.
+    `ocultos`: sinais que ESTE usuário marcou como incorretos para o termo; são pulados
+    e o próximo melhor candidato é usado no lugar.
+    """
     if not expressions or len(embeddings) == 0:
         return None, 0.0
 
-    # Tenta match exato/embedding
+    def permitido(indice):
+        return not ocultos or normalizar_sinal(expressions[indice]) not in ocultos
+
+    # Tenta match por embedding (do mais parecido para o menos parecido)
     embedding_termo = model.encode(termo)
-    similarity_scores = cosine_similarity([embedding_termo], embeddings)
-    max_score_index = np.argmax(similarity_scores)
-    score = similarity_scores[0][max_score_index]
-    
-    if score >= 0.7:
-        return expressions[max_score_index], float(score)
-        
+    similarity_scores = cosine_similarity([embedding_termo], embeddings)[0]
+    for indice in np.argsort(-similarity_scores):
+        score = similarity_scores[indice]
+        if score < 0.7:
+            break
+        if permitido(indice):
+            return expressions[indice], float(score)
+
     # Fallback Levenshtein para o termo
-    distancias = [levenshtein_distance(termo, expr.lower()) for expr in expressions]
-    min_idx = np.argmin(distancias)
-    if distancias[min_idx] <= 2:
-        return expressions[min_idx], 0.0
+    distancias = np.array([levenshtein_distance(termo, expr.lower()) for expr in expressions])
+    for indice in np.argsort(distancias, kind='stable'):
+        if distancias[indice] > 2:
+            break
+        if permitido(indice):
+            return expressions[indice], 0.0
 
     return None, 0.0
 
-def processar_traducao_frase(frase_usuario):
+def processar_traducao_frase(frase_usuario, exclusoes=frozenset()):
     expressions, embeddings, urls = obter_cache_sinais()
 
     # 1. Converter frase em estrutura de Libras (Glosa)
     glosa = portugues_para_glosa_libras(frase_usuario)
     termos_glosa = glosa.split()
-    
+
     sequencia_animacoes = []
-    
+
     # 2. Mapear cada termo da glosa para um sinal cadastrado no banco
     for termo in termos_glosa:
-        sinal_encontrado, score = encontrar_melhor_sinal(termo, expressions, embeddings)
+        ocultos = frozenset(sinal for (t, sinal) in exclusoes if t == normalizar_sinal(termo))
+        sinal_encontrado, score = encontrar_melhor_sinal(termo, expressions, embeddings, ocultos)
         if sinal_encontrado:
             url = urls.get(sinal_encontrado)
             if url:
@@ -265,6 +281,31 @@ def ler_texto(valor):
     texto = " ".join(valor.split())
     return texto if 0 < len(texto) <= LIMITE_TEXTO else None
 
+def ler_exclusoes(valor):
+    """
+    Sinais que o usuário marcou como incorretos: [{"termo": "...", "expressao": "..."}].
+    Vêm do navegador (do banco, para quem está logado; da sessão do navegador, para visitantes)
+    e só afetam a tradução de quem enviou. Aceita lista ou texto JSON (envio por formulário).
+    """
+    if isinstance(valor, str):
+        try:
+            valor = json.loads(valor)
+        except ValueError:
+            return frozenset()
+    if not isinstance(valor, list):
+        return frozenset()
+
+    exclusoes = set()
+    for item in valor[:LIMITE_EXCLUSOES]:
+        if not isinstance(item, dict):
+            continue
+        termo, expressao = item.get('termo'), item.get('expressao')
+        if isinstance(termo, str) and isinstance(expressao, str):
+            termo, expressao = normalizar_sinal(termo)[:100], normalizar_sinal(expressao)[:100]
+            if termo and expressao:
+                exclusoes.add((termo, expressao))
+    return frozenset(exclusoes)
+
 @app.errorhandler(HTTPException)
 def erro_http(e):
     codigos = {404: 'ROTA_INEXISTENTE', 405: 'METODO_NAO_PERMITIDO', 413: 'ARQUIVO_GRANDE'}
@@ -287,7 +328,7 @@ def sugestao():
     if texto is None:
         return erro(400, 'TEXTO_INVALIDO', f'Digite um texto de 1 a {LIMITE_TEXTO} caracteres.')
 
-    return resposta_traducao(processar_traducao_frase(texto))
+    return resposta_traducao(processar_traducao_frase(texto, ler_exclusoes(data.get('exclusoes'))))
 
 # ----------------- Glossário (palavras com sinal cadastrado) -----------------
 @app.route('/api/glossario', methods=['GET'])
@@ -305,63 +346,10 @@ def glossario():
     return jsonify({'status': 'success', 'total': len(lista), 'palavras': lista}), 200
 
 # ----------------- Feedback -----------------
-def registrar_feedback(cursor, entrada, sugestao, score, foi_util):
-    cursor.execute("""
-        INSERT INTO feedback_log (input_text, expressao_sugerida, score, foi_util)
-        VALUES (%s, %s, %s, %s)
-    """, (entrada, sugestao, float(score), foi_util))
-
-    # Após 3 rejeições da mesma sugestão para a mesma entrada, ela é marcada como exclusão
-    cursor.execute("""
-        SELECT COUNT(*) FROM feedback_log
-        WHERE input_text = %s AND expressao_sugerida = %s AND foi_util = FALSE
-    """, (entrada, sugestao))
-    rejeicoes = cursor.fetchone()[0]
-
-    if rejeicoes >= 3:
-        cursor.execute("""
-            INSERT IGNORE INTO exclusoes (input_text, expressao_excluida)
-            VALUES (%s, %s)
-        """, (entrada, sugestao))
-
-@app.route('/api/feedback', methods=['POST'])
-def feedback():
-    data = request.get_json(silent=True)
-    if not isinstance(data, dict):
-        return erro(400, 'JSON_INVALIDO', 'Envie os dados do feedback em JSON.')
-
-    entrada = ler_texto(data.get('entrada'))
-    sugestao = data.get('sugestao')
-    sugestao = " ".join(sugestao.split())[:500] if isinstance(sugestao, str) else ''
-    foi_util = data.get('foi_util')
-    try:
-        score = float(data.get('score') or 0.0)
-    except (TypeError, ValueError):
-        score = None
-
-    if not entrada or not sugestao:
-        return erro(400, 'DADOS_INVALIDOS', 'Faça uma tradução antes de enviar o feedback.')
-    if not isinstance(foi_util, bool) or score is None:
-        return erro(400, 'DADOS_INVALIDOS', 'Dados de feedback inválidos.')
-    entrada, sugestao = entrada.lower(), sugestao.lower()
-
-    db = connect_to_db()
-    cursor = db.cursor()
-    try:
-        registrar_feedback(cursor, entrada, sugestao, score, foi_util)
-        db.commit()
-        if foi_util:
-            mensagem = "🎉 Oba! Ficamos felizes que ajudamos! \n Obrigado pelo feedback positivo!"
-        else:
-            mensagem = "😔 Poxa, sentimos muito que não foi útil dessa vez. Seu feedback é muito importante e estamos trabalhando para melhorar. \n Por favor, tente novamente com outra palavra ou expressão."
-        return jsonify({'mensagem': mensagem, 'status': 'success'}), 200
-    except Exception:
-        db.rollback()
-        log.exception("Erro ao registrar feedback")
-        return erro(500, 'ERRO_INTERNO', 'Ocorreu um erro ao processar seu feedback.')
-    finally:
-        cursor.close()
-        db.close()
+# O feedback agora é salvo pelo servidor Node (POST /feedback), que sabe quem é o usuário logado
+# (tabelas feedback_traducao e exclusoes_usuario). A antiga rota /api/feedback gravava votos sem dono
+# e, após 3 votos negativos de qualquer pessoa, excluía o sinal para todos; por isso foi removida.
+# Aqui a API só aplica as exclusões que chegam junto com cada tradução (ver ler_exclusoes).
 
 # ----------------- Rota de Áudio ajustada para Frases -----------------
 @app.route('/api/transcrever', methods=['POST'])
@@ -395,7 +383,8 @@ def transcrever():
             return erro(502, 'TRANSCRICAO_INDISPONIVEL', 'O serviço de transcrição está indisponível no momento.')
 
         texto = ler_texto(texto) or texto[:LIMITE_TEXTO]
-        return resposta_traducao(processar_traducao_frase(texto), texto_transcrito=texto)
+        exclusoes = ler_exclusoes(request.form.get('exclusoes'))
+        return resposta_traducao(processar_traducao_frase(texto, exclusoes), texto_transcrito=texto)
     finally:
         shutil.rmtree(tmp_dir, ignore_errors=True)
 

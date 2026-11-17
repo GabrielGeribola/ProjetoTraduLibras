@@ -1,86 +1,108 @@
 <%- include('includes/head') %>
 <%- include('includes/navbar') %>
 
-<div class="page-container">
-  <div class="content-card">
-
-    <div class="header">
-      <h1>Cursos</h1>
-      <input type="text" class="search-bar" id="searchInput" placeholder="🔍 Buscar cursos">
-    </div>
-
-    <div class="scrollable-content">
-
-      <!-- Artigos Didáticos -->
-      <div class="toggle-section" id="section-artigos">
-        <button class="section-header" type="button" aria-expanded="false">
-          📄 Artigos Didáticos
-        </button>
-        <div class="section-content topics-container">
-          <% artigos.forEach(artigo => { %>
-          <div class="topic">
-            <h3><%= artigo.titulo %></h3>
-            <p><%= artigo.descricao %></p>
-            <a href="<%= artigo.link %>" target="_blank" class="btn-topic">📄 Ler artigo</a>
-          </div>
-          <% }) %>
-        </div>
+<%
+  // Card reutilizado em "Comece por aqui" e nas listas
+  function cardVideo(v) { %>
+    <li class="curso-card curso-video" data-tipo="video" data-tema="<%= v.tema %>"<%= v.destaque ? ' data-destaque' : '' %> data-busca="<%= (v.titulo + ' ' + v.descricao + ' ' + v.autor + ' ' + v.temaNome).toLowerCase() %>">
+      <a href="<%= v.link %>" class="curso-thumb js-video" data-video="<%= v.id %>" data-titulo="<%= v.titulo %>" target="_blank" rel="noopener noreferrer">
+        <img src="<%= v.thumb %>" alt="" loading="lazy" referrerpolicy="no-referrer">
+        <span class="curso-play" aria-hidden="true">▶</span>
+        <span class="curso-visto" hidden>✓ Visto</span>
+        <span class="sr-only">Assistir: <%= v.titulo %></span>
+      </a>
+      <div class="curso-corpo">
+        <span class="curso-tema"><%= v.temaNome %></span>
+        <h3 class="curso-titulo"><%= v.titulo %></h3>
+        <p class="curso-descricao"><%= v.descricao %></p>
+        <p class="curso-fonte">🎬 <%= v.autor %></p>
       </div>
-
-      <!-- Vídeos Didáticos -->
-      <div class="toggle-section" id="section-videos">
-        <button class="section-header" type="button" aria-expanded="false">
-          🎬 Vídeos Didáticos
-        </button>
-        <div class="section-content topics-container">
-          <% videos.forEach(video => { %>
-          <div class="topic">
-            <h3><%= video.titulo %></h3>
-            <p><%= video.descricao %></p>
-            <a href="<%= video.link %>" target="_blank" class="btn-topic">▶️ Assistir vídeo</a>
-          </div>
-          <% }) %>
-        </div>
+    </li>
+<% }
+  function cardArtigo(a) { %>
+    <li class="curso-card curso-artigo" data-tipo="artigo" data-tema="<%= a.tema %>"<%= a.destaque ? ' data-destaque' : '' %> data-busca="<%= (a.titulo + ' ' + a.descricao + ' ' + a.fonte + ' ' + a.temaNome).toLowerCase() %>">
+      <div class="curso-corpo">
+        <span class="curso-tema"><%= a.temaNome %></span>
+        <h3 class="curso-titulo"><%= a.titulo %></h3>
+        <p class="curso-descricao"><%= a.descricao %></p>
+        <p class="curso-fonte">
+          📄 <%= a.fonte %><% if (a.pdf) { %> <span class="curso-selo">PDF</span><% } %>
+        </p>
+        <a href="<%= a.link %>" class="curso-ler" target="_blank" rel="noopener noreferrer">Ler<span class="sr-only"> <%= a.titulo %></span> ↗<span class="sr-only"> (abre em nova aba)</span></a>
       </div>
+    </li>
+<% } %>
 
+<main class="planos-container cursos-pagina">
+
+  <div class="planos-cabecalho">
+    <h1 class="planos-titulo">Cursos</h1>
+    <p class="planos-subtitulo">Vídeos e leituras selecionados para aprender Libras e conhecer a cultura surda. Escolha por tema ou busque um assunto.</p>
+  </div>
+
+  <!-- Filtros -->
+  <div class="cursos-filtros">
+    <label for="cursosBusca" class="sr-only">Buscar vídeos e artigos</label>
+    <input type="search" id="cursosBusca" class="input-home cursos-busca" placeholder="Buscar: alfabeto, família, leis…" autocomplete="off" maxlength="80">
+
+    <div class="ciclo-seletor cursos-tipo" role="radiogroup" aria-label="Tipo de conteúdo">
+      <button type="button" class="ciclo-opcao" role="radio" data-tipo="todos" aria-checked="true">Tudo</button>
+      <button type="button" class="ciclo-opcao" role="radio" data-tipo="video" aria-checked="false" tabindex="-1">Vídeos <span class="ciclo-desconto"><%= videos.length %></span></button>
+      <button type="button" class="ciclo-opcao" role="radio" data-tipo="artigo" aria-checked="false" tabindex="-1">Artigos <span class="ciclo-desconto"><%= artigos.length %></span></button>
     </div>
+  </div>
+
+  <div class="cursos-temas" role="group" aria-label="Filtrar por tema">
+    <button type="button" class="curso-chip" data-tema="todos" aria-pressed="true">Todos os temas</button>
+    <% temas.forEach((t) => { %>
+      <button type="button" class="curso-chip" data-tema="<%= t.id %>" aria-pressed="false"><%= t.nome %> <span aria-hidden="true">· <%= t.total %></span></button>
+    <% }); %>
+  </div>
+
+  <p class="cursos-status" id="cursosStatus" role="status" aria-live="polite"></p>
+
+  <!-- Comece por aqui (some quando há filtro) -->
+  <section class="cursos-secao" id="cursosDestaque" aria-labelledby="destaqueTitulo">
+    <h2 class="sobre-secao-titulo" id="destaqueTitulo">Comece por aqui</h2>
+    <p class="cursos-secao-sub">Nunca estudou Libras? Estes conteúdos são um bom primeiro passo.</p>
+    <ul class="cursos-grid">
+      <% videos.filter((v) => v.destaque).forEach((v) => cardVideo(v)); %>
+      <% artigos.filter((a) => a.destaque).forEach((a) => cardArtigo(a)); %>
+    </ul>
+  </section>
+
+  <section class="cursos-secao" id="secaoVideos" aria-labelledby="videosTitulo">
+    <h2 class="sobre-secao-titulo" id="videosTitulo">Vídeos</h2>
+    <ul class="cursos-grid js-lista">
+      <% videos.forEach((v) => cardVideo(v)); %>
+    </ul>
+  </section>
+
+  <section class="cursos-secao" id="secaoArtigos" aria-labelledby="artigosTitulo">
+    <h2 class="sobre-secao-titulo" id="artigosTitulo">Artigos, leis e materiais</h2>
+    <ul class="cursos-grid js-lista">
+      <% artigos.forEach((a) => cardArtigo(a)); %>
+    </ul>
+  </section>
+
+  <div class="cursos-vazio" id="cursosVazio" hidden>
+    <p>Nenhum conteúdo encontrado com esses filtros.</p>
+    <button type="button" class="plano-botao plano-botao-secundario" id="cursosLimpar">Limpar filtros</button>
+  </div>
+
+</main>
+
+<!-- Player de vídeo (YouTube sem cookies) -->
+<div class="tutorial-overlay" id="cursoPlayer" role="dialog" aria-modal="true" aria-labelledby="cursoPlayerTitulo">
+  <div class="tutorial-modal">
+    <div class="tutorial-modal-header">
+      <span id="cursoPlayerTitulo">Vídeo</span>
+      <button class="tutorial-close" id="cursoPlayerFechar" aria-label="Fechar vídeo">✕</button>
+    </div>
+    <div class="tutorial-video-wrap" id="cursoPlayerArea"></div>
+    <p class="tutorial-caption"><a id="cursoPlayerYoutube" href="#" target="_blank" rel="noopener noreferrer">Abrir no YouTube ↗</a></p>
   </div>
 </div>
 
-<script>
-  // Acordeão
-  document.querySelectorAll('.section-header').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const section = btn.parentElement;
-      const isOpen  = section.classList.contains('open');
-      section.classList.toggle('open', !isOpen);
-      btn.setAttribute('aria-expanded', String(!isOpen));
-    });
-  });
-
-  // Busca — filtra tópicos e expande a seção automaticamente
-  document.getElementById('searchInput').addEventListener('input', function () {
-    const q = this.value.trim().toLowerCase();
-
-    document.querySelectorAll('.toggle-section').forEach(section => {
-      const topics   = section.querySelectorAll('.topic');
-      let anyVisible = false;
-
-      topics.forEach(topic => {
-        const text    = topic.textContent.toLowerCase();
-        const matches = !q || text.includes(q);
-        topic.style.display = matches ? '' : 'none';
-        if (matches) anyVisible = true;
-      });
-
-      // Abre seção se houver resultado, fecha se não houver (só durante busca)
-      if (q) {
-        section.classList.toggle('open', anyVisible);
-        section.querySelector('.section-header').setAttribute('aria-expanded', String(anyVisible));
-      }
-      section.style.display = anyVisible || !q ? '' : 'none';
-    });
-  });
-</script>
-
+<script src="/assets/js/cursos.js"></script>
 <%- include('includes/footer') %>

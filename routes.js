@@ -3,7 +3,11 @@ const route = express.Router();
 const homeController = require('./src/controllers/homeController');
 const loginController = require('./src/controllers/loginController');
 const historicoController = require('./src/controllers/historicoController');
-const { loginRequired, limiteLogin, limiteCadastro } = require('./src/middlewares/middleware');
+const feedbackController = require('./src/controllers/feedbackController');
+const senhaController = require('./src/controllers/senhaController');
+const {
+  loginRequired, limiteLogin, limiteCadastro, limiteSenha, limiteFeedback,
+} = require('./src/middlewares/middleware');
 
 // Páginas
 route.get('/', homeController.home);
@@ -23,9 +27,19 @@ route.post('/logout', loginController.logout);
 route.get('/register', loginController.registerPage);
 route.post('/register', limiteCadastro, loginController.register);
 
-// Histórico de traduções (somente usuário logado)
-route.get('/historico', loginRequired, historicoController.index);
+// Esqueci a senha: pede o link por e-mail e cria a nova senha pelo link
+route.get('/esqueci-senha', senhaController.esqueciPage);
+route.post('/esqueci-senha', limiteSenha, senhaController.esqueci);
+route.get('/redefinir-senha/:token', senhaController.redefinirPage);
+route.post('/redefinir-senha/:token', limiteSenha, senhaController.redefinir);
+
+// Histórico: visível para todos; o conteúdo só aparece para quem está logado
+route.get('/historico', historicoController.index);
 route.post('/historico', historicoController.salvar); // responde 401 em JSON se não estiver logado
 route.post('/historico/:id/excluir', loginRequired, historicoController.excluir);
+
+// Feedback das traduções (salvo por usuário; visitante guarda só no navegador)
+route.post('/feedback', limiteFeedback, feedbackController.salvar); // responde 401 em JSON se não estiver logado
+route.post('/feedback/exclusoes/restaurar', loginRequired, feedbackController.restaurar);
 
 module.exports = route;

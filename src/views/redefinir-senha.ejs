@@ -1,0 +1,43 @@
+<%- include('includes/head', { bodyClass: 'page-centered' }); %>
+<%- include('includes/navbar'); %>
+
+  <div class="container">
+
+    <div class="logo-boasvindas-login">
+      <a href="/home" aria-label="Voltar para o tradutor">
+        <img src="https://assetstradulibras.s3.us-east-1.amazonaws.com/imgs/logo-clara.png" alt="Logo TraduLibras" class="img-fluid" />
+      </a>
+    </div>
+
+    <%- include('includes/messages'); %>
+
+    <div class="titulo-entrar">
+      <h1 class="entrar">Criar nova senha</h1>
+
+      <% if (tokenValido) { %>
+        <form action="/redefinir-senha/<%= token %>" method="POST">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <div class="form-group">
+            <label class="diminutivo" for="nova_senha">Nova senha (mínimo de 10 caracteres)</label>
+            <input type="password" class="form-control" id="nova_senha" name="password" placeholder="Nova senha" autocomplete="new-password" minlength="10" required>
+          </div>
+          <div class="form-group">
+            <label class="diminutivo" for="confirmar_senha">Repita a nova senha</label>
+            <input type="password" class="form-control" id="confirmar_senha" name="confirmacao" placeholder="Repita a senha" autocomplete="new-password" minlength="10" required>
+          </div>
+          <button type="submit" class="btn-criar-conta">Salvar nova senha</button>
+        </form>
+      <% } else { %>
+        <div class="senha-aviso senha-aviso-erro" role="alert">
+          <p><strong>Este link não vale mais.</strong></p>
+          <p>Ele pode ter expirado (o link vale por 1 hora), já ter sido usado ou ter sido substituído por um pedido mais novo.</p>
+        </div>
+        <a class="linkp-register" href="/esqueci-senha">Pedir um novo link</a>
+      <% } %>
+
+      <div class="linha"></div>
+      <a class="linkp-register" href="/login">Voltar para o login</a>
+    </div>
+  </div>
+
+<%- include('includes/footer'); %>

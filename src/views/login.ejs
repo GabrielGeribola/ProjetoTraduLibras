@@ -3,40 +3,41 @@
 
   <div class="container">
 
-      <div class="logo-boasvindas-login">
+    <div class="logo-boasvindas-login">
+      <a href="/home" aria-label="Voltar para o tradutor">
         <img src="https://assetstradulibras.s3.us-east-1.amazonaws.com/imgs/logo-clara.png" alt="Logo TraduLibras" class="img-fluid" />
-      </div>
+      </a>
+    </div>
 
-      <div >
-        <div >
-          <%- include('includes/messages'); %>
+    <%- include('includes/messages'); %>
 
-          <div class="titulo-entrar">
-            <h4 class="entrar">Entrar</h4>
+    <div class="titulo-entrar">
+      <h1 class="entrar">Entrar</h1>
 
-            <form action="/login" method="POST">
-              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-              <div class="form-group">
-                <label class="diminutivo" for="login_email">Digite seu email</label>
-                <br>
-                <input type="email" class="form-control" id="login_email" name="email" placeholder="Email" autocomplete="email" required>
-              </div>
-
-              <div class="form-group">
-                <label class="diminutivo" for="login_senha">Digite sua senha</label>
-                <br>
-                <input type="password" class="form-control" id="login_senha" name="password" placeholder="Senha" autocomplete="current-password" required>
-              </div>
-
-              <button type="submit" class="btn-btn-primary botaoacessar">Acessar</button>
-            </form>
-
-            <div class="linha"></div>
-            <p class="tem-conta">Ainda não tem conta? </p>
-            <a class="linkp-register" href="/register">Crie uma agora</a>
-          </div>
+      <form action="/login" method="POST">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <% if (typeof voltar !== 'undefined' && voltar) { %>
+          <input type="hidden" name="voltar" value="<%= voltar %>">
+        <% } %>
+        <div class="form-group">
+          <label class="diminutivo" for="login_email">Digite seu email</label>
+          <input type="email" class="form-control" id="login_email" name="email" placeholder="Email" autocomplete="email" required>
         </div>
-      </div>
+
+        <div class="form-group">
+          <label class="diminutivo" for="login_senha">Digite sua senha</label>
+          <input type="password" class="form-control" id="login_senha" name="password" placeholder="Senha" autocomplete="current-password" required>
+        </div>
+
+        <p class="esqueci-link"><a href="/esqueci-senha">Esqueceu a senha?</a></p>
+
+        <button type="submit" class="btn-btn-primary botaoacessar">Acessar</button>
+      </form>
+
+      <div class="linha"></div>
+      <p class="tem-conta">Ainda não tem conta?</p>
+      <a class="linkp-register" href="/register">Crie uma agora</a>
+    </div>
   </div>
 
 <%- include('includes/footer'); %>

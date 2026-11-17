@@ -1,0 +1,43 @@
+<%- include('includes/head', { bodyClass: 'page-centered' }); %>
+<%- include('includes/navbar'); %>
+
+  <div class="container">
+
+    <div class="logo-boasvindas-login">
+      <a href="/home" aria-label="Voltar para o tradutor">
+        <img src="https://assetstradulibras.s3.us-east-1.amazonaws.com/imgs/logo-clara.png" alt="Logo TraduLibras" class="img-fluid" />
+      </a>
+    </div>
+
+    <%- include('includes/messages'); %>
+
+    <div class="titulo-entrar">
+      <h1 class="entrar">Esqueci a senha</h1>
+
+      <% if (enviado) { %>
+        <div class="senha-aviso" role="status">
+          <p><strong>Pedido recebido.</strong></p>
+          <p><%= mensagem %></p>
+        </div>
+        <p class="tem-conta">Não chegou nada em alguns minutos?</p>
+        <a class="linkp-register" href="/esqueci-senha">Pedir outro link</a>
+      <% } else { %>
+        <p class="senha-instrucao">Digite o e-mail da sua conta. Vamos enviar um link para você criar uma nova senha.</p>
+
+        <form action="/esqueci-senha" method="POST">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <div class="form-group">
+            <label class="diminutivo" for="esqueci_email">E-mail cadastrado</label>
+            <input type="email" class="form-control" id="esqueci_email" name="email" placeholder="Email" autocomplete="email" required>
+          </div>
+          <button type="submit" class="btn-criar-conta">Enviar link</button>
+        </form>
+      <% } %>
+
+      <div class="linha"></div>
+      <p class="tem-conta">Lembrou a senha?</p>
+      <a class="linkp-register" href="/login">Voltar para o login</a>
+    </div>
+  </div>
+
+<%- include('includes/footer'); %>

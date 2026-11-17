@@ -9,11 +9,11 @@ exports.middlewareGlobal = (req, res, next) => {
   next();
 };
 
-// Bloqueia páginas que exigem login (ex.: histórico)
+// Bloqueia ações que exigem login (ex.: excluir item do histórico)
 exports.loginRequired = (req, res, next) => {
   if (!req.session.user) {
-    req.flash('errors', 'Você precisa fazer login para acessar o histórico.');
-    req.session.save(() => res.redirect('/login'));
+    req.flash('errors', 'Você precisa entrar na sua conta para continuar.');
+    req.session.save(() => res.redirect('/login?voltar=/historico'));
     return;
   }
   next();
@@ -79,3 +79,17 @@ function limitador(mensagem) {
 
 exports.limiteLogin = limitador('Muitas tentativas de login. Aguarde 15 minutos e tente novamente.');
 exports.limiteCadastro = limitador('Muitas tentativas de cadastro. Aguarde 15 minutos e tente novamente.');
+exports.limiteSenha = limitador('Muitas tentativas de redefinir a senha. Aguarde 15 minutos e tente novamente.');
+
+// Feedback é chamado por fetch: responde em JSON
+exports.limiteFeedback = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: Number(process.env.RATE_LIMIT_FEEDBACK) || 60,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  handler: (req, res) => res.status(429).json({
+    status: 'error',
+    codigo: 'MUITAS_TENTATIVAS',
+    mensagem: 'Você enviou muitos feedbacks seguidos. Aguarde alguns minutos.',
+  }),
+});

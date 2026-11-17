@@ -39,6 +39,7 @@
     "express-session": "^1.18.0",
     "helmet": "^8.3.0",
     "mysql2": "^3.9.7",
+    "nodemailer": "^10.3.1",
     "sequelize": "^6.37.3",
     "validator": "^13.11.0"
   }

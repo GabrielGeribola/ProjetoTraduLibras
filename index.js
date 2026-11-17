@@ -36,6 +36,8 @@ app.use(helmet({
       'img-src': ["'self'", 'data:', 'https:'],
       'media-src': ["'self'", 'https:', 'blob:'],
       'connect-src': ["'self'", origemApi].filter(Boolean),
+      // Player dos vídeos da página Cursos (modo sem cookies do YouTube)
+      'frame-src': ["'self'", 'https://www.youtube-nocookie.com'],
       'upgrade-insecure-requests': isProd ? [] : null,
     },
   },

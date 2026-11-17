@@ -1,74 +1,113 @@
 <%- include('includes/head') %>
 <%- include('includes/navbar') %>
 
-<div class="sobre-container">
-  <div class="sobre-title">Sobre</div>
+<main class="planos-container sobre-pagina">
 
-  <div class="sobre-scroll-area">
-    <p class="sobre-text">
-      Este projeto foi desenvolvido com o objetivo de promover a inclusão e facilitar a comunicação entre pessoas ouvintes e surdas por meio da tradução de palavras e expressões para a Língua Brasileira de Sinais (Libras).
-    </p>
-    <p class="sobre-text">
-      A plataforma oferece uma experiência intuitiva e acessível, permitindo que usuários explorem traduções em Libras, assistam a vídeos demonstrativos e contribuam com sugestões de novas expressões.
-    </p>
-    <p class="sobre-text">
-      O projeto foi desenvolvido por universitários dos cursos de <strong>Análise e Desenvolvimento de Sistemas</strong> e <strong>Ciência da Computação</strong> da <strong>FAM - Faculdade das Américas</strong>.
-    </p>
-    <p class="sobre-text">
-      Nosso compromisso é tornar a comunicação mais acessível e ajudar a construir um ambiente mais empático, inclusivo e respeitoso para todos.
-    </p>
-    <p class="sobre-text">
-      Seja você um estudante, educador, familiar de uma pessoa surda ou simplesmente alguém interessado em aprender Libras, este espaço foi pensado para você!
-    </p>
-    <p class="sobre-text">Agradecemos por fazer parte dessa jornada conosco. 💙</p>
+  <div class="planos-cabecalho">
+    <h1 class="planos-titulo">Sobre</h1>
+    <p class="planos-subtitulo">Tradução de português para Libras, feita para aproximar pessoas ouvintes e surdas.</p>
+  </div>
 
-    <h3 style="font-family:'DM Serif Display',serif;font-style:italic;text-align:center;margin-top:24px;color:var(--text-dark);">Conheça os participantes</h3>
+  <!-- Missão -->
+  <section class="sobre-bloco" aria-labelledby="missaoTitulo">
+    <h2 class="sobre-secao-titulo" id="missaoTitulo">Nossa missão</h2>
+    <div class="sobre-cartao">
+      <p>
+        O TraduLibras nasceu para promover a inclusão e facilitar a comunicação entre pessoas ouvintes e surdas,
+        traduzindo palavras e frases do português para a <strong>Língua Brasileira de Sinais (Libras)</strong>.
+      </p>
+      <p>
+        Nosso compromisso é tornar a comunicação mais acessível e ajudar a construir um ambiente mais empático,
+        inclusivo e respeitoso para todos.
+      </p>
+    </div>
+  </section>
 
-    <div class="dev-grid">
-      <div class="dev-card">
-        <img src="https://assetstradulibras.s3.us-east-1.amazonaws.com/imgs/icon-joao.jpeg" alt="João Moura">
-        <h4>João Moura</h4>
-        <div class="dev-links"><a href="https://www.linkedin.com/in/joão-moura-209b24291/" target="_blank">Contato</a></div>
-      </div>
-      <div class="dev-card">
-        <img src="https://avatars.githubusercontent.com/u/61872177?v=4" alt="Alice Batista">
-        <h4>Alice Batista Grem da Silva</h4>
-        <div class="dev-links"><a href="https://github.com/Alice-Grem" target="_blank">Contato</a></div>
-      </div>
-      <div class="dev-card">
-        <img src="https://avatars.githubusercontent.com/u/166943026?v=4" alt="Gabriel Rodrigues">
-        <h4>Gabriel Rodrigues</h4>
-        <div class="dev-links"><a href="https://github.com/bielgeri" target="_blank">Contato</a></div>
-      </div>
-      <div class="dev-card">
-        <img src="https://avatars.githubusercontent.com/u/125068498?v=4" alt="Catarina Dalsan">
-        <h4>Catarina Dalsan</h4>
-        <div class="dev-links"><a href="https://github.com/Catyz00" target="_blank">Contato</a></div>
-      </div>
-      <div class="dev-card">
-        <img src="https://avatars.githubusercontent.com/u/USER_ID5?v=4" alt="Guilherme Barboza">
-        <h4>Guilherme Barboza</h4>
-        <div class="dev-links"><a href="https://github.com/usuario5" target="_blank">Contato</a></div>
-      </div>
-      <div class="dev-card">
-        <img src="https://avatars.githubusercontent.com/u/140861646?v=4" alt="Gustavo Dutra">
-        <h4>Gustavo Dutra</h4>
-        <div class="dev-links"><a href="https://github.com/OLemonPie" target="_blank">Contato</a></div>
-      </div>
-      <div class="dev-card">
-        <img src="https://avatars.githubusercontent.com/u/140853105?v=4" alt="Paulo César">
-        <h4>Paulo César</h4>
-        <div class="dev-links"><a href="https://github.com/PauloCezarSB" target="_blank">Contato</a></div>
-      </div>
-      <div class="dev-card">
-        <img src="https://media.licdn.com/dms/image/v2/D4D03AQG_FWQd6IiuJw/profile-displayphoto-scale_400_400/B4DZtwToN3GgAg-/0/1767115753700?e=1781740800&v=beta&t=6UOXMz0uBG4lDO7Q2zXejyFDXIh_8cMRWG2Mx-ffO2g" alt="Amanda Beserra">
-        <h4>Amanda Beserra</h4>
-        <div class="dev-links"><a href="https://www.linkedin.com/in/amanda-beserra-bb7924256/" target="_blank">Contato</a></div>
+  <!-- O que oferecemos -->
+  <section class="sobre-bloco" aria-labelledby="recursosTitulo">
+    <h2 class="sobre-secao-titulo" id="recursosTitulo">O que você encontra aqui</h2>
+    <div class="sobre-recursos">
+      <a href="/home" class="sobre-recurso">
+        <span class="sobre-recurso-icone" aria-hidden="true">🔁</span>
+        <h3>Tradutor</h3>
+        <p>Digite ou fale uma frase e veja a sequência de sinais em vídeo.</p>
+      </a>
+      <a href="/sugestoes" class="sobre-recurso">
+        <span class="sobre-recurso-icone" aria-hidden="true">🔎</span>
+        <h3>Glossário</h3>
+        <p>Milhares de palavras com sinal disponível, organizadas por categoria.</p>
+      </a>
+      <a href="/cursos" class="sobre-recurso">
+        <span class="sobre-recurso-icone" aria-hidden="true">📖</span>
+        <h3>Cursos</h3>
+        <p>Vídeos e leituras selecionados para aprender Libras e a cultura surda.</p>
+      </a>
+      <a href="/historico" class="sobre-recurso">
+        <span class="sobre-recurso-icone" aria-hidden="true">🕘</span>
+        <h3>Histórico</h3>
+        <p>Suas traduções e feedbacks guardados na sua conta.</p>
+      </a>
+    </div>
+  </section>
+
+  <!-- Quem somos -->
+  <section class="sobre-bloco" aria-labelledby="quemTitulo">
+    <h2 class="sobre-secao-titulo" id="quemTitulo">Quem somos</h2>
+    <div class="planos-ong sobre-destaque">
+      <span class="planos-ong-selo">FAM</span>
+      <div class="planos-ong-texto">
+        <h3>Um projeto acadêmico da FAM – Faculdade das Américas</h3>
+        <p>
+          Desenvolvido por estudantes de <strong>Análise e Desenvolvimento de Sistemas</strong>
+          e <strong>Ciência da Computação</strong>.
+        </p>
       </div>
     </div>
+    <div class="sobre-cartao">
+      <p>
+        Seja você estudante, educador, familiar de uma pessoa surda ou simplesmente alguém interessado em aprender Libras,
+        este espaço foi pensado para você. Agradecemos por fazer parte dessa jornada conosco. 💙
+      </p>
+    </div>
+  </section>
 
+  <!-- Equipe -->
+  <section class="sobre-bloco" aria-labelledby="equipeTitulo">
+    <h2 class="sobre-secao-titulo" id="equipeTitulo">Conheça os participantes</h2>
+    <ul class="dev-grid">
+      <% equipe.forEach((pessoa) => { %>
+        <li class="dev-card">
+          <span class="dev-avatar" data-iniciais="<%= pessoa.iniciais %>">
+            <% if (pessoa.foto) { %>
+              <img src="<%= pessoa.foto %>" alt="" loading="lazy" referrerpolicy="no-referrer">
+            <% } else { %>
+              <%= pessoa.iniciais %>
+            <% } %>
+          </span>
+          <h3><%= pessoa.nome %></h3>
+          <% if (pessoa.link) { %>
+            <div class="dev-links">
+              <a href="<%= pessoa.link %>" target="_blank" rel="noopener noreferrer"><%= pessoa.rede %><span class="sr-only"> de <%= pessoa.nome %> (abre em nova aba)</span></a>
+            </div>
+          <% } %>
+        </li>
+      <% }); %>
+    </ul>
+  </section>
 
+  <div class="sobre-cta">
+    <a href="/home" class="plano-botao">Começar a traduzir</a>
   </div>
-</div>
+
+</main>
+
+<script>
+  // Foto que não carrega vira as iniciais da pessoa (sem ícone de imagem quebrada)
+  document.querySelectorAll('.dev-avatar img').forEach((img) => {
+    const trocar = () => { const avatar = img.parentElement; avatar.textContent = avatar.dataset.iniciais; };
+    if (img.complete && img.naturalWidth === 0) trocar();
+    else img.addEventListener('error', trocar);
+  });
+</script>
 
 <%- include('includes/footer') %>
