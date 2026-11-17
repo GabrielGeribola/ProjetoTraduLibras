@@ -147,14 +147,17 @@
   const tutorialOverlay = document.getElementById('tutorialOverlay');
   const tutorialVideo   = document.getElementById('tutorialVideo');
 
-  document.getElementById('btnTutorial').addEventListener('click', () => {
+  function abrirTutorial() {
     if (playerAtivo) playerAtivo.pausar();
     tutorialVideo.src = TUTORIAL_URL;
     tutorialVideo.load();
     tutorialVideo.play().catch(() => {});
     tutorialOverlay.classList.add('open');
     document.body.style.overflow = 'hidden';
-  });
+  }
+  document.getElementById('btnTutorial').addEventListener('click', abrirTutorial);
+  // /home?tutorial=1 (link "Ver tutorial" da página Ajuda) já abre o vídeo
+  if (new URLSearchParams(window.location.search).get('tutorial') === '1') abrirTutorial();
 
   function fecharTutorial() {
     if (!tutorialOverlay.classList.contains('open')) return;

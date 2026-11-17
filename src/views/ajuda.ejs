@@ -1,45 +1,190 @@
 <%- include('includes/head') %>
 <%- include('includes/navbar') %>
 
-<div class="faq-container">
-  <div class="faq-title">Ajuda</div>
+<main class="planos-container sobre-pagina ajuda-pagina">
 
-  <button class="accordion">Como faço para redefinir minha senha?</button>
-  <div class="panel">
-    <p>Para redefinir sua senha, vá até a página de login e clique em "Esqueceu a senha?".</p>
+  <div class="planos-cabecalho">
+    <h1 class="planos-titulo">Ajuda</h1>
+    <p class="planos-subtitulo">Respostas rápidas para as dúvidas mais comuns sobre o TraduLibras.</p>
   </div>
 
-  <button class="accordion">Como realizo a tradução?</button>
-  <div class="panel">
-    <p>Acesse a aba "Home" e insira o texto que deseja traduzir, é recomendado você ter um usuário cadastrado.</p>
+  <!-- Busca + atalhos para as seções -->
+  <div class="ajuda-busca-area">
+    <label for="ajudaBusca" class="sr-only">Buscar na ajuda</label>
+    <input type="search" id="ajudaBusca" class="input-home ajuda-busca" placeholder="Buscar: senha, microfone, feedback…" autocomplete="off" maxlength="80">
+    <nav class="cursos-temas ajuda-atalhos" aria-label="Seções da ajuda">
+      <a href="#traducao" class="curso-chip">Tradução</a>
+      <a href="#feedback" class="curso-chip">Feedback</a>
+      <a href="#conta" class="curso-chip">Conta e histórico</a>
+      <a href="#conteudo" class="curso-chip">Glossário e cursos</a>
+    </nav>
+    <p class="cursos-status" id="ajudaStatus" role="status" aria-live="polite"></p>
   </div>
 
-  <button class="accordion">Como envio sugestões de frases ou palavras?</button>
-  <div class="panel">
-    <p>As sugestões são feitas automaticamente através do sistema de palavras do TraduLibras.</p>
+  <!-- Tradução -->
+  <section class="sobre-bloco ajuda-secao" id="traducao" aria-labelledby="traducaoTitulo">
+    <h2 class="sobre-secao-titulo" id="traducaoTitulo">Tradução</h2>
+    <div class="ajuda-lista">
+      <details class="ajuda-item">
+        <summary>Como faço uma tradução?</summary>
+        <div class="ajuda-resposta">
+          <p>Na página <a href="/home">Tradução</a>, digite uma palavra ou frase (até 300 caracteres) e toque em <strong>›</strong>. Se preferir falar, toque em <strong>🎤 Gravar áudio</strong> e fale por até 5 segundos.</p>
+          <p>Os sinais aparecem em vídeo, um depois do outro. Use <strong>Pausar</strong> e <strong>Repetir</strong> para rever.</p>
+        </div>
+      </details>
+      <details class="ajuda-item">
+        <summary>Preciso ter conta para traduzir?</summary>
+        <div class="ajuda-resposta">
+          <p>Não. Qualquer pessoa pode traduzir. Com uma conta, suas traduções ficam salvas no <a href="/historico">Histórico</a> e seus feedbacks ficam guardados em qualquer dispositivo.</p>
+        </div>
+      </details>
+      <details class="ajuda-item">
+        <summary>O que é a “glosa” que aparece na resposta?</summary>
+        <div class="ajuda-resposta">
+          <p>A Libras tem gramática própria e não segue a ordem das palavras do português. A glosa é a frase reescrita na estrutura aproximada da Libras (por exemplo, sem artigos e com o verbo no final), e é ela que define a sequência de sinais.</p>
+        </div>
+      </details>
+      <details class="ajuda-item">
+        <summary>Por que algumas palavras ficaram sem sinal?</summary>
+        <div class="ajuda-resposta">
+          <p>Nossa base ainda não tem sinal para todas as palavras. Veja no <a href="/sugestoes">Glossário</a> as palavras disponíveis e tente usar um sinônimo.</p>
+        </div>
+      </details>
+      <details class="ajuda-item">
+        <summary>O botão de gravar áudio não funciona. O que faço?</summary>
+        <div class="ajuda-resposta">
+          <p>O navegador precisa da sua permissão para usar o microfone. Clique no cadeado ao lado do endereço do site, libere o <strong>Microfone</strong> e recarregue a página. Fale perto do microfone e em um lugar com pouco barulho.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- Feedback -->
+  <section class="sobre-bloco ajuda-secao" id="feedback" aria-labelledby="feedbackTitulo">
+    <h2 class="sobre-secao-titulo" id="feedbackTitulo">Feedback</h2>
+    <div class="ajuda-lista">
+      <details class="ajuda-item">
+        <summary>Como aviso que um sinal está errado?</summary>
+        <div class="ajuda-resposta">
+          <p>Abaixo de cada tradução aparece <strong>“Esse era o resultado esperado?”</strong>. Toque em 👎, marque o sinal que não ficou certo e toque em <strong>Enviar</strong>.</p>
+          <p>A partir daí, esse sinal deixa de ser usado nas <strong>suas</strong> traduções. Toque em <strong>Traduzir de novo</strong> para ver o resultado na hora.</p>
+        </div>
+      </details>
+      <details class="ajuda-item">
+        <summary>Meu feedback muda a tradução das outras pessoas?</summary>
+        <div class="ajuda-resposta">
+          <p>Não. Cada feedback vale só para quem o enviou. Assim, ninguém consegue alterar sozinho o resultado que os outros usuários veem.</p>
+        </div>
+      </details>
+      <details class="ajuda-item">
+        <summary>Marquei um sinal por engano. Como desfaço?</summary>
+        <div class="ajuda-resposta">
+          <p>Entre no <a href="/historico#sinais-ocultos">Histórico</a> e, em <strong>Sinais ocultados por você</strong>, toque em <strong>Voltar a usar</strong>.</p>
+          <p>Sem conta, basta fechar a aba: o feedback de quem não entrou vale só até o fim da sessão.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- Conta e histórico -->
+  <section class="sobre-bloco ajuda-secao" id="conta" aria-labelledby="contaTitulo">
+    <h2 class="sobre-secao-titulo" id="contaTitulo">Conta e histórico</h2>
+    <div class="ajuda-lista">
+      <details class="ajuda-item">
+        <summary>Como crio uma conta?</summary>
+        <div class="ajuda-resposta">
+          <p>Abra o menu, toque em <strong>Entrar</strong> e depois em <a href="/register">Crie uma agora</a>. Basta um e-mail e uma senha com pelo menos 10 caracteres.</p>
+        </div>
+      </details>
+      <details class="ajuda-item">
+        <summary>Esqueci minha senha. Como redefino?</summary>
+        <div class="ajuda-resposta">
+          <p>Na tela de login, toque em <a href="/esqueci-senha">Esqueceu a senha?</a> e informe o e-mail da conta. Você vai receber um link para criar uma nova senha.</p>
+          <p>O link vale por 1 hora e só pode ser usado uma vez. Se não encontrar o e-mail, confira a caixa de spam.</p>
+        </div>
+      </details>
+      <details class="ajuda-item">
+        <summary>Onde vejo as traduções que já fiz?</summary>
+        <div class="ajuda-resposta">
+          <p>No <a href="/historico">Histórico</a>, disponível para quem entrou na conta. Lá você pode <strong>Traduzir de novo</strong> com um clique ou <strong>Excluir</strong> um item.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- Glossário, cursos e preferências -->
+  <section class="sobre-bloco ajuda-secao" id="conteudo" aria-labelledby="conteudoTitulo">
+    <h2 class="sobre-secao-titulo" id="conteudoTitulo">Glossário, cursos e preferências</h2>
+    <div class="ajuda-lista">
+      <details class="ajuda-item">
+        <summary>Como uso o Glossário?</summary>
+        <div class="ajuda-resposta">
+          <p>O <a href="/sugestoes">Glossário</a> lista as palavras que têm sinal, separadas por categoria. Busque uma palavra e toque nela para ver a tradução.</p>
+        </div>
+      </details>
+      <details class="ajuda-item">
+        <summary>Como funcionam os cursos?</summary>
+        <div class="ajuda-resposta">
+          <p>Em <a href="/cursos">Cursos</a> há vídeos e artigos selecionados. Filtre por tema ou busque um assunto. Os vídeos abrem dentro do site e ficam marcados como <strong>Visto</strong>; os artigos abrem em uma nova aba.</p>
+        </div>
+      </details>
+      <details class="ajuda-item">
+        <summary>Como ativo o modo escuro ou aumento a letra?</summary>
+        <div class="ajuda-resposta">
+          <p>Toque na <strong>engrenagem</strong> no canto superior direito. Lá você liga o modo escuro e ajusta o tamanho da fonte. A escolha fica salva neste navegador.</p>
+        </div>
+      </details>
+      <details class="ajuda-item">
+        <summary>O TraduLibras é gratuito?</summary>
+        <div class="ajuda-resposta">
+          <p>Sim, o plano Free é gratuito. Organizações podem conhecer os planos pagos e o desconto para ONGs em <a href="/planos">Planos</a>.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <div class="cursos-vazio" id="ajudaVazio" hidden>
+    <p>Não encontramos nada sobre isso na ajuda.</p>
   </div>
 
-  <button class="accordion">Como funciona os cursos e apostilas?</button>
-  <div class="panel">
-    <p>Para acessar, entre na área de cursos e clique nos links de vídeo aulas ou no material didático.</p>
-  </div>
+  <!-- Contato -->
+  <section class="planos-contato ajuda-contato" aria-labelledby="ajudaContatoTitulo">
+    <h2 id="ajudaContatoTitulo">Ainda precisa de ajuda?</h2>
+    <p>Veja o vídeo tutorial ou escreva para a nossa equipe:</p>
+    <p class="planos-email"><a href="mailto:<%= emailContato %>?subject=<%= encodeURIComponent('Ajuda TraduLibras') %>"><%= emailContato %></a></p>
+    <div class="planos-contato-acoes">
+      <a href="/home?tutorial=1" class="plano-botao">▶ Ver tutorial</a>
+      <a href="mailto:<%= emailContato %>?subject=<%= encodeURIComponent('Ajuda TraduLibras') %>" class="plano-botao plano-botao-secundario">✉ Enviar e-mail</a>
+    </div>
+  </section>
 
-</div>
+</main>
 
 <script>
-  document.querySelectorAll('.accordion').forEach(btn => {
-    btn.addEventListener('click', function () {
-      document.querySelectorAll('.accordion').forEach(b => {
-        if (b !== this) {
-          b.classList.remove('active');
-          b.nextElementSibling.style.display = 'none';
-        }
+  // Busca: mostra só as perguntas que contêm o termo (sem diferenciar acentos) e abre as encontradas
+  (() => {
+    const busca = document.getElementById('ajudaBusca');
+    const status = document.getElementById('ajudaStatus');
+    const vazio = document.getElementById('ajudaVazio');
+    const itens = [...document.querySelectorAll('.ajuda-item')];
+    const secoes = [...document.querySelectorAll('.ajuda-secao')];
+    const semAcento = (t) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+    itens.forEach((item) => { item.dataset.texto = semAcento(item.textContent); });
+
+    busca.addEventListener('input', () => {
+      const termo = semAcento(busca.value.trim());
+      let total = 0;
+      itens.forEach((item) => {
+        const confere = !termo || item.dataset.texto.includes(termo);
+        item.hidden = !confere;
+        item.open = Boolean(termo) && confere;
+        if (confere) total += 1;
       });
-      this.classList.toggle('active');
-      const panel = this.nextElementSibling;
-      panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+      secoes.forEach((s) => { s.hidden = !s.querySelector('.ajuda-item:not([hidden])'); });
+      vazio.hidden = total > 0;
+      status.textContent = termo ? (total ? `${total} ${total === 1 ? 'resposta encontrada' : 'respostas encontradas'}.` : 'Nenhuma resposta encontrada.') : '';
     });
-  });
+  })();
 </script>
 
 <%- include('includes/footer') %>
