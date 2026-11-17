@@ -2,49 +2,104 @@
 <%- include('includes/navbar') %>
 
 <div class="historico-container">
-  <div class="historico-title">Histórico</div>
-  <p class="historico-subtitulo">Suas traduções, da mais recente para a mais antiga.</p>
+  <h1 class="historico-title">Histórico</h1>
 
-  <%- include('includes/messages') %>
-
-  <% if (erroCarregar) { %>
-    <p class="historico-vazio">Não foi possível carregar seu histórico agora. Tente novamente em instantes.</p>
-
-  <% } else if (itens.length === 0) { %>
-    <div class="historico-vazio">
-      <p>Você ainda não fez nenhuma tradução.<br>Tudo o que você traduzir aparece aqui.</p>
-      <a href="/home" class="btn-topic">Fazer uma tradução</a>
+  <% if (bloqueado) { %>
+    <%# Visitante: a página existe e explica o que ganha ao entrar %>
+    <div class="historico-bloqueado">
+      <div class="historico-bloqueado-icone" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+        </svg>
+      </div>
+      <h2>Entre para ver seu histórico</h2>
+      <p>O histórico guarda as traduções que você faz e os feedbacks que você deu, para você repetir uma tradução com um clique, em qualquer dispositivo.</p>
+      <ul class="historico-beneficios">
+        <li>Suas traduções salvas automaticamente</li>
+        <li>“Traduzir de novo” com um clique</li>
+        <li>Seus feedbacks guardados na sua conta</li>
+      </ul>
+      <div class="historico-bloqueado-acoes">
+        <a href="/login?voltar=/historico" class="plano-botao">Entrar</a>
+        <a href="/register" class="plano-botao plano-botao-secundario">Criar conta grátis</a>
+      </div>
     </div>
 
   <% } else { %>
-    <ul class="historico-lista">
-      <% itens.forEach(function (item) {
-           const traducao = item.traducao;
-           if (!traducao) return;
-           const data = new Date(item.data_traducao).toLocaleString('pt-BR', {
-             timeZone: 'America/Sao_Paulo', dateStyle: 'short', timeStyle: 'short'
-           });
-      %>
-        <li class="historico-item">
-          <div class="historico-info">
-            <p class="historico-texto"><%= traducao.texto_original %></p>
-            <% const glosa = item.glosa || traducao.glosa; %>
-            <% if (glosa) { %>
-              <p class="historico-glosa">Glosa: <%= glosa %></p>
-            <% } %>
-            <span class="historico-data"><%= data %></span>
-          </div>
+    <p class="historico-subtitulo">Suas traduções, da mais recente para a mais antiga.</p>
 
-          <div class="historico-acoes">
-            <a href="/home?word=<%= encodeURIComponent(traducao.texto_original) %>" class="btn-topic">Traduzir de novo</a>
-            <form method="POST" action="/historico/<%= item.id_historico %>/excluir" class="form-excluir">
-              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-              <button type="submit" class="btn-excluir" aria-label="Remover do histórico: <%= traducao.texto_original %>">Excluir</button>
-            </form>
-          </div>
-        </li>
-      <% }); %>
-    </ul>
+    <%- include('includes/messages') %>
+
+    <% if (erroCarregar) { %>
+      <p class="historico-vazio">Não foi possível carregar seu histórico agora. Tente novamente em instantes.</p>
+
+    <% } else if (itens.length === 0) { %>
+      <div class="historico-vazio">
+        <p>Você ainda não fez nenhuma tradução.<br>Tudo o que você traduzir aparece aqui.</p>
+        <a href="/home" class="btn-topic">Fazer uma tradução</a>
+      </div>
+
+    <% } else { %>
+      <ul class="historico-lista">
+        <% itens.forEach(function (item) {
+             const traducao = item.traducao;
+             if (!traducao) return;
+             const data = new Date(item.data_traducao).toLocaleString('pt-BR', {
+               timeZone: 'America/Sao_Paulo', dateStyle: 'short', timeStyle: 'short'
+             });
+        %>
+          <li class="historico-item">
+            <div class="historico-info">
+              <p class="historico-texto"><%= traducao.texto_original %></p>
+              <% const glosa = item.glosa || traducao.glosa; %>
+              <% if (glosa) { %>
+                <p class="historico-glosa">Glosa: <%= glosa %></p>
+              <% } %>
+              <span class="historico-data"><%= data %></span>
+            </div>
+
+            <div class="historico-acoes">
+              <a href="/home?word=<%= encodeURIComponent(traducao.texto_original) %>" class="btn-topic">Traduzir de novo</a>
+              <form method="POST" action="/historico/<%= item.id_historico %>/excluir" class="form-excluir">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button type="submit" class="btn-excluir" aria-label="Remover do histórico: <%= traducao.texto_original %>">Excluir</button>
+              </form>
+            </div>
+          </li>
+        <% }); %>
+      </ul>
+    <% } %>
+
+    <%# Sinais que o usuário marcou como incorretos (👎) — só valem para ele %>
+    <section class="sinais-ocultos" id="sinais-ocultos" aria-labelledby="sinaisOcultosTitulo">
+      <h2 id="sinaisOcultosTitulo">Sinais ocultados por você</h2>
+      <% if (exclusoes.length === 0) { %>
+        <p class="sinais-ocultos-vazio">Quando você marcar um sinal como incorreto (👎) em uma tradução, ele aparece aqui. Ele deixa de ser usado só nas <strong>suas</strong> traduções, e você pode desfazer quando quiser.</p>
+      <% } else { %>
+        <p class="sinais-ocultos-info">Estes sinais não são usados nas suas traduções. Isso vale só para a sua conta.</p>
+        <ul class="sinais-ocultos-lista">
+          <% exclusoes.forEach(function (ex) { %>
+            <li>
+              <span class="sinais-ocultos-sinal"><%= ex.expressao.toUpperCase() %></span>
+              <span class="sinais-ocultos-termo">para “<%= ex.termo %>”</span>
+              <form method="POST" action="/feedback/exclusoes/restaurar">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <input type="hidden" name="termo" value="<%= ex.termo %>">
+                <input type="hidden" name="expressao" value="<%= ex.expressao %>">
+                <button type="submit" class="btn-excluir">Voltar a usar</button>
+              </form>
+            </li>
+          <% }); %>
+        </ul>
+        <% if (exclusoes.length > 1) { %>
+          <form method="POST" action="/feedback/exclusoes/restaurar" class="sinais-ocultos-todos">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <input type="hidden" name="todos" value="1">
+            <button type="submit" class="btn-excluir">Voltar a usar todos</button>
+          </form>
+        <% } %>
+      <% } %>
+    </section>
   <% } %>
 </div>
 

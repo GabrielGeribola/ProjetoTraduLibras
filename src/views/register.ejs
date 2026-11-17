@@ -1,45 +1,37 @@
-<%- include('includes/head'); %>
+<%- include('includes/head', { bodyClass: 'page-centered' }); %>
+<%- include('includes/navbar'); %>
 
   <div class="container">
 
     <div class="logo-boasvindas-login">
-      <img src="https://assetstradulibras.s3.us-east-1.amazonaws.com/imgs/logo-clara.png" alt="Logo TraduLibras" class="img-fluid" />
+      <a href="/home" aria-label="Voltar para o tradutor">
+        <img src="https://assetstradulibras.s3.us-east-1.amazonaws.com/imgs/logo-clara.png" alt="Logo TraduLibras" class="img-fluid" />
+      </a>
     </div>
 
-    <div class="row">
-      <div class="col-lg-2"></div>
+    <%- include('includes/messages'); %>
 
-      <div class="col-lg-8 my-3">
-        <div class="row">
-          <%- include('includes/messages'); %>
+    <div class="titulo-entrar">
+      <h1 class="entrar">Cadastro</h1>
 
-          <div class="">
-            <h4 class="entrar">Cadastro</h4>
-
-            <form action="/register" method="post">
-              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-              <div class="form-group">
-                <label class="diminutivo" for="cadastro_email">Digite seu e-mail</label>
-                <br>
-                <input type="email" class="form-control" id="cadastro_email" name="email" placeholder="Email" autocomplete="email" required>
-              </div>
-
-              <div class="form-group">
-                <label class="diminutivo" for="cadastro_senha">Digite sua senha (mínimo de 10 caracteres)</label>
-                <br>
-                <input type="password" class="form-control" id="cadastro_senha" name="password" placeholder="Senha" autocomplete="new-password" minlength="10" required>
-              </div>
-
-              <button type="submit" class="btn-criar-conta">Criar minha conta</button>
-            </form>
-
-
-            <div class="linha"></div>
-            <p class="tem-conta">Ja tem conta? </p>
-            <a class="linkp-register" href="/login">Faça login</a>
-          </div>
+      <form action="/register" method="post">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div class="form-group">
+          <label class="diminutivo" for="cadastro_email">Digite seu e-mail</label>
+          <input type="email" class="form-control" id="cadastro_email" name="email" placeholder="Email" autocomplete="email" required>
         </div>
-      </div>
+
+        <div class="form-group">
+          <label class="diminutivo" for="cadastro_senha">Digite sua senha (mínimo de 10 caracteres)</label>
+          <input type="password" class="form-control" id="cadastro_senha" name="password" placeholder="Senha" autocomplete="new-password" minlength="10" required>
+        </div>
+
+        <button type="submit" class="btn-criar-conta">Criar minha conta</button>
+      </form>
+
+      <div class="linha"></div>
+      <p class="tem-conta">Já tem conta?</p>
+      <a class="linkp-register" href="/login">Faça login</a>
     </div>
   </div>
 

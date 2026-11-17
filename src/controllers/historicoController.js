@@ -1,59 +1,32 @@
-const { UniqueConstraintError } = require('sequelize');
 const Traducao = require('../models/TraducaoModel');
 const Historico = require('../models/HistoricoModel');
+const { exclusoesDoUsuario } = require('../models/FeedbackModel');
+const { LIMITE_TEXTO, textoLimpo, sequenciaLimpa, buscarOuCriarTraducao } = require('../services/traducaoService');
 
-const LIMITE_TEXTO = 500;
 const LIMITE_ITENS_PAGINA = 200;
 
-function textoLimpo(valor) {
-  if (typeof valor !== 'string') return '';
-  return valor.replace(/\s+/g, ' ').trim();
-}
-
-// Guarda só os campos usados pelo site, com tamanho limitado
-function sequenciaLimpa(sequencia) {
-  if (!Array.isArray(sequencia)) return null;
-
-  return sequencia.slice(0, 100).map((item) => {
-    const url = textoLimpo(item?.url);
-    return {
-      termo_original: textoLimpo(item?.termo_original).slice(0, 100),
-      expressao_libras: textoLimpo(item?.expressao_libras).slice(0, 100),
-      url: url.startsWith('https://') ? url.slice(0, 500) : '',
-    };
-  });
-}
-
-// Reaproveita a tradução se a frase já foi traduzida antes (por qualquer usuário)
-async function buscarOuCriarTraducao(texto, glosa, sequencia) {
-  const existente = await Traducao.findOne({ where: { texto_original: texto } });
-  if (existente) return existente;
-
-  try {
-    return await Traducao.create({ texto_original: texto, glosa, sequencia });
-  } catch (e) {
-    // Outra requisição criou a mesma frase ao mesmo tempo
-    if (e instanceof UniqueConstraintError) {
-      return Traducao.findOne({ where: { texto_original: texto } });
-    }
-    throw e;
-  }
-}
-
-// GET /historico — lista apenas as traduções do usuário logado
+// GET /historico — visitante vê a página com o convite para entrar;
+// usuário logado vê apenas as próprias traduções e os sinais que ocultou.
 exports.index = async (req, res) => {
-  try {
-    const itens = await Historico.findAll({
-      where: { id_usuario: req.session.user.id },
-      include: [{ model: Traducao, as: 'traducao' }],
-      order: [['data_traducao', 'DESC'], ['id_historico', 'DESC']],
-      limit: LIMITE_ITENS_PAGINA,
-    });
+  if (!req.session.user) {
+    return res.render('historico', { bloqueado: true, itens: [], exclusoes: [], erroCarregar: false });
+  }
 
-    return res.render('historico', { itens, erroCarregar: false });
+  try {
+    const [itens, exclusoes] = await Promise.all([
+      Historico.findAll({
+        where: { id_usuario: req.session.user.id },
+        include: [{ model: Traducao, as: 'traducao' }],
+        order: [['data_traducao', 'DESC'], ['id_historico', 'DESC']],
+        limit: LIMITE_ITENS_PAGINA,
+      }),
+      exclusoesDoUsuario(req.session.user.id),
+    ]);
+
+    return res.render('historico', { bloqueado: false, itens, exclusoes, erroCarregar: false });
   } catch (e) {
     console.error('Erro ao carregar histórico:', e);
-    return res.render('historico', { itens: [], erroCarregar: true });
+    return res.render('historico', { bloqueado: false, itens: [], exclusoes: [], erroCarregar: true });
   }
 };
 
