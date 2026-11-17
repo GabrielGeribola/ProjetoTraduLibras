@@ -18,7 +18,7 @@ exports.home = async (req, res) => {
 
 // Rota para a página de ajuda
 exports.ajuda = (req, res) => {
-  res.render('ajuda');
+  res.render('ajuda', { emailContato: EMAIL_COMERCIAL }); // definido na seção de planos, abaixo
 };
 
 // Rota para a página do glossário
