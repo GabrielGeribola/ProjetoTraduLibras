@@ -23,10 +23,12 @@ import json
 import os
 import re
 import sys
-import unicodedata
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(RAIZ, "scripts"))
+sys.path.insert(0, RAIZ)
+
+from servico_admin import MODELO_EMBEDDING_BANCO, montar_acentuador, tirar_acentos  # noqa: E402
 
 ARQUIVO = re.compile(r"\.(mp4|webm|gif|mov|png|jpe?g)$", re.I)
 # Registros que não são sinais (comparação pela URL, que é única)
@@ -41,41 +43,6 @@ CORRECOES = {
     "maquina-de escrever": "máquina de escrever",
     "cafe-da-manha": "café da manhã",
 }
-NAO_ACENTUAR = {"basquete", "coreia"}  # o dicionário sugere grafias erradas/antigas (básquete, coréia)
-
-
-def tirar_acentos(texto):
-    texto = unicodedata.normalize("NFKD", texto)
-    return "".join(c for c in texto if not unicodedata.combining(c))
-
-
-def montar_acentuador():
-    """Devolve uma função que recoloca acentos numa palavra sem acento, quando não há dúvida."""
-    from simplemma.strategies.dictionaries import DefaultDictionaryFactory
-    dicionario = DefaultDictionaryFactory().get_dictionary("pt")
-    exatas = set()
-    acentuadas = {}
-    for k in dicionario.keys():
-        if not k.isalpha():
-            continue
-        k = k.lower()
-        exatas.add(k)
-        sem = tirar_acentos(k)
-        if sem != k:
-            acentuadas.setdefault(sem, set()).add(k)
-
-    def acentuar(palavra):
-        if not palavra.isalpha() or palavra in exatas or palavra in NAO_ACENTUAR:
-            return palavra  # não é palavra simples, ou já existe assim (maca, pais, agua, abençoar)
-        opcoes = acentuadas.get(tirar_acentos(palavra), set())  # "aboliçao" também procura "abolição"
-        if len(opcoes) != 1:
-            return palavra
-        # O dicionário mistura grafias de Portugal: abdómen/ténis -> abdômen/tênis (Brasil).
-        # "também", "alguém" (acento no fim) continuam iguais.
-        return re.sub(r"[éó](?=[mn][aeiouáéíóú])", lambda m: {"é": "ê", "ó": "ô"}[m.group(0)], next(iter(opcoes)))
-    return acentuar
-
-
 def nova_descricao(descricao, acentuar):
     d = re.sub(r"\(\s*\)", " ", descricao)
     d = d.replace("_", " ")
@@ -149,7 +116,7 @@ def main():
     # Calculada antes de gravar, para o banco ficar o menor tempo possível com mudanças pela metade.
     print("\nCalculando embeddings das descrições novas...")
     from sentence_transformers import SentenceTransformer
-    modelo = SentenceTransformer("paraphrase-MiniLM-L6-v2")
+    modelo = SentenceTransformer(MODELO_EMBEDDING_BANCO)
     vetores = modelo.encode([n for _, _, n in renomear], batch_size=128, show_progress_bar=False)
 
     # Tudo em lotes: banco remoto + milhares de comandos um a um derrubava a conexão.

@@ -74,6 +74,9 @@ async function enviarLink(usuario) {
   });
 }
 
+// Também usado pela administração (criar conta e "enviar link para criar senha")
+exports.enviarLink = enviarLink;
+
 // GET /esqueci-senha
 exports.esqueciPage = (req, res) => res.render('esqueci-senha', { enviado: false });
 

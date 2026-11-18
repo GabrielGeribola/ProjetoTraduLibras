@@ -1,0 +1,34 @@
+<%- include('partials/topo') %>
+
+<p><a href="/admin/usuarios" class="adm-link">← Voltar para a lista</a></p>
+
+<section class="adm-card adm-card-estreito">
+  <h2>Criar conta</h2>
+  <p class="adm-muted">A conta é criada com uma senha aleatória e a pessoa recebe por e-mail o link para criar a própria senha. Útil para clientes Enterprise e para novos administradores.</p>
+  <form method="POST" action="/admin/usuarios" class="adm-form">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="adm-campo">
+      <label for="email">E-mail</label>
+      <input class="adm-input" type="email" id="email" name="email" required maxlength="255" autocomplete="off">
+    </div>
+    <div class="adm-campo-linha">
+      <div class="adm-campo">
+        <label for="papel">Papel</label>
+        <select class="adm-input" id="papel" name="papel">
+          <option value="usuario">Usuário</option>
+          <option value="admin">Administrador</option>
+        </select>
+      </div>
+      <div class="adm-campo">
+        <label for="id_plano">Plano</label>
+        <select class="adm-input" id="id_plano" name="id_plano">
+          <option value="">Sem plano (Free)</option>
+          <% planos.forEach((p) => { %><option value="<%= p.id_plano %>"><%= p.nome %></option><% }); %>
+        </select>
+      </div>
+    </div>
+    <button type="submit" class="adm-btn" data-aguarde="Criando…">Criar e enviar o e-mail</button>
+  </form>
+</section>
+
+<%- include('partials/rodape') %>

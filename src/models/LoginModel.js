@@ -17,7 +17,7 @@ class Login {
      if(this.errors.length > 0) return;
 
     const user = await User.findOne({
-      attributes: ['id', 'email', 'password'],
+      attributes: ['id', 'email', 'password', 'papel', 'ativo'],
       where: {
         email: this.body.email
       }
@@ -30,11 +30,21 @@ class Login {
       return;
     }
 
-    // Guarda na sessão só o necessário (nunca a senha)
+    if (!user.ativo) {
+      this.errors.push('Esta conta está desativada. Fale com a equipe do TraduLibras.');
+      return;
+    }
+
+    // Guarda na sessão só o necessário (nunca a senha). O papel serve para mostrar o menu
+    // de administração; as páginas /admin conferem o papel no banco a cada acesso.
     this.User = {
       id: user.id,
-      email: user.email
+      email: user.email,
+      papel: user.papel,
     };
+
+    User.update({ ultimo_login: new Date() }, { where: { id: user.id } })
+      .catch((e) => console.error('Erro ao registrar o último login:', e.message));
   }
 
   async register() {

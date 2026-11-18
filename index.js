@@ -11,6 +11,7 @@ const compression = require('compression');
 const cookieParser = require('cookie-parser');
 
 const sequelize = require('./src/config/database');
+const { prepararBanco } = require('./src/config/migracoes');
 const routes = require('./routes');
 const { middlewareGlobal, csrfToken, csrfProtection } = require('./src/middlewares/middleware');
 
@@ -114,6 +115,12 @@ app.use((err, req, res, next) => {
   if (!corpoInvalido) console.error('Erro inesperado:', err);
 
   if (res.headersSent) return;
+  // Se o erro veio antes dos middlewares (ex.: banco das sessões fora do ar), a página de erro
+  // ainda precisa destes valores para montar o menu
+  res.locals.user = res.locals.user ?? null;
+  res.locals.errors = res.locals.errors ?? [];
+  res.locals.success = res.locals.success ?? [];
+  res.locals.csrfToken = res.locals.csrfToken ?? '';
   if (req.accepts(['html', 'json']) === 'json') {
     return res.status(status).json({
       status: 'error',
@@ -134,11 +141,15 @@ async function startServer() {
   try {
     await sessionStore.sync();
 
+    // Tabelas e colunas da área de administração (só cria o que falta; nunca apaga dados)
+    const criado = await prepararBanco();
+    if (criado.length) console.log('Banco atualizado:', criado.join(', '));
+
     app.listen(PORT, () => {
       console.log(`Servidor iniciado na porta ${PORT}: http://localhost:${PORT}`);
     });
   } catch (error) {
-    console.log('Erro ao inicializar o armazenamento das sessões: ', error);
+    console.log('Erro ao preparar o banco (sessões e tabelas da administração): ', error);
     process.exit(1);
   }
 }

@@ -1,0 +1,15 @@
+  </main>
+</div>
+
+<!-- Prévia dos vídeos de sinais -->
+<dialog class="adm-dialogo" id="admVideo" aria-labelledby="admVideoTitulo">
+  <div class="adm-dialogo-topo">
+    <strong id="admVideoTitulo">Vídeo</strong>
+    <button type="button" class="adm-btn adm-btn-sec adm-btn-peq" data-fechar-dialogo>Fechar</button>
+  </div>
+  <video id="admVideoPlayer" controls playsinline preload="none"></video>
+  <p class="adm-dialogo-url" id="admVideoUrl"></p>
+</dialog>
+
+<script src="/assets/js/admin.js"></script>
+<%- include('../../includes/footer') %>

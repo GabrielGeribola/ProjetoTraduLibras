@@ -32,6 +32,30 @@ Se nada for confiável, a palavra fica sem sinal e aparece como "Ainda sem sinal
 | testes da `validation_metrics` | 74,5% | 100% |
 
 
+<h2> 🔐 Área de administração</h2>
+<p>
+Fica em <code>/admin</code> e só abre para contas com o papel de administrador. O administrador entra pelo login normal do site e cai direto na administração; para qualquer outra pessoa o endereço responde "página não encontrada". O primeiro administrador é criado pelo terminal (depois, os outros podem ser promovidos pela própria tela de usuários):
+</p>
+
+```
+node scripts/tornar-admin.js pessoa@exemplo.com            # a conta precisa já existir (cadastro em /register)
+node scripts/tornar-admin.js pessoa@exemplo.com --remover  # volta a ser usuário comum
+```
+
+| Seção | O que dá para fazer |
+|---|---|
+| Painel | Números gerais, situação da API de tradução, palavras mais pedidas sem sinal e últimas ações |
+| Usuários | Buscar e filtrar; mudar papel, plano (com validade) e status; desativar (encerra as sessões na hora); enviar link para criar senha; criar e excluir contas |
+| Palavras | Buscar sinais e ver o vídeo; renomear; adicionar sinônimo a um vídeo ("cão" → vídeo de CACHORRO); excluir; recarregar o tradutor na hora |
+| Importar do S3 | Varre os buckets e lista os vídeos que ainda não estão no banco, com filtro e sinalização (palavra nova, já tem sinal, revisar o nome). Aprovar (um, os marcados ou todos) cadastra vídeo + palavra + embedding de uma vez; excluir tira da lista sem cadastrar. Também mostra os vídeos do banco cujo arquivo sumiu do S3 |
+| Qualidade | Palavras pedidas sem sinal (com atalho para usar um sinal existente), sinais mais marcados como errados e últimos 👎 |
+| Planos | Criar e editar os planos da página /planos (preços, limite de tokens, recursos, botão) |
+| Cursos | Vídeos e artigos da página /cursos (publicar, rascunho, "Comece por aqui") e os temas |
+| Banco | Tabelas, tamanho, colunas, ligações e registros, só leitura (senhas, tokens e sessões nunca aparecem) |
+| Registro | Quem fez o quê na administração |
+
+As tabelas e colunas novas são criadas sozinhas quando o servidor Node sobe (`src/config/migracoes.js`); nada existente é apagado. A importação do S3 e as embeddings usam rotas internas da API Python, protegidas pelo `TOKEN_INTERNO` (o mesmo valor no `.env` do site e da API); a leitura do S3 precisa de credenciais da AWS na API (veja `.env.example`).
+
 <h2> ⚙️ Principais funcionalidades</h2>
 <p> 
 <h3> • Tradução de textos em português para Libras;</h3>
@@ -43,6 +67,7 @@ Se nada for confiável, a palavra fica sem sinal e aparece como "Ainda sem sinal
 <h3> • Associação das expressões encontradas aos respectivos conteúdos em Libras;</h3>
 <h3> • Reprodução das traduções por meio de animações/vídeos de Libras;</h3>
 <h3> • Glossário organizado por segmentos;</h3>
+<h3> • Área de administração: usuários, palavras, importação de vídeos do S3, planos, cursos e visão do banco;</h3>
 <h3> • Interface desenvolvida com foco em acessibilidade e usabilidade.</h3>
 
 O projeto encontra-se em desenvolvimento, com foco na evolução do processo de tradução, aumento da precisão das correspondências e ampliação da base de expressões em Libras. </p>

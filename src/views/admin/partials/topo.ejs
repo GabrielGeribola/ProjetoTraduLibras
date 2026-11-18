@@ -1,0 +1,40 @@
+<%- include('../../includes/head', { bodyClass: 'admin-body', cssExtra: '/css/admin.css', tituloAba: titulo + ' · Administração' }) %>
+<%- include('../../includes/navbar') %>
+<%
+  const abas = [
+    { id: 'painel', href: '/admin', nome: 'Painel' },
+    { id: 'usuarios', href: '/admin/usuarios', nome: 'Usuários' },
+    { id: 'palavras', href: '/admin/palavras', nome: 'Palavras' },
+    { id: 's3', href: '/admin/s3', nome: 'Importar do S3', contador: pendentesS3 },
+    { id: 'qualidade', href: '/admin/qualidade', nome: 'Qualidade' },
+    { id: 'planos', href: '/admin/planos', nome: 'Planos' },
+    { id: 'cursos', href: '/admin/cursos', nome: 'Cursos' },
+    { id: 'banco', href: '/admin/banco', nome: 'Banco' },
+    { id: 'registro', href: '/admin/registro', nome: 'Registro' },
+  ];
+%>
+<div class="admin">
+  <header class="admin-topo">
+    <div>
+      <span class="admin-selo">Administração</span>
+      <h1 class="admin-titulo"><%= titulo %></h1>
+    </div>
+    <div class="admin-conta">
+      <span class="admin-conta-email" title="Conta de administrador"><%= admin.email %></span>
+      <a href="/home" class="adm-btn adm-btn-sec adm-btn-peq">Ir para o site ↗</a>
+    </div>
+  </header>
+
+  <nav class="admin-abas" aria-label="Seções da administração">
+    <% abas.forEach((aba) => { %>
+      <a href="<%= aba.href %>" class="admin-aba<%= secao === aba.id ? ' ativa' : '' %>"<%- secao === aba.id ? ' aria-current="page"' : '' %>>
+        <%= aba.nome %><% if (aba.contador) { %> <span class="admin-aba-contador" aria-label="<%= aba.contador %> pendentes"><%= fmt.numero(aba.contador) %></span><% } %>
+      </a>
+    <% }); %>
+  </nav>
+
+  <div class="admin-mensagens" role="status" aria-live="polite">
+    <%- include('../../includes/messages') %>
+  </div>
+
+  <main class="admin-conteudo" id="conteudo">

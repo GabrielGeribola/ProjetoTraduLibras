@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import collections
+import hmac
 import json
 import mysql.connector
 import os
@@ -12,6 +13,7 @@ from werkzeug.exceptions import HTTPException
 from pydub import AudioSegment
 import speech_recognition as sr
 
+import servico_admin
 from tradutor import Tradutor, normalizar_sinal
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -259,5 +261,65 @@ def transcrever():
     finally:
         shutil.rmtree(tmp_dir, ignore_errors=True)
 
+# ----------------- Rotas internas (área de administração do site) -----------------
+# Chamadas só pelo servidor Node, com o cabeçalho X-Token-Interno igual a TOKEN_INTERNO do .env.
+# Ficam fora de /api (o proxy de produção só repassa /api) e, sem TOKEN_INTERNO, ficam desligadas.
+TOKEN_INTERNO = os.getenv("TOKEN_INTERNO", "")
+LIMITE_EMBEDDINGS = 1000
+
+@app.before_request
+def proteger_rotas_internas():
+    if not request.path.startswith('/interno/'):
+        return None
+    enviado = request.headers.get('X-Token-Interno', '')
+    if not TOKEN_INTERNO or not hmac.compare_digest(enviado.encode(), TOKEN_INTERNO.encode()):
+        return erro(403, 'ACESSO_NEGADO', 'Acesso negado.')
+    return None
+
+@app.route('/interno/status', methods=['GET'])
+def interno_status():
+    return jsonify({'status': 'success', **motor.status(),
+                    'modelo_embedding_carregado': servico_admin.modelo_embedding_carregado(),
+                    'buckets': servico_admin.buckets_configurados()}), 200
+
+@app.route('/interno/recarregar', methods=['POST'])
+def interno_recarregar():
+    motor.pedir_recarga()
+    return jsonify({'status': 'success', 'mensagem': 'Recarga dos sinais iniciada.'}), 202
+
+@app.route('/interno/embeddings', methods=['POST'])
+def interno_embeddings():
+    data = request.get_json(silent=True) or {}
+    textos = data.get('textos')
+    if (not isinstance(textos, list) or not textos or len(textos) > LIMITE_EMBEDDINGS
+            or not all(isinstance(t, str) and 0 < len(t.strip()) <= 100 for t in textos)):
+        return erro(400, 'TEXTOS_INVALIDOS', f'Envie de 1 a {LIMITE_EMBEDDINGS} textos de até 100 caracteres.')
+    return jsonify({'status': 'success', 'vetores': servico_admin.gerar_embeddings([t.strip() for t in textos])}), 200
+
+@app.route('/interno/descricoes', methods=['POST'])
+def interno_descricoes():
+    """Sugestão de descrição (com acento) para nomes de arquivo: "aviao_de_papel.mp4" -> "avião de papel"."""
+    data = request.get_json(silent=True) or {}
+    nomes = data.get('nomes')
+    if not isinstance(nomes, list) or len(nomes) > LIMITE_EMBEDDINGS or not all(isinstance(n, str) for n in nomes):
+        return erro(400, 'NOMES_INVALIDOS', 'Envie uma lista de nomes de arquivo.')
+    return jsonify({'status': 'success', 'descricoes': [servico_admin.sugerir_descricao(n[:500]) for n in nomes]}), 200
+
+@app.route('/interno/s3/videos', methods=['GET'])
+def interno_s3_videos():
+    try:
+        resultado = servico_admin.listar_videos_s3()
+    except Exception as e:
+        # Sem credenciais, sem permissão, bucket inexistente...: a mensagem ajuda quem configura o servidor
+        log.warning("Falha ao listar o S3", exc_info=True)
+        nome = type(e).__name__
+        if nome in ('NoCredentialsError', 'PartialCredentialsError'):
+            return erro(503, 'S3_SEM_CREDENCIAIS', 'A API não tem credenciais da AWS configuradas para ler o S3.')
+        if nome == 'ClientError':
+            codigo = getattr(e, 'response', {}).get('Error', {}).get('Code', '')
+            return erro(502, 'S3_ERRO', f'O S3 recusou a listagem ({codigo or "erro desconhecido"}). Confira as permissões e os buckets.')
+        return erro(502, 'S3_ERRO', 'Não foi possível listar os vídeos do S3.')
+    return jsonify({'status': 'success', **resultado}), 200
+
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=5000, debug=False, threaded=True)
+    app.run(host="0.0.0.0", port=int(os.getenv("API_PORT", "5000")), debug=False, threaded=True)

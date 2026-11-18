@@ -1,0 +1,126 @@
+<%- include('partials/topo') %>
+
+<div class="adm-barra-resumo">
+  <p class="adm-muted"><%= fmt.numero(contagem.videos) %> vídeos e <%= fmt.numero(contagem.artigos) %> artigos<% if (Number(contagem.rascunhos)) { %> (<%= fmt.numero(contagem.rascunhos) %> em rascunho)<% } %>.
+    Tudo o que está publicado aparece em <a href="/cursos" class="adm-link" target="_blank" rel="noopener">/cursos ↗</a>.</p>
+  <div class="adm-botoes">
+    <a href="/admin/cursos/novo?tipo=video" class="adm-btn">+ Vídeo</a>
+    <a href="/admin/cursos/novo?tipo=artigo" class="adm-btn adm-btn-sec">+ Artigo</a>
+  </div>
+</div>
+
+<form class="adm-filtros" method="GET" action="/admin/cursos" role="search">
+  <div class="adm-campo adm-campo-cresce">
+    <label for="fq">Título, descrição ou canal</label>
+    <input class="adm-input" type="search" id="fq" name="q" value="<%= filtros.q %>" placeholder="Buscar">
+  </div>
+  <div class="adm-campo">
+    <label for="ftipo">Tipo</label>
+    <select class="adm-input" id="ftipo" name="tipo" data-auto-enviar>
+      <option value="">Todos</option>
+      <% Object.entries(tipos).forEach(([id, nome]) => { %><option value="<%= id %>"<%= filtros.tipo === id ? ' selected' : '' %>><%= nome %>s</option><% }); %>
+    </select>
+  </div>
+  <div class="adm-campo">
+    <label for="ftema">Tema</label>
+    <select class="adm-input" id="ftema" name="tema" data-auto-enviar>
+      <option value="">Todos</option>
+      <% temas.forEach((t) => { %><option value="<%= t.id_tema %>"<%= String(filtros.tema) === String(t.id_tema) ? ' selected' : '' %>><%= t.nome %></option><% }); %>
+    </select>
+  </div>
+  <div class="adm-campo">
+    <label for="fstatus">Situação</label>
+    <select class="adm-input" id="fstatus" name="status" data-auto-enviar>
+      <option value="">Todas</option>
+      <option value="publicado"<%= filtros.status === 'publicado' ? ' selected' : '' %>>Publicados</option>
+      <option value="rascunho"<%= filtros.status === 'rascunho' ? ' selected' : '' %>>Rascunhos</option>
+      <option value="destaque"<%= filtros.status === 'destaque' ? ' selected' : '' %>>Em “Comece por aqui”</option>
+    </select>
+  </div>
+  <button type="submit" class="adm-btn adm-btn-sec">Filtrar</button>
+</form>
+
+<% if (!conteudos.length) { %>
+  <p class="adm-vazio adm-card">Nenhum conteúdo com esses filtros.</p>
+<% } else { %>
+  <div class="adm-tabela-wrap">
+    <table class="adm-tabela">
+      <thead>
+        <tr><th scope="col">Conteúdo</th><th scope="col">Tema</th><th scope="col">Situação</th><th scope="col" class="adm-num">Ordem</th><th scope="col"><span class="sr-only">Ações</span></th></tr>
+      </thead>
+      <tbody>
+        <% conteudos.forEach((c) => { %>
+          <tr<%- c.ativo ? '' : ' class="adm-linha-apagada"' %>>
+            <td>
+              <div class="adm-conteudo-linha">
+                <% if (c.tipo === 'video' && c.youtube_id) { %>
+                  <img src="https://i.ytimg.com/vi/<%= c.youtube_id %>/default.jpg" alt="" class="adm-miniatura" loading="lazy" referrerpolicy="no-referrer">
+                <% } else { %>
+                  <span class="adm-miniatura adm-miniatura-doc" aria-hidden="true">📄</span>
+                <% } %>
+                <div>
+                  <a href="/admin/cursos/<%= c.id_conteudo %>?voltar=<%= encodeURIComponent(urlAtual) %>" class="adm-link-forte"><%= c.titulo %></a>
+                  <br><span class="adm-muted"><%= tipos[c.tipo] %> · <%= c.tipo === 'video' ? (c.autor || 'YouTube') : fonteDoLink(c.link) %></span>
+                </div>
+              </div>
+            </td>
+            <td><%= c.tema %></td>
+            <td>
+              <% if (c.ativo) { %><span class="adm-tag tag-ok">Publicado</span><% } else { %><span class="adm-tag">Rascunho</span><% } %>
+              <% if (c.destaque) { %><span class="adm-tag tag-destaque">Comece por aqui</span><% } %>
+            </td>
+            <td class="adm-num"><%= c.ordem %></td>
+            <td class="adm-acoes-celula">
+              <a href="<%= c.link %>" class="adm-btn adm-btn-sec adm-btn-peq" target="_blank" rel="noopener noreferrer">Abrir ↗</a>
+              <a href="/admin/cursos/<%= c.id_conteudo %>?voltar=<%= encodeURIComponent(urlAtual) %>" class="adm-btn adm-btn-sec adm-btn-peq">Editar</a>
+            </td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+<% } %>
+<%- include('partials/paginacao') %>
+
+<section class="adm-card" id="temas">
+  <h2>Temas</h2>
+  <p class="adm-muted">Os temas viram os filtros da página /cursos (só aparecem os que têm conteúdo publicado). A ordem define a sequência dos botões.</p>
+  <div class="adm-tabela-wrap">
+    <table class="adm-tabela">
+      <thead><tr><th scope="col">Nome</th><th scope="col" class="adm-num">Ordem</th><th scope="col" class="adm-num">Conteúdos</th><th scope="col"><span class="sr-only">Ações</span></th></tr></thead>
+      <tbody>
+        <% temas.forEach((t) => { %>
+          <tr>
+            <td colspan="2">
+              <form method="POST" action="/admin/cursos/temas/<%= t.id_tema %>" class="adm-form-linha">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <label class="sr-only" for="tn<%= t.id_tema %>">Nome do tema</label>
+                <input class="adm-input" id="tn<%= t.id_tema %>" name="nome" value="<%= t.nome %>" maxlength="80" required>
+                <label class="sr-only" for="to<%= t.id_tema %>">Ordem</label>
+                <input class="adm-input adm-input-curto" id="to<%= t.id_tema %>" name="ordem" value="<%= t.ordem %>" inputmode="numeric">
+                <button type="submit" class="adm-btn adm-btn-sec adm-btn-peq">Salvar</button>
+              </form>
+            </td>
+            <td class="adm-num"><a href="/admin/cursos?tema=<%= t.id_tema %>" class="adm-link"><%= fmt.numero(t.total) %></a></td>
+            <td class="adm-acoes-celula">
+              <% if (Number(t.total) === 0) { %>
+                <form method="POST" action="/admin/cursos/temas/<%= t.id_tema %>/excluir" data-confirmar="Excluir o tema <%= t.nome %>?">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  <button type="submit" class="adm-btn adm-btn-perigo adm-btn-peq">Excluir</button>
+                </form>
+              <% } %>
+            </td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+  <form method="POST" action="/admin/cursos/temas" class="adm-form-linha adm-novo-tema">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <label for="novoTema">Novo tema</label>
+    <input class="adm-input" id="novoTema" name="nome" maxlength="80" placeholder="ex.: Libras na saúde" required>
+    <button type="submit" class="adm-btn adm-btn-peq">Criar tema</button>
+  </form>
+</section>
+
+<%- include('partials/rodape') %>

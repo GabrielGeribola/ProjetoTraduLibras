@@ -1,0 +1,76 @@
+<%- include('partials/topo') %>
+<% const novo = !item.id_conteudo; const voltarA = typeof voltarPara !== 'undefined' ? voltarPara : '/admin/cursos'; %>
+
+<p><a href="<%= voltarA %>" class="adm-link">← Voltar para a lista</a></p>
+
+<form method="POST" action="<%= novo ? '/admin/cursos' : '/admin/cursos/' + item.id_conteudo %>" class="adm-card adm-form" data-form-curso>
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <input type="hidden" name="voltar" value="<%= voltarA %>">
+
+  <fieldset class="adm-fieldset adm-tipo">
+    <legend>Tipo</legend>
+    <% Object.entries(tipos).forEach(([id, nome]) => { %>
+      <label class="adm-check"><input type="radio" name="tipo" value="<%= id %>"<%= item.tipo === id ? ' checked' : '' %> data-tipo-curso> <%= nome %></label>
+    <% }); %>
+  </fieldset>
+
+  <div class="adm-campo">
+    <label for="titulo">Título</label>
+    <input class="adm-input" id="titulo" name="titulo" value="<%= item.titulo %>" maxlength="200" required>
+  </div>
+
+  <div class="adm-campo">
+    <label for="link" data-rotulo-video="Link do vídeo no YouTube" data-rotulo-artigo="Link do artigo (https://…)"><%= item.tipo === 'video' ? 'Link do vídeo no YouTube' : 'Link do artigo (https://…)' %></label>
+    <input class="adm-input" id="link" name="link" value="<%= item.link %>" maxlength="500" required placeholder="https://">
+    <div class="adm-previa-video" data-previa-video<%= item.tipo === 'video' && item.youtube_id ? '' : ' hidden' %>>
+      <img alt="Miniatura do vídeo" referrerpolicy="no-referrer" src="<%= item.youtube_id ? 'https://i.ytimg.com/vi/' + item.youtube_id + '/mqdefault.jpg' : '' %>">
+    </div>
+  </div>
+
+  <div class="adm-campo-linha">
+    <div class="adm-campo" data-so-video<%= item.tipo === 'video' ? '' : ' hidden' %>>
+      <label for="autor">Canal / autor</label>
+      <input class="adm-input" id="autor" name="autor" value="<%= item.autor || '' %>" maxlength="120">
+    </div>
+    <div class="adm-campo">
+      <label for="id_tema">Tema</label>
+      <select class="adm-input" id="id_tema" name="id_tema" required>
+        <option value="">Escolha…</option>
+        <% temas.forEach((t) => { %><option value="<%= t.id_tema %>"<%= String(item.id_tema) === String(t.id_tema) ? ' selected' : '' %>><%= t.nome %></option><% }); %>
+      </select>
+    </div>
+    <div class="adm-campo">
+      <label for="ordem">Ordem</label>
+      <input class="adm-input adm-input-curto" id="ordem" name="ordem" value="<%= item.ordem %>" inputmode="numeric">
+    </div>
+  </div>
+
+  <div class="adm-campo">
+    <label for="descricao">Descrição</label>
+    <textarea class="adm-input" id="descricao" name="descricao" rows="3" maxlength="600"><%= item.descricao %></textarea>
+  </div>
+
+  <div class="adm-botoes">
+    <label class="adm-check"><input type="checkbox" name="ativo" value="1"<%= Number(item.ativo) ? ' checked' : '' %>> Publicado (aparece em /cursos)</label>
+    <label class="adm-check"><input type="checkbox" name="destaque" value="1"<%= Number(item.destaque) ? ' checked' : '' %>> Mostrar em “Comece por aqui”</label>
+  </div>
+
+  <div class="adm-botoes">
+    <button type="submit" class="adm-btn"><%= novo ? 'Criar' : 'Salvar' %></button>
+    <a href="<%= voltarA %>" class="adm-btn adm-btn-sec">Cancelar</a>
+  </div>
+</form>
+
+<% if (!novo) { %>
+  <section class="adm-card adm-zona-perigo">
+    <h2>Excluir</h2>
+    <p>Para só tirar do site, desmarque “Publicado”.</p>
+    <form method="POST" action="/admin/cursos/<%= item.id_conteudo %>/excluir" data-confirmar="Excluir “<%= item.titulo %>”?">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <input type="hidden" name="voltar" value="<%= voltarA %>">
+      <button type="submit" class="adm-btn adm-btn-perigo">Excluir</button>
+    </form>
+  </section>
+<% } %>
+
+<%- include('partials/rodape') %>

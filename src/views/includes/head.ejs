@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="csrf-token" content="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
-  <title>Tradulibras</title>
+  <title><%= typeof tituloAba !== 'undefined' && tituloAba ? tituloAba + ' · ' : '' %>Tradulibras</title>
 
   <script>
     // Aplica tema e tamanho de fonte salvos antes de pintar a página (evita o "piscar" do modo escuro)
@@ -23,6 +23,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Serif+Display:ital@0;1&display=swap">
   <link rel="stylesheet" href="/css/styleteste.css">
+  <% if (typeof cssExtra !== 'undefined' && cssExtra) { %><link rel="stylesheet" href="<%= cssExtra %>"><% } %>
 </head>
 
 <body<% if (typeof bodyClass !== 'undefined' && bodyClass) { %> class="<%= bodyClass %>"<% } %>>

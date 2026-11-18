@@ -1,0 +1,67 @@
+<%- include('partials/topo') %>
+
+<p><a href="/admin/banco" class="adm-link">← Todas as tabelas</a></p>
+<% if (descricao) { %><p class="adm-muted"><%= descricao %> · <%= Number(mb).toLocaleString('pt-BR', { maximumFractionDigits: 2 }) %> MB</p><% } %>
+
+<details class="adm-card adm-estrutura">
+  <summary><strong>Estrutura</strong> (<%= colunas.length %> colunas<%= ligacoes.length ? ', ' + ligacoes.length + ' ligação(ões)' : '' %>)</summary>
+  <div class="adm-tabela-wrap">
+    <table class="adm-tabela">
+      <thead><tr><th scope="col">Coluna</th><th scope="col">Tipo</th><th scope="col">Vazio?</th><th scope="col">Chave</th><th scope="col">Padrão</th></tr></thead>
+      <tbody>
+        <% colunas.forEach((c) => { const lig = ligacoes.find((l) => l.coluna === c.nome); %>
+          <tr>
+            <td class="adm-codigo"><%= c.nome %><% if (c.oculta) { %> <span class="adm-tag">oculta</span><% } %></td>
+            <td class="adm-codigo adm-muted"><%= c.tipo %></td>
+            <td><%= c.nulo === 'YES' ? 'sim' : 'não' %></td>
+            <td><%= c.chave === 'PRI' ? 'primária' : c.chave === 'UNI' ? 'única' : c.chave === 'MUL' ? 'índice' : '' %><% if (lig) { %> → <a href="/admin/banco/<%= encodeURIComponent(lig.ref_tabela) %>" class="adm-link"><%= lig.ref_tabela %>.<%= lig.ref_coluna %></a><% } %></td>
+            <td class="adm-codigo adm-muted"><%= c.padrao === null ? '' : c.padrao %> <%= c.extra %></td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+</details>
+
+<form class="adm-filtros" method="GET" action="/admin/banco/<%= encodeURIComponent(nome) %>" role="search">
+  <div class="adm-campo">
+    <label for="fcoluna">Coluna</label>
+    <select class="adm-input" id="fcoluna" name="coluna">
+      <% visiveis.forEach((c) => { %><option value="<%= c.nome %>"<%= filtroColuna === c.nome ? ' selected' : '' %>><%= c.nome %></option><% }); %>
+    </select>
+  </div>
+  <div class="adm-campo adm-campo-cresce">
+    <label for="fvalor">Contém</label>
+    <input class="adm-input" type="search" id="fvalor" name="valor" value="<%= filtroValor %>">
+  </div>
+  <button type="submit" class="adm-btn adm-btn-sec">Filtrar</button>
+  <% if (filtroValor) { %><a href="/admin/banco/<%= encodeURIComponent(nome) %>" class="adm-link">Limpar</a><% } %>
+</form>
+
+<% if (!linhas.length) { %>
+  <p class="adm-vazio adm-card">Nenhum registro.</p>
+<% } else { %>
+  <div class="adm-tabela-wrap">
+    <table class="adm-tabela adm-tabela-dados">
+      <thead><tr><% colunas.forEach((c) => { %><th scope="col"><%= c.nome %></th><% }); %></tr></thead>
+      <tbody>
+        <% linhas.forEach((l) => { %>
+          <tr>
+            <% colunas.forEach((c) => { const valor = l[c.nome]; %>
+              <td>
+                <% if (c.oculta) { %><span class="adm-muted">••••</span>
+                <% } else if (c.nome === 'embedding') { %><span class="adm-muted"><%= valor ? 'vetor de ' + valor + ' números' : 'vazio' %></span>
+                <% } else if (valor === null || valor === undefined) { %><span class="adm-muted">NULL</span>
+                <% } else if (/^https?:\/\//.test(valor) && /\.(mp4|webm|mov)$/i.test(valor)) { %><button type="button" class="adm-btn adm-btn-sec adm-btn-peq" data-video="<%= valor %>" data-titulo="<%= valor.split('/').pop() %>">▶</button> <span class="adm-codigo"><%= valor.split('/').slice(3).join('/') %></span>
+                <% } else { %><%= valor %><% } %>
+              </td>
+            <% }); %>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+<% } %>
+<%- include('partials/paginacao') %>
+
+<%- include('partials/rodape') %>

@@ -1,0 +1,76 @@
+<%- include('partials/topo') %>
+
+<form class="adm-filtros" method="GET" action="/admin/usuarios" role="search">
+  <div class="adm-campo adm-campo-cresce">
+    <label for="fq">E-mail</label>
+    <input class="adm-input" type="search" id="fq" name="q" value="<%= filtros.q %>" placeholder="Buscar por e-mail">
+  </div>
+  <div class="adm-campo">
+    <label for="fpapel">Papel</label>
+    <select class="adm-input" id="fpapel" name="papel" data-auto-enviar>
+      <option value="">Todos</option>
+      <option value="admin"<%= filtros.papel === 'admin' ? ' selected' : '' %>>Administradores</option>
+      <option value="usuario"<%= filtros.papel === 'usuario' ? ' selected' : '' %>>Usuários</option>
+    </select>
+  </div>
+  <div class="adm-campo">
+    <label for="fstatus">Status</label>
+    <select class="adm-input" id="fstatus" name="status" data-auto-enviar>
+      <option value="">Todos</option>
+      <option value="ativo"<%= filtros.status === 'ativo' ? ' selected' : '' %>>Ativos</option>
+      <option value="inativo"<%= filtros.status === 'inativo' ? ' selected' : '' %>>Desativados</option>
+    </select>
+  </div>
+  <div class="adm-campo">
+    <label for="fplano">Plano</label>
+    <select class="adm-input" id="fplano" name="plano" data-auto-enviar>
+      <option value="">Todos</option>
+      <option value="nenhum"<%= filtros.plano === 'nenhum' ? ' selected' : '' %>>Sem plano</option>
+      <% planos.forEach((p) => { %>
+        <option value="<%= p.id_plano %>"<%= String(filtros.plano) === String(p.id_plano) ? ' selected' : '' %>><%= p.nome %></option>
+      <% }); %>
+    </select>
+  </div>
+  <button type="submit" class="adm-btn adm-btn-sec">Filtrar</button>
+  <a href="/admin/usuarios/novo" class="adm-btn adm-filtros-direita">+ Criar usuário</a>
+</form>
+
+<% if (!usuarios.length) { %>
+  <p class="adm-vazio adm-card">Nenhum usuário com esses filtros.</p>
+<% } else { %>
+  <div class="adm-tabela-wrap">
+    <table class="adm-tabela">
+      <thead>
+        <tr>
+          <th scope="col">E-mail</th>
+          <th scope="col">Papel</th>
+          <th scope="col">Plano</th>
+          <th scope="col" class="adm-num">Traduções</th>
+          <th scope="col">Cadastro</th>
+          <th scope="col">Último login</th>
+          <th scope="col"><span class="sr-only">Ações</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% usuarios.forEach((u) => { %>
+          <tr<%- u.ativo ? '' : ' class="adm-linha-apagada"' %>>
+            <td>
+              <a href="/admin/usuarios/<%= u.id %>?voltar=<%= encodeURIComponent(urlAtual) %>" class="adm-link-forte"><%= u.email %></a>
+              <% if (!u.ativo) { %><span class="adm-tag tag-perigo">Desativado</span><% } %>
+              <% if (u.id === admin.id) { %><span class="adm-tag">Você</span><% } %>
+            </td>
+            <td><% if (u.papel === 'admin') { %><span class="adm-tag tag-destaque">Admin</span><% } else { %>Usuário<% } %></td>
+            <td><%= u.plano || '—' %><% if (u.plano_valido_ate) { %><br><span class="adm-muted">até <%= fmt.dia(u.plano_valido_ate) %></span><% } %></td>
+            <td class="adm-num"><%= fmt.numero(u.traducoes) %></td>
+            <td><%= fmt.data(u.createdAt) %></td>
+            <td><%= u.ultimo_login ? fmt.dataHora(u.ultimo_login) : '—' %></td>
+            <td class="adm-acoes-celula"><a href="/admin/usuarios/<%= u.id %>?voltar=<%= encodeURIComponent(urlAtual) %>" class="adm-btn adm-btn-sec adm-btn-peq">Abrir</a></td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+<% } %>
+<%- include('partials/paginacao') %>
+
+<%- include('partials/rodape') %>

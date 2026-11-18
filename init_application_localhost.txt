@@ -37,7 +37,24 @@
                           aparecem antônimos: magro -> GORDO)
     DATILOLOGIA           1 = soletra nomes próprios sem sinal (padrão), 0 = desliga
     REGISTRAR_SEM_SINAL   1 = conta palavras sem sinal na tabela termos_sem_sinal (padrão)
-    CACHE_TTL_SEGUNDOS    a cada quanto tempo recarrega os sinais do banco (padrão: 3600)
+    CACHE_TTL_SEGUNDOS    a cada quanto tempo recarrega os sinais do banco (padrão: 3600;
+                          mudanças feitas pela administração já recarregam na hora)
+    TOKEN_INTERNO         liga as rotas internas usadas pela administração (mesmo valor do site)
+    S3_BUCKETS            buckets lidos pela importação (padrão: words-traducao,tradulibras-videos)
+    AWS_REGION            região dos buckets (padrão: us-east-1)
+    API_PORT              porta da API (padrão: 5000)
+
+- área de administração (http://localhost:3000/admin):
+  1. No .env (o mesmo arquivo serve para o site e para a API), defina TOKEN_INTERNO com um texto
+     aleatório e reinicie os dois. Para gerar:
+       node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+  2. Cadastre-se no site (/register) e transforme a sua conta em administrador:
+       node scripts/tornar-admin.js seu@email.com
+  3. Entre pelo /login normal: o administrador cai direto em /admin.
+  As tabelas novas (planos, cursos, importação do S3, registro) são criadas sozinhas quando o Node sobe.
+  Para "Importar do S3" funcionar, a API precisa de credenciais da AWS com permissão de listar os
+  buckets (AWS_ACCESS_KEY_ID e AWS_SECRET_ACCESS_KEY no .env, ou ~/.aws/credentials). Sem elas, o
+  resto da administração funciona e a tela do S3 mostra o aviso.
 
 - medir a qualidade da tradução (rode depois de mexer no tradutor ou no banco de sinais):
     python scripts/avaliar_traducao.py --detalhes

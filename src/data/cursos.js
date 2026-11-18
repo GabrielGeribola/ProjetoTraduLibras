@@ -1,7 +1,8 @@
-// Conteúdo da página /cursos.
-// Vídeos: todos conferidos no YouTube em 16/11/2026 (os links que não existiam mais foram retirados
-// e a lista foi ampliada com aulas de canais conhecidos, universidades e do MEC).
-// Para incluir um item, basta adicionar um objeto na lista certa usando um dos temas abaixo.
+// Conteúdo inicial da página /cursos.
+// Desde a área de administração, vídeos, artigos e temas ficam nas tabelas cursos_temas e
+// cursos_conteudos e são editados em /admin/cursos. Esta lista só é usada para criar as tabelas
+// pela primeira vez (src/config/migracoes.js) e como reserva se o banco não responder.
+// Vídeos: todos conferidos no YouTube em 16/11/2026.
 
 const TEMAS = [
   { id: 'primeiros-passos', nome: 'Primeiros passos' },
@@ -202,35 +203,5 @@ const ARTIGOS = [
     link: 'https://www.scielo.br/j/edreal/a/XjyRJtDLTwVh3dxVrkL3cBm/' },
 ];
 
-function fonteDoLink(link) {
-  try {
-    return new URL(link).hostname.replace(/^www\./, '');
-  } catch (e) {
-    return '';
-  }
-}
-
-const nomeDoTema = Object.fromEntries(TEMAS.map((t) => [t.id, t.nome]));
-
-const videos = VIDEOS.map((v) => ({
-  ...v,
-  tipo: 'video',
-  temaNome: nomeDoTema[v.tema],
-  link: `https://www.youtube.com/watch?v=${v.id}`,
-  thumb: `https://i.ytimg.com/vi/${v.id}/hqdefault.jpg`,
-}));
-
-const artigos = ARTIGOS.map((a) => ({
-  ...a,
-  tipo: 'artigo',
-  temaNome: nomeDoTema[a.tema],
-  fonte: fonteDoLink(a.link),
-  pdf: /\.pdf($|\?)/i.test(a.link) || /\/download\//.test(a.link),
-}));
-
-// Só mostra filtros de temas que têm conteúdo
-const temas = TEMAS
-  .map((t) => ({ ...t, total: videos.filter((v) => v.tema === t.id).length + artigos.filter((a) => a.tema === t.id).length }))
-  .filter((t) => t.total > 0);
-
-module.exports = { temas, videos, artigos };
+// A página é montada por src/services/cursosService.js
+module.exports = { TEMAS, VIDEOS, ARTIGOS };

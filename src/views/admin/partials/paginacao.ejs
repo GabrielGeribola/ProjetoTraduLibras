@@ -1,0 +1,9 @@
+<% if (pag.paginas > 1) { %>
+  <nav class="adm-paginacao" aria-label="Páginas">
+    <% if (pag.pagina > 1) { %><a href="<%= pag.link(pag.pagina - 1) %>" class="adm-btn adm-btn-sec adm-btn-peq">← Anterior</a><% } %>
+    <span>Página <%= pag.pagina %> de <%= pag.paginas %> · <%= fmt.numero(pag.total) %> no total</span>
+    <% if (pag.pagina < pag.paginas) { %><a href="<%= pag.link(pag.pagina + 1) %>" class="adm-btn adm-btn-sec adm-btn-peq">Próxima →</a><% } %>
+  </nav>
+<% } else if (pag.total > 0) { %>
+  <p class="adm-paginacao"><span><%= fmt.numero(pag.total) %> no total</span></p>
+<% } %>
