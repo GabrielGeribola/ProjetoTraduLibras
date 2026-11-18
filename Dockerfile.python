@@ -10,7 +10,8 @@ WORKDIR /app
 COPY requirements_api.txt ./
 RUN pip install --no-cache-dir -r requirements_api.txt
 
-COPY ApiTradu.py ./
+COPY ApiTradu.py tradutor.py ./
+COPY dados_traducao ./dados_traducao
 
 EXPOSE 5000
 CMD ["python", "ApiTradu.py"]

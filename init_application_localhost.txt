@@ -1,13 +1,44 @@
 - abrir dois terminais
 - no primeiro rodar o comando que inicia a aplicação em ejs
-    npm run dev 
-- no segundo  se já criou a venv antes, basta iniciar a venv:
-    source venv/bin/activate
-- após iniciar a API
-     python3 ApiTradu.py 
-     
-- caso não tenha a venv criada é necessário criar uma e instalar as dependencias da API.
-    python3 -m venv venv
-    source venv/bin/activate
-    pip3 install mysql-connector-python scipy python-Levenshtein scikit-learn nltk sentence-transformers flask flask-cors pydub SpeechRecognition
-     --esse é o processo mais demorado,
+    npm run dev
+
+- no segundo, a API de tradução (Python 3.11, o mesmo do Dockerfile.python).
+  Com Python 3.12+ o spaCy 3.7 não instala.
+
+  Primeira vez (cria a venv e instala as dependências; é o processo mais demorado):
+    Linux/Mac:
+      python3.11 -m venv venv
+      source venv/bin/activate
+      pip install -r requirements_api.txt
+    Windows (PowerShell):
+      py -3.11 -m venv venv
+      .\venv\Scripts\Activate.ps1
+      pip install -r requirements_api.txt
+    (no Windows, o torch precisa do "Microsoft Visual C++ Redistributable":
+     winget install Microsoft.VCRedist.2015+.x64)
+
+  Nas próximas vezes, só ativar a venv e iniciar a API (ela lê os dados do banco do .env):
+    Linux/Mac:
+      source venv/bin/activate
+      python3 ApiTradu.py
+    Windows (PowerShell):
+      .\venv\Scripts\Activate.ps1
+      python ApiTradu.py
+
+  Variáveis opcionais da API (todas têm valor padrão; podem ir no .env):
+    MODELO_SPACY          modelo de gramática (padrão: pt_core_news_md)
+    MODELO_EMBEDDING      busca por semelhança de significado (padrão: nenhum = desligada).
+                          Se for ligar, use rufimelo/bert-large-portuguese-cased-sts: foi o único
+                          de 6 modelos testados que acha sinônimos sem errar (cão -> CACHORRO).
+                          Custa ~1,3 GB de download e ~1,5 GB de memória; os outros trocam
+                          palavras com nota alta (sim -> ANO, brincar -> BRINCO).
+                          Comparação: python scripts/avaliar_modelos_semanticos.py
+    LIMIAR_SEMANTICO      nota mínima dessa busca, se ligada (padrão 0.90; abaixo de ~0.80
+                          aparecem antônimos: magro -> GORDO)
+    DATILOLOGIA           1 = soletra nomes próprios sem sinal (padrão), 0 = desliga
+    REGISTRAR_SEM_SINAL   1 = conta palavras sem sinal na tabela termos_sem_sinal (padrão)
+    CACHE_TTL_SEGUNDOS    a cada quanto tempo recarrega os sinais do banco (padrão: 3600)
+
+- medir a qualidade da tradução (rode depois de mexer no tradutor ou no banco de sinais):
+    python scripts/avaliar_traducao.py --detalhes
+  O número mais importante é "sinais ERRADOS": um sinal errado é pior do que nenhum sinal.
