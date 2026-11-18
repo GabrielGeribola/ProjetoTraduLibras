@@ -1,0 +1,208 @@
+<%- include('partials/topo') %>
+
+<section class="adm-card adm-varredura">
+  <div class="adm-varredura-texto">
+    <h2>Procurar vídeos novos</h2>
+    <p class="adm-muted">Compara os arquivos de vídeo dos buckets
+      <% if (api.online && api.buckets) { %><strong><%= api.buckets.join(' e ') %></strong><% } else { %>do S3<% } %>
+      com o banco. O que ainda não está cadastrado entra na lista abaixo para você aprovar. Nada é cadastrado sem aprovação.</p>
+    <% if (varredura) { %>
+      <p class="adm-varredura-ultima">
+        Última varredura: <strong><%= fmt.dataHora(varredura.feita_em) %></strong> ·
+        <%= fmt.numero(varredura.total_s3) %> vídeos no S3 ·
+        <%= fmt.numero(varredura.ja_cadastrados) %> já cadastrados ·
+        <%= fmt.numero(varredura.novos) %> novos
+        <% if (ausentes.length) { %> · <a href="#ausentes" class="adm-link"><%= fmt.numero(ausentes.length) %> no banco sem arquivo no S3</a><% } %>
+      </p>
+    <% } %>
+    <% if (!api.online) { %>
+      <p class="adm-aviso adm-aviso-perigo">A API de tradução não respondeu: <%= api.erro %> Sem ela não dá para ler o S3 nem gerar as embeddings.</p>
+    <% } %>
+  </div>
+  <form method="POST" action="/admin/s3/varrer">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <button type="submit" class="adm-btn adm-btn-grande" data-aguarde="Procurando… (pode levar um minuto)"<%= api.online ? '' : ' disabled' %>>Procurar no S3</button>
+  </form>
+</section>
+
+<nav class="adm-subabas" aria-label="Situação dos vídeos">
+  <% Object.entries(statusLista).forEach(([id, nome]) => { %>
+    <a href="<%= linkStatus(id) %>" class="adm-subaba<%= filtros.status === id ? ' ativa' : '' %>"<%- filtros.status === id ? ' aria-current="page"' : '' %>>
+      <%= nome %> <span class="adm-subaba-num"><%= fmt.numero(contagens[id] || 0) %></span>
+    </a>
+  <% }); %>
+</nav>
+
+<form class="adm-filtros" method="GET" action="/admin/s3" role="search">
+  <input type="hidden" name="status" value="<%= filtros.status %>">
+  <div class="adm-campo adm-campo-cresce">
+    <label for="fq">Palavra ou arquivo</label>
+    <input class="adm-input" type="search" id="fq" name="q" value="<%= filtros.q %>" placeholder="Buscar">
+  </div>
+  <div class="adm-campo">
+    <label for="fbucket">Bucket</label>
+    <select class="adm-input" id="fbucket" name="bucket" data-auto-enviar>
+      <option value="">Todos</option>
+      <% buckets.forEach((b) => { %><option value="<%= b %>"<%= filtros.bucket === b ? ' selected' : '' %>><%= b %></option><% }); %>
+    </select>
+  </div>
+  <% if (filtros.status !== 'aprovado') { %>
+    <div class="adm-campo">
+      <label for="fsinal">Sinalização</label>
+      <select class="adm-input" id="fsinal" name="sinal" data-auto-enviar>
+        <option value="">Todas</option>
+        <% Object.entries(sinalizacoes).forEach(([id, nome]) => { %><option value="<%= id %>"<%= filtros.sinal === id ? ' selected' : '' %>><%= nome %></option><% }); %>
+      </select>
+    </div>
+  <% } %>
+  <button type="submit" class="adm-btn adm-btn-sec">Filtrar</button>
+  <% if (filtros.q || filtros.bucket || filtros.sinal) { %><a href="<%= linkStatus(filtros.status) %>" class="adm-link">Limpar filtros</a><% } %>
+</form>
+
+<% if (filtros.status !== 'aprovado') { %>
+  <ul class="adm-legenda" aria-label="O que cada sinalização quer dizer">
+    <li><span class="adm-tag tag-ok">Palavra nova</span> ainda não existe no tradutor</li>
+    <li><span class="adm-tag tag-info">Já tem sinal</span> a palavra já existe; este vídeo vira uma alternativa</li>
+    <li><span class="adm-tag tag-alerta">Revisar o nome</span> nome com números, símbolos, longo demais ou repetido: confira antes de aprovar</li>
+  </ul>
+<% } %>
+
+<% if (!itens.length) { %>
+  <div class="adm-card adm-vazio">
+    <% if (filtros.status === 'pendente' && !filtros.q && !filtros.bucket && !filtros.sinal) { %>
+      <p><strong>Nenhum vídeo esperando aprovação.</strong> Clique em “Procurar no S3” depois de subir vídeos novos para os buckets.</p>
+    <% } else { %>
+      <p>Nenhum vídeo nesta lista com esses filtros.</p>
+    <% } %>
+  </div>
+<% } else { %>
+  <form method="POST" action="/admin/s3/decidir" class="adm-form-lote" data-sem-enter>
+    <%# Botão padrão desativado: Enter dentro de um campo não envia o formulário (não aprova nada sem querer) %>
+    <button type="submit" disabled hidden aria-hidden="true" tabindex="-1"></button>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="voltar" value="<%= urlAtual %>">
+    <input type="hidden" name="filtro_q" value="<%= filtros.q %>">
+    <input type="hidden" name="filtro_bucket" value="<%= filtros.bucket %>">
+    <input type="hidden" name="filtro_sinal" value="<%= filtros.sinal %>">
+
+    <% if (filtros.status === 'pendente') { %>
+      <div class="adm-lote-topo">
+        <p class="adm-muted">Confira o nome de cada vídeo (dá para corrigir no campo) e aprove. Aprovar cadastra o vídeo, a palavra e a embedding de uma vez.</p>
+        <button type="submit" name="acao" value="aprovar_todos" class="adm-btn adm-btn-ok"
+                data-aguarde="Aprovando…"
+                data-confirmar="Aprovar <%= fmt.numero(Math.min(total, limitePorVez)) %> vídeo(s)<%= (filtros.q || filtros.bucket || filtros.sinal) ? ' deste filtro' : '' %>? Cada um vira uma palavra no tradutor.">
+          ✓ Aprovar todos<%= (filtros.q || filtros.bucket || filtros.sinal) ? ' do filtro' : '' %> (<%= fmt.numero(Math.min(total, limitePorVez)) %>)
+        </button>
+      </div>
+    <% } %>
+
+    <div class="adm-tabela-wrap">
+      <table class="adm-tabela adm-tabela-s3">
+        <thead>
+          <tr>
+            <% if (filtros.status !== 'aprovado') { %>
+              <th scope="col" class="adm-col-check"><input type="checkbox" data-marcar-todos aria-label="Marcar todos desta página"></th>
+            <% } %>
+            <th scope="col">Vídeo</th>
+            <th scope="col">Palavra</th>
+            <th scope="col">Arquivo</th>
+            <th scope="col"><%= filtros.status === 'pendente' ? 'Encontrado em' : 'Decidido' %></th>
+            <th scope="col"><span class="sr-only">Ações</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% itens.forEach((i) => { const id = i.id_importacao; %>
+            <tr>
+              <% if (filtros.status !== 'aprovado') { %>
+                <td class="adm-col-check"><input type="checkbox" name="ids" value="<%= id %>" aria-label="Marcar <%= i.descricao_sugerida || i.chave %>"></td>
+              <% } %>
+              <td><button type="button" class="adm-btn adm-btn-sec adm-btn-peq" data-video="<%= i.url %>" data-titulo="<%= i.descricao_sugerida || i.chave %>">▶ Ver</button></td>
+              <td class="adm-col-palavra">
+                <% if (filtros.status === 'pendente') { %>
+                  <label class="sr-only" for="d<%= id %>">Palavra do vídeo <%= i.chave %></label>
+                  <input class="adm-input adm-input-palavra" id="d<%= id %>" name="descricao[i<%= id %>]" value="<%= i.descricao_sugerida %>" maxlength="100">
+                <% } else if (filtros.status === 'aprovado') { %>
+                  <strong><%= i.palavras || i.descricao_sugerida %></strong>
+                  <% if (i.id_animation) { %><a href="/admin/palavras?video=<%= i.id_animation %>" class="adm-link">ver em Palavras</a><% } %>
+                <% } else { %>
+                  <strong><%= i.descricao_sugerida || '—' %></strong>
+                <% } %>
+                <% if (filtros.status !== 'aprovado') { %>
+                  <div class="adm-tags">
+                    <% if (i.motivos.length) { %>
+                      <span class="adm-tag tag-alerta" title="<%= i.motivos.join(', ') %>">Revisar: <%= i.motivos.join(', ') %></span>
+                    <% } else if (i.existe) { %>
+                      <span class="adm-tag tag-info">Já tem sinal</span>
+                    <% } else { %>
+                      <span class="adm-tag tag-ok">Palavra nova</span>
+                    <% } %>
+                  </div>
+                <% } %>
+              </td>
+              <td class="adm-col-arquivo">
+                <span class="adm-codigo"><%= i.chave %></span>
+                <span class="adm-muted"><%= i.bucket %> · <%= fmt.bytes(i.tamanho) %></span>
+              </td>
+              <td class="adm-muted">
+                <% if (filtros.status === 'pendente') { %><%= fmt.dataHora(i.encontrado_em) %><% } else { %><%= fmt.dataHora(i.decidido_em) %><% if (i.decidido_por) { %><br><%= i.decidido_por %><% } %><% } %>
+              </td>
+              <td class="adm-acoes-celula">
+                <% if (filtros.status === 'pendente') { %>
+                  <button type="submit" name="acao" value="aprovar:<%= id %>" class="adm-btn adm-btn-ok adm-btn-peq" data-aguarde="…">Aprovar</button>
+                  <button type="submit" name="acao" value="rejeitar:<%= id %>" class="adm-btn adm-btn-perigo adm-btn-peq">Excluir</button>
+                <% } else if (filtros.status === 'rejeitado') { %>
+                  <button type="submit" name="acao" value="restaurar:<%= id %>" class="adm-btn adm-btn-sec adm-btn-peq">Voltar para a lista</button>
+                <% } %>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+
+    <% if (filtros.status !== 'aprovado') { %>
+      <div class="adm-barra-lote" data-barra-lote hidden>
+        <span><strong data-contador-selecionados>0</strong> marcado(s)</span>
+        <% if (filtros.status === 'pendente') { %>
+          <button type="submit" name="acao" value="aprovar_selecionados" class="adm-btn adm-btn-ok" data-aguarde="Aprovando…">✓ Aprovar marcados</button>
+          <button type="submit" name="acao" value="rejeitar_selecionados" class="adm-btn adm-btn-perigo"
+                  data-confirmar="Excluir os vídeos marcados da lista? Eles não serão cadastrados (os arquivos continuam no S3).">Excluir marcados</button>
+        <% } else { %>
+          <button type="submit" name="acao" value="restaurar_selecionados" class="adm-btn adm-btn-sec">Voltar marcados para a lista</button>
+        <% } %>
+      </div>
+    <% } %>
+  </form>
+  <%- include('partials/paginacao') %>
+<% } %>
+
+<% if (ausentes.length) { %>
+  <section class="adm-card adm-zona-alerta" id="ausentes">
+    <h2>No banco, mas sem arquivo no S3 (<%= fmt.numero(ausentes.length) %>)</h2>
+    <p class="adm-muted">Estes vídeos estão cadastrados, mas a última varredura não achou o arquivo no bucket: no tradutor, eles aparecem como vídeo quebrado.
+      Se o arquivo foi apagado de propósito, remova do banco. Se foi renomeado, aprove o novo nome na lista acima e remova o antigo.</p>
+    <div class="adm-tabela-wrap">
+      <table class="adm-tabela">
+        <thead><tr><th scope="col">Arquivo</th><th scope="col">Palavras</th><th scope="col"><span class="sr-only">Ações</span></th></tr></thead>
+        <tbody>
+          <% ausentes.slice(0, 300).forEach((a) => { %>
+            <tr>
+              <td><span class="adm-codigo"><%= a.url.split('/').slice(3).join('/') %></span><br><span class="adm-muted"><%= a.url.split('/')[2].split('.')[0] %></span></td>
+              <td><%= a.palavras || '—' %></td>
+              <td class="adm-acoes-celula">
+                <form method="POST" action="/admin/s3/ausentes/<%= a.id_animation %>/remover"
+                      data-confirmar="Remover do banco o vídeo de “<%= a.palavras || 'sem palavra' %>”? As palavras dele deixam de ter sinal.">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  <button type="submit" class="adm-btn adm-btn-perigo adm-btn-peq">Remover do banco</button>
+                </form>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+    <% if (ausentes.length > 300) { %><p class="adm-muted">Mostrando 300 de <%= fmt.numero(ausentes.length) %>.</p><% } %>
+  </section>
+<% } %>
+
+<%- include('partials/rodape') %>

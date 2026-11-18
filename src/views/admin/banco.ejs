@@ -1,0 +1,41 @@
+<%- include('partials/topo') %>
+
+<div class="adm-barra-resumo">
+  <p class="adm-muted">Banco <strong><%= info.banco %></strong> · MySQL <%= info.versao %> ·
+    <%= fmt.numero(grupos.reduce((s, g) => s + g.tabelas.length, 0)) %> tabelas ·
+    <%= totalMb.toLocaleString('pt-BR', { maximumFractionDigits: 1 }) %> MB.
+    Só leitura: senhas, tokens e dados de sessão nunca aparecem.</p>
+</div>
+
+<% grupos.forEach((g) => { %>
+  <section class="adm-card">
+    <h2><%= g.titulo %></h2>
+    <div class="adm-tabela-wrap">
+      <table class="adm-tabela">
+        <thead><tr><th scope="col">Tabela</th><th scope="col">Para que serve</th><th scope="col" class="adm-num">Registros</th><th scope="col" class="adm-num">Tamanho</th></tr></thead>
+        <tbody>
+          <% g.tabelas.forEach((t) => { %>
+            <tr>
+              <td><a href="/admin/banco/<%= encodeURIComponent(t.nome) %>" class="adm-link-forte adm-codigo"><%= t.nome %></a></td>
+              <td class="adm-muted"><%= t.descricao || '—' %></td>
+              <td class="adm-num"><%= fmt.numero(t.linhas) %></td>
+              <td class="adm-num"><%= Number(t.mb).toLocaleString('pt-BR', { maximumFractionDigits: 2 }) %> MB</td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </section>
+<% }); %>
+
+<section class="adm-card">
+  <h2>Ligações entre tabelas</h2>
+  <p class="adm-muted">Cada linha diz que a coluna da esquerda aponta para um registro da tabela da direita.</p>
+  <ul class="adm-ligacoes">
+    <% ligacoes.forEach((l) => { %>
+      <li><span class="adm-codigo"><%= l.tabela %>.<%= l.coluna %></span> <span aria-hidden="true">→</span><span class="sr-only">aponta para</span> <span class="adm-codigo"><%= l.ref_tabela %>.<%= l.ref_coluna %></span></li>
+    <% }); %>
+  </ul>
+</section>
+
+<%- include('partials/rodape') %>

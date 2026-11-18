@@ -1,0 +1,35 @@
+<%- include('partials/topo') %>
+
+<div class="adm-barra-resumo">
+  <p class="adm-muted">Os planos aparecem na página <a href="/planos" class="adm-link" target="_blank" rel="noopener">/planos ↗</a> na ordem abaixo. O desconto de cada ciclo (semestral -10%, anual -20%) entra quando o preço do ciclo fica vazio.</p>
+  <a href="/admin/planos/novo" class="adm-btn">+ Novo plano</a>
+</div>
+
+<div class="adm-planos">
+  <% planos.forEach((p) => { %>
+    <article class="adm-card adm-plano<%= p.ativo ? '' : ' adm-linha-apagada' %>">
+      <div class="adm-card-topo">
+        <div>
+          <h2><%= p.nome %> <% if (p.selo) { %><span class="adm-tag tag-destaque"><%= p.selo %></span><% } %></h2>
+          <p class="adm-muted"><%= p.publico %></p>
+        </div>
+        <% if (!p.ativo) { %><span class="adm-tag tag-perigo">Oculto no site</span><% } %>
+      </div>
+      <dl class="adm-dados adm-dados-compacto">
+        <% p.exibicao.forEach((e, i) => { %>
+          <dt><%= ciclos[i].rotulo %></dt><dd><%= e.valor %><%= e.periodo %></dd>
+        <% }); %>
+        <dt>Limite</dt><dd><%= p.limite_tokens ? fmt.numero(p.limite_tokens) + ' tokens por tradução' : 'sem limite' %></dd>
+        <dt>Usuários</dt><dd><a href="/admin/usuarios?plano=<%= p.id_plano %>" class="adm-link"><%= fmt.numero(p.usuarios) %></a></dd>
+      </dl>
+      <ul class="adm-recursos">
+        <% p.itens.forEach((r) => { %>
+          <li><% r.partes.forEach((parte) => { %><% if (parte.b) { %><strong><%= parte.t %></strong><% } else { %><%= parte.t %><% } %><% }); %><% if (r.token) { %> <span class="adm-muted">ⓘ</span><% } %></li>
+        <% }); %>
+      </ul>
+      <a href="/admin/planos/<%= p.id_plano %>" class="adm-btn adm-btn-sec adm-btn-peq">Editar</a>
+    </article>
+  <% }); %>
+</div>
+
+<%- include('partials/rodape') %>

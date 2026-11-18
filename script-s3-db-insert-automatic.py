@@ -1,5 +1,8 @@
 """
-Cadastra no banco os vídeos novos do bucket S3.
+Cadastra no banco, sem revisão, os vídeos novos dos buckets S3.
+
+O jeito recomendado agora é a tela Administração > Importar do S3 do site: ela mostra os vídeos
+novos para aprovar um a um (ou todos), já com acento e embedding.
 
 Para cada vídeo que ainda não está em animation_sl_br (comparando pela URL), cria a animação e
 a palavra. A descrição vem do nome do arquivo: "Ano_Novo2.mp4" -> "ano novo".
@@ -8,20 +11,11 @@ Depois de rodar, rode também:
   python gerador-embeddings-db.py                   (preenche a coluna embedding)
 """
 import os
-import re
 
 import boto3
 import mysql.connector
 
-EXTENSOES_VIDEO = (".mp4", ".webm", ".mov")
-
-
-def descricao_do_arquivo(key):
-    """'pasta/Ano_Novo2.mp4' -> 'ano novo'"""
-    nome = os.path.splitext(key.rsplit("/", 1)[-1])[0]
-    nome = re.sub(r"\(\d*\)|\d+$", " ", nome)   # "Palmada (1)", "amor1"
-    nome = nome.replace("_", " ")
-    return " ".join(nome.split()).lower()
+from servico_admin import EXTENSOES_VIDEO, buckets_configurados, descricao_do_arquivo
 
 
 def listar_e_inserir(bucket_name, region_name='us-east-1'):
@@ -215,6 +209,6 @@ def listar_e_inserir(bucket_name, region_name='us-east-1'):
 
 if __name__ == "__main__":
 
-    listar_e_inserir(
-        "words-traducao"
-    )
+    # Os vídeos estão em dois buckets (words-traducao e tradulibras-videos); S3_BUCKETS no .env troca a lista
+    for bucket in buckets_configurados():
+        listar_e_inserir(bucket)

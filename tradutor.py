@@ -496,8 +496,40 @@ class Tradutor:
             self.semantica.atualizar(indice)
         self._indice = indice
         self._carregado_em = time.time()
+        self.total_linhas = len(linhas)
         log.info("[cache] %d sinais (%d palavras/expressões) carregados em %.1fs",
                  len(linhas), len(indice.por_chave), time.time() - inicio)
+
+    def pedir_recarga(self):
+        """Recarrega os sinais do banco em segundo plano (usado depois de mudanças na administração).
+        Se já houver uma recarga em andamento, faz mais uma ao terminar, para pegar a última mudança."""
+        with self._lock:
+            if self._atualizando.is_set():
+                self._recarga_pendente = True
+                return
+            self._atualizando.set()
+            self._recarga_pendente = False
+
+        def tarefa():
+            while True:
+                self._recarregar_em_segundo_plano()
+                with self._lock:
+                    if not getattr(self, "_recarga_pendente", False):
+                        return
+                    self._recarga_pendente = False
+                    self._atualizando.set()
+
+        threading.Thread(target=tarefa, daemon=True).start()
+
+    def status(self):
+        return {
+            "sinais": getattr(self, "total_linhas", 0),
+            "palavras": len(self._indice.por_chave) if self._indice else 0,
+            "carregado_em": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(self._carregado_em)),
+            "atualizando": self._atualizando.is_set(),
+            "modelo_spacy": f"{self.nlp.meta.get('lang', '')}_{self.nlp.meta.get('name', '')}" if self.nlp else "",
+            "busca_semantica": bool(self.semantica),
+        }
 
     def _recarregar_em_segundo_plano(self):
         try:

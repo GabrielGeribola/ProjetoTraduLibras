@@ -1,83 +1,125 @@
 <%- include('includes/head'); %>
+<%- include('includes/navbar'); %>
 
-<main>
-  <%- include('includes/navbar'); %>
-
-  <!-- Modal de Vídeo Tutorial -->
-  <div class="tutorial-overlay" id="tutorialOverlay" role="dialog" aria-modal="true" aria-labelledby="tutorialTitulo">
-    <div class="tutorial-modal">
-      <div class="tutorial-modal-header">
-        <span id="tutorialTitulo">📹 Vídeo Tutorial</span>
-        <button class="tutorial-close" id="tutorialClose" aria-label="Fechar tutorial">✕</button>
-      </div>
-      <div class="tutorial-video-wrap">
-        <video id="tutorialVideo" controls playsinline></video>
-      </div>
-      <p class="tutorial-caption">Aprenda a usar o TraduLibras em poucos minutos.</p>
+<!-- Modal de Vídeo Tutorial -->
+<div class="tutorial-overlay" id="tutorialOverlay" role="dialog" aria-modal="true" aria-labelledby="tutorialTitulo">
+  <div class="tutorial-modal">
+    <div class="tutorial-modal-header">
+      <span id="tutorialTitulo">📹 Vídeo Tutorial</span>
+      <button class="tutorial-close" id="tutorialClose" aria-label="Fechar tutorial">✕</button>
     </div>
+    <div class="tutorial-video-wrap">
+      <video id="tutorialVideo" controls playsinline></video>
+    </div>
+    <p class="tutorial-caption">Aprenda a usar o TraduLibras em poucos minutos.</p>
+  </div>
+</div>
+
+<!-- Tela inicial (mesmo padrão de Cursos e Planos) -->
+<main class="planos-container tradutor-pagina" id="inicio">
+  <div class="planos-cabecalho">
+    <h1 class="planos-titulo">Tradutor</h1>
+    <p class="planos-subtitulo">Escreva ou fale em português e veja a frase em Libras, sinal por sinal.</p>
+    <button type="button" class="tradutor-tutorial" data-tutorial>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/>
+      </svg>
+      Como usar (vídeo tutorial)
+    </button>
   </div>
 
-  <div class="container-home" id="homeContent">
-
-    <!-- Cabeçalho com título e botão tutorial -->
-    <div class="home-header-row">
-      <h2 class="translate-home">TRADUTOR</h2>
-      <button class="btn-tutorial" id="btnTutorial" aria-label="Abrir vídeo tutorial">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <circle cx="12" cy="12" r="10"/>
-          <polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/>
-        </svg>
-        Tutorial
-      </button>
-    </div>
-
-    <div class="digite-expressao">
-      <p id="instrucaoTraducao">Digite uma palavra ou expressão ou grave sua voz:</p>
-    </div>
-
-    <form id="searchForm" class="input-group">
-      <label for="input_text" class="sr-only">Palavra ou frase para traduzir</label>
-      <input type="text" class="input-home" id="input_text" name="input_text"
-             placeholder="Exemplo: Abraço" maxlength="300" autocomplete="off"
-             aria-describedby="instrucaoTraducao">
-      <button class="btn-home" type="submit" id="searchSubmit" aria-label="Traduzir">&gt;</button>
-      <button type="button" class="btn-home" id="recordBtn" aria-label="Gravar áudio por 5 segundos">
-        🎤 <span class="btn-label">Gravar Áudio</span>
-      </button>
+  <section class="tradutor-caixa" aria-label="Traduzir para Libras">
+    <form id="searchForm" class="tradutor-form">
+      <label for="input_text" class="tradutor-rotulo">Palavra ou frase em português</label>
+      <div class="tradutor-linha">
+        <input type="text" class="input-home tradutor-input" id="input_text" name="input_text"
+               placeholder="Ex.: bom dia, tudo bem?" maxlength="300" autocomplete="off" enterkeyhint="go"
+               aria-describedby="tradutorDica">
+        <button type="button" class="plano-botao plano-botao-secundario btn-falar" id="recordBtn" aria-label="Falar: grava sua voz por até 5 segundos">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="17" x2="12" y2="22"/>
+          </svg>
+          Falar
+        </button>
+        <button type="submit" class="plano-botao btn-traduzir" id="searchSubmit">
+          Traduzir
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+      </div>
+      <p class="tradutor-dica" id="tradutorDica">Frases curtas funcionam melhor. Nomes próprios são soletrados letra por letra.</p>
+      <p class="tradutor-status" id="tradutorStatus" role="status" aria-live="polite"></p>
     </form>
 
-    <div class="buttons-cards">
-      <a href="/home" class="card-traduzir">
-        <p class="icon-traduzir" aria-hidden="true">🔁</p>
-        <h3 class="title-card">Traduzir</h3>
-        <p class="descricao-card">Converta palavras em Libras de forma rápida e intuitiva.</p>
-      </a>
-      <a href="/cursos" class="card-aprender">
-        <p class="icon-aprender" aria-hidden="true">📖</p>
-        <h3 class="title-card">Aprender</h3>
-        <p class="descricao-card">Descubra novos sinais e amplie seu conhecimento em Libras.</p>
-      </a>
-      <a href="/sugestoes" class="card-incluir">
-        <p class="icon-incluir" aria-hidden="true">🤗</p>
-        <h3 class="title-card">Incluir</h3>
-        <p class="descricao-card">Facilite a comunicação e torne o diálogo mais acessível.</p>
-      </a>
+    <div class="tradutor-exemplos" role="group" aria-label="Exemplos para experimentar">
+      <span class="tradutor-exemplos-rotulo">Experimente:</span>
+      <% ['bom dia', 'eu te amo', 'obrigado', 'qual é o seu nome?', 'meu nome é Ana'].forEach((exemplo) => { %>
+        <button type="button" class="curso-chip" data-exemplo="<%= exemplo %>"><%= exemplo %></button>
+      <% }); %>
     </div>
-  </div>
-
-  <!-- Chat de tradução (aparece após a primeira tradução) -->
-  <section id="chatWrapper" aria-label="Conversa de tradução">
-    <div class="chat-container" id="chatContainer" role="log" aria-live="polite" aria-relevant="additions"></div>
-
-    <form id="chatForm" class="chat-input-container">
-      <label for="chat_input" class="sr-only">Nova palavra ou frase para traduzir</label>
-      <input type="text" class="input-home" id="chat_input" name="chat_input"
-             placeholder="Digite aqui..." maxlength="300" autocomplete="off">
-      <button type="button" class="btn-home" id="chatRecordBtn" aria-label="Gravar áudio por 5 segundos">🎤</button>
-      <button class="btn-home" type="submit" id="chatSubmit" aria-label="Traduzir">›</button>
-    </form>
   </section>
+
+  <div class="buttons-cards">
+    <a href="#input_text" class="card-traduzir" id="cardTraduzir">
+      <p class="icon-traduzir" aria-hidden="true">🔁</p>
+      <h2 class="title-card">Traduzir</h2>
+      <p class="descricao-card">Converta palavras em Libras de forma rápida e intuitiva.</p>
+    </a>
+    <a href="/cursos" class="card-aprender">
+      <p class="icon-aprender" aria-hidden="true">📖</p>
+      <h2 class="title-card">Aprender</h2>
+      <p class="descricao-card">Descubra novos sinais e amplie seu conhecimento em Libras.</p>
+    </a>
+    <a href="/sugestoes" class="card-incluir">
+      <p class="icon-incluir" aria-hidden="true">🤗</p>
+      <h2 class="title-card">Incluir</h2>
+      <p class="descricao-card">Facilite a comunicação e torne o diálogo mais acessível.</p>
+    </a>
+  </div>
 </main>
+
+<!-- Conversa (estilo WhatsApp): abre na primeira tradução -->
+<section class="conversa" id="conversa" aria-labelledby="conversaNome" hidden>
+  <header class="conversa-topo">
+    <span class="conversa-avatar" aria-hidden="true">🤟</span>
+    <div class="conversa-info">
+      <h1 class="conversa-nome" id="conversaNome">TraduLibras</h1>
+      <p class="conversa-status" id="conversaStatus">online</p>
+    </div>
+    <div class="conversa-acoes">
+      <button type="button" class="conversa-icone" data-tutorial aria-label="Ver o vídeo tutorial" title="Tutorial">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/></svg>
+      </button>
+      <button type="button" class="conversa-icone" id="btnLimpar" aria-label="Nova conversa: apaga as mensagens e volta ao início" title="Nova conversa">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="conversa-mensagens" id="listaMensagens" aria-label="Mensagens">
+    <div class="conversa-dia"><span>Hoje</span></div>
+  </div>
+
+  <form class="conversa-rodape" id="chatForm">
+    <div class="conversa-campo" id="conversaCampo">
+      <label for="chat_input" class="sr-only">Frase para traduzir</label>
+      <input type="text" class="conversa-input" id="chat_input" name="chat_input" placeholder="Digite uma frase"
+             maxlength="300" autocomplete="off" enterkeyhint="send">
+      <p class="conversa-gravando" id="conversaGravando" hidden>
+        <span class="conversa-gravando-ponto" aria-hidden="true"></span>
+        <span id="conversaGravandoTexto">Gravando… 0:05</span>
+      </p>
+    </div>
+    <button type="button" class="conversa-botao" id="chatAcao" aria-label="Gravar áudio">
+      <svg class="icone-mic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="17" x2="12" y2="22"/>
+      </svg>
+      <svg class="icone-enviar" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3.4 20.4 21 12 3.4 3.6l-.01 6.53L15 12 3.39 13.87z"/></svg>
+      <svg class="icone-parar" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+    </button>
+  </form>
+</section>
+
+<p class="sr-only" id="anuncio" aria-live="polite"></p>
 
 <%# Sinais que o usuário logado marcou como incorretos (JSON seguro para <script>) %>
 <script type="application/json" id="dadosExclusoes"><%- JSON.stringify(typeof exclusoes !== 'undefined' ? exclusoes : []).replace(/</g, '\\u003c') %></script>
@@ -95,25 +137,38 @@
   const CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]')?.content || '';
   const TEMPO_LIMITE_MS = 30000;
   const DURACAO_GRAVACAO_MS = 5000;
+  const LIMITE_TEXTO = 300;
+  const VELOCIDADES = [0.5, 0.75, 1];
+  const CHAVE_VELOCIDADE = 'tradulibras:velocidade';
 
   // ── Elementos ─────────────────────────────────────────────
-  const homeContent   = document.getElementById('homeContent');
-  const chatWrapper   = document.getElementById('chatWrapper');
-  const chatContainer = document.getElementById('chatContainer');
-  const searchForm    = document.getElementById('searchForm');
-  const searchInput   = document.getElementById('input_text');
-  const searchSubmit  = document.getElementById('searchSubmit');
-  const chatForm      = document.getElementById('chatForm');
-  const chatInput     = document.getElementById('chat_input');
-  const chatSubmit    = document.getElementById('chatSubmit');
-  const recordBtn     = document.getElementById('recordBtn');
-  const chatRecordBtn = document.getElementById('chatRecordBtn');
-  const botoesAudio   = [recordBtn, chatRecordBtn];
-  botoesAudio.forEach((b) => { b.dataset.conteudoOriginal = b.innerHTML; });
+  const inicio       = document.getElementById('inicio');
+  const conversa     = document.getElementById('conversa');
+  const searchForm   = document.getElementById('searchForm');
+  const searchInput  = document.getElementById('input_text');
+  const recordBtn    = document.getElementById('recordBtn');
+  const statusInicio = document.getElementById('tradutorStatus');
+  const lista        = document.getElementById('listaMensagens');
+  const chatForm     = document.getElementById('chatForm');
+  const chatInput    = document.getElementById('chat_input');
+  const chatAcao     = document.getElementById('chatAcao');
+  const statusTopo   = document.getElementById('conversaStatus');
+  const gravandoEl   = document.getElementById('conversaGravando');
+  const gravandoTxt  = document.getElementById('conversaGravandoTexto');
+  const anuncio      = document.getElementById('anuncio');
+  const exemplos     = [...document.querySelectorAll('[data-exemplo]')];
 
   let traduzindo = false;
   let gravando = false;
   let playerAtivo = null;
+  const players = new Set();
+  const audiosGravados = [];
+
+  let velocidade = 1;
+  try {
+    const salva = Number(localStorage.getItem(CHAVE_VELOCIDADE));
+    if (VELOCIDADES.includes(salva)) velocidade = salva;
+  } catch (e) { /* armazenamento indisponível */ }
 
   // ── Sinais ocultados (resultado do feedback negativo) ─────
   // Logado: vêm do banco e valem em qualquer dispositivo.
@@ -123,8 +178,8 @@
   const exclusoes = new Map();
   const normalizar = (t) => String(t || '').replace(/\s+/g, ' ').trim().toLowerCase();
 
-  function guardarExclusoes(lista) {
-    (lista || []).forEach((item) => {
+  function guardarExclusoes(listaNova) {
+    (listaNova || []).forEach((item) => {
       const termo = normalizar(item.termo);
       const expressao = normalizar(item.expressao);
       if (termo && expressao) exclusoes.set(`${termo}\u0000${expressao}`, { termo, expressao });
@@ -155,7 +210,7 @@
     tutorialOverlay.classList.add('open');
     document.body.style.overflow = 'hidden';
   }
-  document.getElementById('btnTutorial').addEventListener('click', abrirTutorial);
+  document.querySelectorAll('[data-tutorial]').forEach((b) => b.addEventListener('click', abrirTutorial));
   // /home?tutorial=1 (link "Ver tutorial" da página Ajuda) já abre o vídeo
   if (new URLSearchParams(window.location.search).get('tutorial') === '1') abrirTutorial();
 
@@ -181,39 +236,111 @@
     return elemento;
   }
 
-  function mostrarChat() {
-    homeContent.hidden = true;
-    chatWrapper.classList.add('is-active');
+  const anunciar = (texto) => { anuncio.textContent = ''; setTimeout(() => { anuncio.textContent = texto; }, 50); };
+  const horaAgora = () => new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+  // ── Estado da conversa ────────────────────────────────────
+  function abrirConversa() {
+    if (!conversa.hidden) return;
+    inicio.hidden = true;
+    conversa.hidden = false;
+    document.body.classList.add('em-conversa');
+    window.scrollTo(0, 0);
   }
 
-  function rolarParaFim() {
-    chatContainer.scrollTop = chatContainer.scrollHeight;
-  }
-
-  function adicionarMensagem(conteudo, remetente = 'bot', classeExtra) {
-    const msg = criar('div', { classe: `chat-bubble ${remetente}` });
-    if (classeExtra) msg.classList.add(classeExtra);
-    if (conteudo instanceof Node) msg.append(conteudo);
-    else msg.textContent = conteudo;
-    chatContainer.append(msg);
-    rolarParaFim();
-    return msg;
-  }
-
-  function mensagemCarregando(texto) {
-    const conteudo = criar('span', { classe: 'carregando-conteudo' }, [
-      criar('span', { classe: 'carregando-pontos', atributos: { 'aria-hidden': 'true' } },
-        [criar('span'), criar('span'), criar('span')]),
-      criar('span', { texto }),
-    ]);
-    return adicionarMensagem(conteudo, 'bot', 'carregando');
-  }
+  function definirStatus(texto) { statusTopo.textContent = texto; }
 
   function atualizarBloqueios() {
     const ocupado = traduzindo || gravando;
-    [searchInput, searchSubmit, chatInput, chatSubmit].forEach((e) => { e.disabled = ocupado; });
-    botoesAudio.forEach((b) => { b.disabled = ocupado; });
+    exemplos.forEach((b) => { b.disabled = ocupado; });
+    document.getElementById('searchSubmit').disabled = ocupado;
+    recordBtn.disabled = ocupado;
+    chatAcao.disabled = traduzindo && !gravando;
+    if (gravando) definirStatus('gravando áudio…');
+    else if (traduzindo) definirStatus('traduzindo…');
+    else definirStatus('online');
   }
+
+  // Botão redondo do rodapé: microfone com o campo vazio, "enviar" quando há texto, "parar" gravando
+  function atualizarBotaoChat() {
+    const modo = gravando ? 'parar' : (chatInput.value.trim() ? 'enviar' : 'mic');
+    chatAcao.dataset.modo = modo;
+    chatAcao.setAttribute('aria-label', { parar: 'Parar e enviar o áudio', enviar: 'Traduzir', mic: 'Gravar áudio' }[modo]);
+    chatAcao.type = modo === 'enviar' ? 'submit' : 'button';
+  }
+  chatInput.addEventListener('input', atualizarBotaoChat);
+
+  // Rola para mostrar a mensagem nova (se for alta, mostra o começo dela)
+  function rolarPara(elemento) {
+    requestAnimationFrame(() => {
+      const alta = elemento.offsetHeight > lista.clientHeight - 24;
+      lista.scrollTop = alta ? elemento.offsetTop - 12 : lista.scrollHeight;
+    });
+  }
+
+  function rodape(extra = []) {
+    return criar('span', { classe: 'msg-rodape' }, [criar('time', { texto: horaAgora() }), ...extra]);
+  }
+
+  // Mensagem do usuário (direita). Os tiques viram ✓✓ quando a resposta chega.
+  function mensagemUsuario(conteudo) {
+    const tiques = criar('span', { classe: 'msg-tiques', texto: '✓', atributos: { 'aria-hidden': 'true' } });
+    const balao = criar('div', { classe: 'msg msg-usuario' }, [...conteudo, rodape([tiques])]);
+    lista.append(balao);
+    rolarPara(balao);
+    return {
+      balao,
+      respondida() { tiques.textContent = '✓✓'; tiques.classList.add('lida'); },
+    };
+  }
+
+  // Resposta do TraduLibras (esquerda)
+  function mensagemBot() {
+    const balao = criar('div', { classe: 'msg msg-bot digitando' }, [
+      criar('span', { classe: 'carregando-pontos', atributos: { 'aria-label': 'Traduzindo' } }, [criar('span'), criar('span'), criar('span')]),
+    ]);
+    lista.append(balao);
+    rolarPara(balao);
+    return {
+      balao,
+      erro(conteudo) {
+        balao.className = 'msg msg-bot erro';
+        balao.replaceChildren(
+          criar('p', { classe: 'msg-texto' }, [criar('span', { texto: '⚠️ ', atributos: { 'aria-hidden': 'true' } }), conteudo]),
+          rodape(),
+        );
+        rolarPara(balao);
+      },
+      mostrar(elementos) {
+        balao.className = 'msg msg-bot msg-traducao';
+        balao.replaceChildren(...elementos, rodape());
+        rolarPara(balao);
+      },
+    };
+  }
+
+  function limparConversa() {
+    players.forEach((p) => p.pausar());
+    players.clear();
+    playerAtivo = null;
+    audiosGravados.splice(0).forEach((url) => URL.revokeObjectURL(url));
+    lista.replaceChildren(criar('div', { classe: 'conversa-dia' }, [criar('span', { texto: 'Hoje' })]));
+    conversa.hidden = true;
+    inicio.hidden = false;
+    document.body.classList.remove('em-conversa');
+    searchInput.focus();
+  }
+  document.getElementById('btnLimpar').addEventListener('click', () => {
+    if (lista.querySelector('.msg') && !window.confirm('Apagar esta conversa e voltar ao início?')) return;
+    limparConversa();
+  });
+
+  // "Traduzir" nos atalhos leva ao campo, em vez de recarregar a página
+  document.getElementById('cardTraduzir').addEventListener('click', (e) => {
+    e.preventDefault();
+    searchInput.focus();
+    searchInput.scrollIntoView({ block: 'center' });
+  });
 
   // ── Chamada à API com tempo limite ────────────────────────
   async function chamarApi(caminho, opcoes) {
@@ -232,54 +359,86 @@
   }
 
   // Mensagens claras para cada tipo de falha
-  function mostrarErro(resultado) {
+  function mensagemDeErro(resultado) {
     const { status, dados, tipo } = resultado;
-
-    if (tipo === 'tempo') {
-      return adicionarMensagem('A tradução está demorando mais que o normal. Tente novamente em instantes.', 'bot', 'erro');
-    }
-    if (tipo === 'rede') {
-      return adicionarMensagem('Não foi possível conectar ao serviço de tradução. Verifique sua conexão e tente novamente.', 'bot', 'erro');
-    }
+    if (tipo === 'tempo') return 'A tradução está demorando mais que o normal. Tente novamente em instantes.';
+    if (tipo === 'rede') return 'Não foi possível conectar ao serviço de tradução. Verifique sua conexão e tente novamente.';
     if (status === 404 && dados && dados.codigo === 'SEM_SINAIS') {
-      const conteudo = criar('span', {}, [
-        'Ainda não temos sinais para essa frase. Veja as palavras disponíveis no ',
-        criar('a', { texto: 'Glossário', atributos: { href: dados.sugestao_link || '/sugestoes' } }),
-        '.',
-      ]);
-      return adicionarMensagem(conteudo, 'bot', 'erro');
+      const partes = ['Ainda não temos sinais para essa frase. '];
+      if (Array.isArray(dados.sem_sinal) && dados.sem_sinal.length) partes.push(`Sem sinal: ${dados.sem_sinal.join(', ')}. `);
+      partes.push('Veja as palavras disponíveis no ', criar('a', { texto: 'Glossário', atributos: { href: dados.sugestao_link || '/sugestoes' } }), '.');
+      return criar('span', {}, partes);
     }
-    if (status >= 500 || !dados) {
-      return adicionarMensagem('O serviço de tradução está com problemas agora. Tente novamente em alguns minutos.', 'bot', 'erro');
+    if (status >= 500 || !dados) return 'O serviço de tradução está com problemas agora. Tente novamente em alguns minutos.';
+    return dados.mensagem || 'Não foi possível processar o pedido.';
+  }
+
+  // ── Sinais da resposta ────────────────────────────────────
+  // Explica quando o sinal não é a palavra exata digitada
+  function notaDoSinal(item) {
+    const termo = item.termo_original || '';
+    if (item.metodo === 'datilologia') return `soletrando “${termo}”`;
+    if (item.aproximado) return `sinal aproximado para “${termo}”`;
+    if (item.metodo === 'correcao') return `você escreveu “${termo}”`;
+    if (['sinonimo', 'variacao', 'lema'].includes(item.metodo) && normalizar(termo) !== normalizar(item.expressao_libras)) {
+      return `para “${termo}”`;
     }
-    return adicionarMensagem(dados.mensagem || 'Não foi possível processar o pedido.', 'bot', 'erro');
+    return '';
+  }
+
+  // Um item por sinal; letras soletradas seguidas da mesma palavra viram um item só ("A-N-A")
+  function agruparSinais(sequencia) {
+    const grupos = [];
+    sequencia.forEach((item, i) => {
+      const nome = String(item.expressao_libras || item.termo_original || '').toUpperCase();
+      const anterior = grupos[grupos.length - 1];
+      if (item.metodo === 'datilologia' && anterior && anterior.soletrado && anterior.termo === item.termo_original) {
+        anterior.fim = i;
+        anterior.rotulo += `-${nome}`;
+        return;
+      }
+      grupos.push({
+        inicio: i, fim: i, rotulo: nome, termo: item.termo_original,
+        soletrado: item.metodo === 'datilologia', aproximado: Boolean(item.aproximado), nota: notaDoSinal(item),
+      });
+    });
+    return grupos;
   }
 
   // ── Player dos sinais ─────────────────────────────────────
   // Dois <video> alternados: enquanto um toca, o outro já carrega o próximo sinal (sem pausa entre sinais).
-  // A sequência toca uma vez; depois aparece "Repetir".
-  function criarPlayer(palco, termoEl, botaoPausa, botaoRepetir, sequencia) {
+  // A sequência toca uma vez; depois aparece "Repetir". Clicar num sinal da lista toca a partir dele.
+  function criarPlayer({ palco, legenda, botaoPausa, botaoRepetir, chips, grupos, sequencia }) {
     let [atual, proximo] = palco.querySelectorAll('video');
     const total = sequencia.length;
     let indice = 0;
     let terminou = false;
+
+    const grupoDoIndice = (i) => grupos.findIndex((g) => i >= g.inicio && i <= g.fim);
+
+    function aplicarVelocidade(video) {
+      video.defaultPlaybackRate = velocidade;
+      video.playbackRate = velocidade;
+    }
 
     function carregar(video, i) {
       if (video.dataset.indice === String(i)) return;
       video.dataset.indice = String(i);
       video.src = sequencia[i].url;
       video.load();
+      aplicarVelocidade(video);
     }
 
-    function atualizarTermo(i) {
-      const item = sequencia[i];
-      const partes = [
-        `Sinal ${i + 1} de ${total}: `,
-        criar('strong', { texto: item.expressao_libras || item.termo_original || '' }),
-      ];
-      const nota = notaDoSinal(item);
-      if (nota) partes.push(criar('span', { classe: 'termo-nota', texto: ` (${nota})` }));
-      termoEl.replaceChildren(...partes);
+    function atualizarLegenda(i) {
+      const g = grupoDoIndice(i);
+      const grupo = grupos[g];
+      const partes = [`Sinal ${g + 1} de ${grupos.length}: `, criar('strong', { texto: grupo.rotulo })];
+      if (grupo.nota) partes.push(criar('span', { classe: 'termo-nota', texto: ` (${grupo.nota})` }));
+      legenda.replaceChildren(...partes);
+      chips.forEach((chip, k) => {
+        if (k === g) chip.setAttribute('aria-current', 'step');
+        else chip.removeAttribute('aria-current');
+      });
     }
 
     function tocar(i) {
@@ -291,10 +450,12 @@
       carregar(atual, i);
       atual.classList.add('is-visible');
       proximo.classList.remove('is-visible');
-      atualizarTermo(i);
-      atual.play().catch(() => {
-        // Navegador bloqueou o autoplay: o usuário inicia pelo botão
-        botaoPausa.textContent = '▶ Reproduzir';
+      atualizarLegenda(i);
+      aplicarVelocidade(atual);
+      atual.play().catch((erro) => {
+        // Navegador bloqueou o autoplay: o usuário inicia pelo botão.
+        // (AbortError = o usuário pausou antes de o vídeo carregar; o botão já mostra "Continuar")
+        if (erro && erro.name === 'NotAllowedError') botaoPausa.textContent = '▶ Reproduzir';
       });
       if (i + 1 < total) carregar(proximo, i + 1);
     }
@@ -331,16 +492,21 @@
           controle.pausar();
         }
       },
-      repetir() {
+      irPara(i) {
         ativar(controle);
-        // garante que o primeiro sinal seja recarregado no player visível
+        // garante que o sinal escolhido seja recarregado no player visível
         atual.dataset.indice = '';
-        tocar(0);
+        tocar(i);
       },
+      repetir() { controle.irPara(0); },
+      velocidade() { aplicarVelocidade(atual); aplicarVelocidade(proximo); },
     };
 
     botaoPausa.addEventListener('click', () => controle.alternar());
     botaoRepetir.addEventListener('click', () => controle.repetir());
+    chips.forEach((chip, k) => chip.addEventListener('click', () => controle.irPara(grupos[k].inicio)));
+    palco.addEventListener('click', () => (terminou ? controle.repetir() : controle.alternar()));
+    players.add(controle);
     return controle;
   }
 
@@ -350,62 +516,79 @@
     playerAtivo = player;
   }
 
+  // Velocidade: vale para todos os vídeos e fica guardada no navegador
+  function seletorVelocidade() {
+    const opcoes = VELOCIDADES.map((v) => {
+      const botao = criar('button', {
+        classe: 'ciclo-opcao',
+        texto: `${String(v).replace('.', ',')}×`,
+        atributos: { type: 'button', 'data-velocidade': String(v), 'aria-pressed': String(v === velocidade) },
+      });
+      botao.addEventListener('click', () => {
+        velocidade = v;
+        try { localStorage.setItem(CHAVE_VELOCIDADE, String(v)); } catch (e) { /* armazenamento indisponível */ }
+        document.querySelectorAll('[data-velocidade]').forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.velocidade) === v)));
+        players.forEach((p) => p.velocidade());
+      });
+      return botao;
+    });
+    return criar('div', { classe: 'ciclo-seletor velocidade', atributos: { role: 'group', 'aria-label': 'Velocidade dos vídeos', title: 'Velocidade' } }, opcoes);
+  }
+
   // Palavras que ficaram de fora (sem sinal confiável no banco): melhor avisar do que mostrar um sinal errado
   function avisoSemSinal(termos) {
     if (!Array.isArray(termos) || termos.length === 0) return [];
     return [criar('p', { classe: 'traducao-sem-sinal' }, [
       criar('strong', { texto: 'Ainda sem sinal: ' }),
       termos.join(', '),
-      ' · ',
-      criar('a', { texto: 'sugerir', atributos: { href: '/sugestoes' } }),
+      '. ',
+      criar('a', { texto: 'Sugerir', atributos: { href: '/sugestoes' } }),
     ])];
   }
 
-  // Explica, ao lado do sinal, quando ele não é a palavra exata digitada
-  function notaDoSinal(item) {
-    const termo = item.termo_original || '';
-    if (item.metodo === 'datilologia') return `soletrando “${termo}”`;
-    if (item.aproximado) return `sinal aproximado para “${termo}”`;
-    if (item.metodo === 'correcao') return `você escreveu “${termo}”`;
-    if (['sinonimo', 'variacao', 'lema'].includes(item.metodo) && normalizar(termo) !== normalizar(item.expressao_libras)) {
-      return `para “${termo}”`;
-    }
-    return '';
-  }
-
-  // ── Resposta da tradução ──────────────────────────────────
-  function renderTraducao(dados, entrada) {
+  // ── Resposta da tradução (balão com vídeo) ────────────────
+  function renderTraducao(resposta, dados, entrada) {
     const sequencia = dados.sequencia || [];
-    const termo = criar('p', { classe: 'termo-atual' });
-    const palco = criar('div', { classe: 'video-stage' }, [
+    const grupos = agruparSinais(sequencia);
+
+    const palco = criar('div', { classe: 'video-stage', atributos: { title: 'Toque para pausar ou continuar' } }, [
       criar('video', { classe: 'video-libras', atributos: { muted: '', playsinline: '', preload: 'auto', 'aria-label': 'Vídeo do sinal em Libras' } }),
       criar('video', { classe: 'video-libras', atributos: { muted: '', playsinline: '', preload: 'auto', 'aria-hidden': 'true' } }),
     ]);
     palco.querySelectorAll('video').forEach((v) => { v.muted = true; });
 
+    const legenda = criar('p', { classe: 'termo-atual', atributos: { 'aria-live': 'polite' } });
     const botaoPausa = criar('button', { classe: 'btn-player', texto: '⏸ Pausar', atributos: { type: 'button' } });
-    const botaoRepetir = criar('button', { classe: 'btn-player', texto: '↻ Repetir', atributos: { type: 'button' } });
+    const botaoRepetir = criar('button', { classe: 'btn-player btn-player-primario', texto: '↻ Repetir', atributos: { type: 'button' } });
     botaoRepetir.hidden = true;
 
-    const feedback = criarFeedback({ texto: entrada, glosa: dados.glosa || '', sequencia });
+    const chips = grupos.map((g, k) => criar('button', {
+      classe: `sinal-chip${g.aproximado ? ' aproximado' : ''}`,
+      atributos: { type: 'button', title: g.nota ? `${g.rotulo}: ${g.nota}` : `Ver o sinal ${g.rotulo}` },
+    }, [criar('span', { classe: 'sinal-num', texto: String(k + 1), atributos: { 'aria-hidden': 'true' } }), g.rotulo]));
 
-    const resultado = criar('div', { classe: 'traducao-resultado' }, [
-      criar('p', {}, [criar('strong', { texto: 'Frase: ' }), dados.frase_original || entrada]),
-      criar('p', { classe: 'traducao-glosa' }, [criar('strong', { texto: 'Glosa: ' }), dados.glosa || '']),
-      ...avisoSemSinal(dados.sem_sinal),
-      criar('div', { classe: 'video-container' }, [
-        palco,
-        termo,
+    // Com um sinal só, a legenda embaixo do vídeo já explica; a lista de notas seria repetição
+    const notas = grupos.length > 1 ? grupos.filter((g) => g.nota) : [];
+
+    resposta.mostrar([
+      palco,
+      legenda,
+      criar('div', { classe: 'player-barra' }, [
         criar('div', { classe: 'player-controles' }, [botaoPausa, botaoRepetir]),
+        seletorVelocidade(),
       ]),
-      feedback,
+      criar('div', { classe: 'sinais-sequencia', atributos: { role: 'group', 'aria-label': 'Sinais da tradução, na ordem da Libras: escolha um para ver' } }, chips),
+      ...(notas.length
+        ? [criar('ul', { classe: 'traducao-notas' }, notas.map((g) => criar('li', {}, [criar('strong', { texto: g.rotulo }), ` — ${g.nota}`])))]
+        : []),
+      ...avisoSemSinal(dados.sem_sinal),
+      criarFeedback({ texto: entrada, glosa: dados.glosa || '', sequencia }),
     ]);
 
-    adicionarMensagem(resultado, 'bot', 'resposta-traducao');
-
-    const player = criarPlayer(palco, termo, botaoPausa, botaoRepetir, sequencia);
+    const player = criarPlayer({ palco, legenda, botaoPausa, botaoRepetir, chips, grupos, sequencia });
     ativar(player);
     player.iniciar();
+    anunciar(`Tradução pronta: ${grupos.length} ${grupos.length === 1 ? 'sinal' : 'sinais'}.`);
   }
 
   // ── Feedback ──────────────────────────────────────────────
@@ -438,11 +621,11 @@
 
   function criarFeedback({ texto, glosa, sequencia }) {
     const pergunta = criar('span', { classe: 'feedback-pergunta', texto: 'Esse era o resultado esperado?' });
-    const sim = criar('button', { texto: '👍', atributos: { type: 'button', 'aria-label': 'Sim, era o esperado' } });
-    const nao = criar('button', { texto: '👎', atributos: { type: 'button', 'aria-label': 'Não era o esperado', 'aria-expanded': 'false' } });
+    const sim = criar('button', { classe: 'feedback-botao', atributos: { type: 'button', 'aria-label': 'Sim, era o esperado' } }, ['👍 ', criar('span', { texto: 'Sim' })]);
+    const nao = criar('button', { classe: 'feedback-botao', atributos: { type: 'button', 'aria-label': 'Não era o esperado', 'aria-expanded': 'false' } }, ['👎 ', criar('span', { texto: 'Não' })]);
     const linha = criar('div', { classe: 'feedback-inline' }, [pergunta, criar('span', { classe: 'feedback-botoes' }, [sim, nao])]);
 
-    // Sinais da resposta, sem repetição, na mesma ordem do player ("Sinal 1 de 3...")
+    // Sinais da resposta, sem repetição, na mesma ordem do player
     const vistos = new Set();
     const sinais = [];
     sequencia.forEach((item, i) => {
@@ -576,127 +759,195 @@
     }).catch((err) => console.warn('Não foi possível salvar no histórico:', err));
   }
 
-  function tratarResultadoTraducao(resultado, entrada) {
+  function tratarResultadoTraducao(resposta, resultado, entrada) {
     const { ok, dados } = resultado;
     if (ok && dados && dados.status === 'success' && (dados.sequencia || []).length > 0) {
-      renderTraducao(dados, entrada);
+      renderTraducao(resposta, dados, entrada);
       salvarHistorico(entrada, dados.glosa, dados.sequencia);
     } else {
-      mostrarErro(resultado);
+      const mensagem = mensagemDeErro(resultado);
+      resposta.erro(mensagem);
+      anunciar(typeof mensagem === 'string' ? mensagem : mensagem.textContent);
     }
   }
 
   // ── Tradução por texto ────────────────────────────────────
   async function traduzirTexto(textoBruto) {
-    const texto = (textoBruto || '').trim();
+    const texto = (textoBruto || '').trim().slice(0, LIMITE_TEXTO);
     if (!texto || traduzindo || gravando) return;
 
-    mostrarChat();
-    adicionarMensagem(texto, 'user');
+    abrirConversa();
     searchInput.value = '';
     chatInput.value = '';
+    statusInicio.textContent = '';
+    atualizarBotaoChat();
 
+    const enviada = mensagemUsuario([criar('p', { classe: 'msg-texto', texto })]);
+    const resposta = mensagemBot();
     traduzindo = true;
     atualizarBloqueios();
-    const carregando = mensagemCarregando('Traduzindo…');
-
     try {
       const resultado = await chamarApi('/api/sugestao', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ texto, exclusoes: listaExclusoes() }),
       });
-      carregando.remove();
-      tratarResultadoTraducao(resultado, texto);
+      enviada.respondida();
+      tratarResultadoTraducao(resposta, resultado, texto);
     } finally {
-      carregando.remove();
       traduzindo = false;
       atualizarBloqueios();
-      chatInput.focus();
+      chatInput.focus({ preventScroll: true });
     }
   }
 
-  searchForm.addEventListener('submit', (e) => { e.preventDefault(); traduzirTexto(searchInput.value); });
-  chatForm.addEventListener('submit', (e) => { e.preventDefault(); traduzirTexto(chatInput.value); });
+  searchForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (!searchInput.value.trim()) {
+      statusInicio.textContent = 'Digite uma palavra ou frase para traduzir.';
+      searchInput.focus();
+      return;
+    }
+    traduzirTexto(searchInput.value);
+  });
+  chatForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    traduzirTexto(chatInput.value);
+  });
+  exemplos.forEach((botao) => botao.addEventListener('click', () => traduzirTexto(botao.dataset.exemplo)));
 
-  // ── Tradução por áudio (um único fluxo para os dois botões) ──
+  // ── Tradução por áudio (mensagem de voz) ──────────────────
   function extensaoDoAudio(mimeType) {
     if (mimeType.includes('mp4')) return 'm4a';
     if (mimeType.includes('ogg')) return 'ogg';
     return 'webm';
   }
 
-  async function gravarAudio(botao) {
-    if (traduzindo || gravando) return;
-    mostrarChat();
+  const formatarDuracao = (s) => `0:${String(Math.max(0, Math.round(s))).padStart(2, '0')}`;
+
+  // Balão de voz do usuário: dá para ouvir de novo o que foi gravado; a transcrição aparece embaixo
+  function balaoDeVoz(blob, segundos) {
+    const url = URL.createObjectURL(blob);
+    audiosGravados.push(url);
+    const audio = new Audio(url);
+    const botao = criar('button', { classe: 'voz-play', texto: '▶', atributos: { type: 'button', 'aria-label': 'Ouvir o áudio gravado' } });
+    const barra = criar('span', { classe: 'voz-onda', atributos: { 'aria-hidden': 'true' } },
+      Array.from({ length: 22 }, (_, i) => criar('i', { atributos: { style: `height:${30 + Math.round(Math.abs(Math.sin(i * 1.7)) * 70)}%` } })));
+    const duracao = criar('span', { classe: 'voz-duracao', texto: formatarDuracao(segundos) });
+    botao.addEventListener('click', () => {
+      if (audio.paused) { if (playerAtivo) playerAtivo.pausar(); audio.play(); } else { audio.pause(); }
+    });
+    audio.addEventListener('play', () => { botao.textContent = '❚❚'; botao.setAttribute('aria-label', 'Pausar o áudio'); });
+    const parado = () => { botao.textContent = '▶'; botao.setAttribute('aria-label', 'Ouvir o áudio gravado'); };
+    audio.addEventListener('pause', parado);
+    audio.addEventListener('ended', parado);
+    const transcricao = criar('p', { classe: 'msg-transcricao', texto: 'transcrevendo…' });
+    return {
+      conteudo: [criar('div', { classe: 'voz' }, [criar('span', { classe: 'voz-mic', texto: '🎤', atributos: { 'aria-hidden': 'true' } }), botao, barra, duracao]), transcricao],
+      transcrito(texto) {
+        transcricao.textContent = texto ? `“${texto}”` : 'Não deu para entender o áudio.';
+        transcricao.classList.toggle('falhou', !texto);
+      },
+    };
+  }
+
+  let pararGravacao = null;
+
+  async function gravarAudio() {
+    if (gravando) { if (pararGravacao) pararGravacao(); return; } // tocar de novo encerra e envia antes dos 5 s
+    if (traduzindo) return;
 
     let stream;
     try {
       stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     } catch (e) {
-      adicionarMensagem('Não foi possível acessar o microfone. Verifique a permissão do navegador.', 'bot', 'erro');
+      if (conversa.hidden) statusInicio.textContent = 'Não foi possível acessar o microfone. Verifique a permissão do navegador.';
+      else mensagemBot().erro('Não foi possível acessar o microfone. Verifique a permissão do navegador.');
       return;
     }
 
+    abrirConversa();
+    if (playerAtivo) playerAtivo.pausar();
     gravando = true;
     atualizarBloqueios();
-    botao.classList.add('gravando');
-    botao.textContent = '🎙️';
+    atualizarBotaoChat();
+    chatInput.hidden = true;
+    gravandoEl.hidden = false;
 
     const partes = [];
     let tipo = 'audio/webm';
-    let aviso = null;
     let gravou = false;
+    let relogio = null;
+    const comeco = Date.now();
     try {
       const recorder = new MediaRecorder(stream);
       recorder.ondataavailable = (e) => { if (e.data.size) partes.push(e.data); };
       const terminou = new Promise((resolve) => { recorder.onstop = resolve; });
+      pararGravacao = () => { if (recorder.state !== 'inactive') recorder.stop(); };
       recorder.start();
-      aviso = mensagemCarregando('Gravando por 5 segundos… fale agora.');
-      setTimeout(() => { if (recorder.state !== 'inactive') recorder.stop(); }, DURACAO_GRAVACAO_MS);
+      const atualizarRelogio = () => {
+        const restante = Math.ceil((DURACAO_GRAVACAO_MS - (Date.now() - comeco)) / 1000);
+        gravandoTxt.textContent = `Gravando… fale agora · ${formatarDuracao(Math.max(restante, 0))}`;
+      };
+      atualizarRelogio();
+      relogio = setInterval(atualizarRelogio, 250);
+      setTimeout(pararGravacao, DURACAO_GRAVACAO_MS);
       await terminou;
       tipo = recorder.mimeType || tipo;
       gravou = partes.length > 0;
     } catch (e) {
       console.warn('Falha na gravação:', e);
     } finally {
+      clearInterval(relogio);
+      pararGravacao = null;
       stream.getTracks().forEach((t) => t.stop());
-      if (aviso) aviso.remove();
-      botao.classList.remove('gravando');
-      botao.innerHTML = botao.dataset.conteudoOriginal;
+      gravandoEl.hidden = true;
+      chatInput.hidden = false;
     }
 
+    gravando = false;
+    atualizarBotaoChat();
     if (!gravou) {
-      adicionarMensagem('Não foi possível gravar o áudio neste navegador.', 'bot', 'erro');
-      gravando = false;
       atualizarBloqueios();
+      mensagemBot().erro('Não foi possível gravar o áudio neste navegador.');
       return;
     }
 
+    const blob = new Blob(partes, { type: tipo });
+    const voz = balaoDeVoz(blob, (Date.now() - comeco) / 1000);
+    const enviada = mensagemUsuario(voz.conteudo);
+    const resposta = mensagemBot();
+
     const formData = new FormData();
-    formData.append('file', new Blob(partes, { type: tipo }), `gravacao.${extensaoDoAudio(tipo)}`);
+    formData.append('file', blob, `gravacao.${extensaoDoAudio(tipo)}`);
     formData.append('exclusoes', JSON.stringify(listaExclusoes()));
 
-    const carregando = mensagemCarregando('Transcrevendo e traduzindo…');
+    traduzindo = true;
+    atualizarBloqueios();
     try {
       // /api/transcrever já devolve a tradução: não é preciso chamar /api/sugestao de novo
       const resultado = await chamarApi('/api/transcrever', { method: 'POST', body: formData });
-      carregando.remove();
       const transcrito = resultado.dados?.texto_transcrito;
-      if (transcrito) adicionarMensagem(`🎤 ${transcrito}`, 'user');
-      tratarResultadoTraducao(resultado, transcrito || '');
+      voz.transcrito(transcrito);
+      enviada.respondida();
+      tratarResultadoTraducao(resposta, resultado, transcrito || '');
     } finally {
-      carregando.remove();
-      gravando = false;
+      traduzindo = false;
       atualizarBloqueios();
     }
   }
 
-  botoesAudio.forEach((botao) => botao.addEventListener('click', () => gravarAudio(botao)));
+  recordBtn.addEventListener('click', gravarAudio);
+  chatAcao.addEventListener('click', (e) => {
+    if (chatAcao.dataset.modo === 'enviar') return; // o submit do formulário cuida
+    e.preventDefault();
+    gravarAudio();
+  });
+  atualizarBotaoChat();
 
   // ── Tradução automática pela URL (?word=) ─────────────────
   const palavraUrl = new URLSearchParams(window.location.search).get('word');
-  if (palavraUrl) traduzirTexto(palavraUrl.slice(0, 300));
+  if (palavraUrl) traduzirTexto(palavraUrl.slice(0, LIMITE_TEXTO));
 })();
 </script>
 

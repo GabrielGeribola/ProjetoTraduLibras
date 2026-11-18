@@ -1,0 +1,103 @@
+<%- include('partials/topo') %>
+
+<p><a href="<%= voltarPara %>" class="adm-link">← Voltar para a lista</a></p>
+
+<div class="adm-duas-colunas">
+  <section class="adm-card">
+    <h2>Conta</h2>
+    <dl class="adm-dados">
+      <dt>E-mail</dt><dd><%= usuario.email %><% if (ehVoce) { %> <span class="adm-tag">Você</span><% } %></dd>
+      <dt>Cadastro</dt><dd><%= fmt.dataHora(usuario.createdAt) %></dd>
+      <dt>Último login</dt><dd><%= usuario.ultimo_login ? fmt.dataHora(usuario.ultimo_login) : 'Ainda não registrado' %></dd>
+      <dt>Sessões abertas</dt><dd><%= fmt.numero(usuario.sessoes) %></dd>
+      <dt>Traduções salvas</dt><dd><%= fmt.numero(usuario.traducoes) %></dd>
+      <dt>Feedbacks</dt><dd><%= fmt.numero(usuario.feedbacks) %> (<%= fmt.numero(usuario.feedbacks_negativos) %> negativos)</dd>
+      <dt>Sinais ocultados</dt><dd><%= fmt.numero(usuario.sinais_ocultados) %></dd>
+    </dl>
+  </section>
+
+  <section class="adm-card">
+    <h2>Acesso e plano</h2>
+    <form method="POST" action="/admin/usuarios/<%= usuario.id %>" class="adm-form">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+      <div class="adm-campo">
+        <label for="papel">Papel</label>
+        <select class="adm-input" id="papel" name="papel"<%= ehVoce ? ' disabled' : '' %>>
+          <option value="usuario"<%= usuario.papel === 'usuario' ? ' selected' : '' %>>Usuário</option>
+          <option value="admin"<%= usuario.papel === 'admin' ? ' selected' : '' %>>Administrador (acessa esta área)</option>
+        </select>
+        <% if (ehVoce) { %><input type="hidden" name="papel" value="admin"><p class="adm-ajuda">Você não pode tirar o seu próprio acesso.</p><% } %>
+      </div>
+
+      <div class="adm-campo">
+        <label for="ativo">Status</label>
+        <select class="adm-input" id="ativo" name="ativo"<%= ehVoce ? ' disabled' : '' %>>
+          <option value="1"<%= usuario.ativo ? ' selected' : '' %>>Ativo</option>
+          <option value="0"<%= usuario.ativo ? '' : ' selected' %>>Desativado (não consegue entrar)</option>
+        </select>
+        <% if (ehVoce) { %><input type="hidden" name="ativo" value="1"><% } %>
+      </div>
+
+      <div class="adm-campo-linha">
+        <div class="adm-campo">
+          <label for="id_plano">Plano</label>
+          <select class="adm-input" id="id_plano" name="id_plano">
+            <option value="">Sem plano (Free)</option>
+            <% planos.forEach((p) => { %>
+              <option value="<%= p.id_plano %>"<%= usuario.id_plano === p.id_plano ? ' selected' : '' %>><%= p.nome %><%= p.ativo ? '' : ' (oculto no site)' %></option>
+            <% }); %>
+          </select>
+        </div>
+        <div class="adm-campo">
+          <label for="plano_valido_ate">Válido até</label>
+          <input class="adm-input" type="date" id="plano_valido_ate" name="plano_valido_ate"
+                 value="<%= fmt.isoDia(usuario.plano_valido_ate) %>">
+        </div>
+      </div>
+      <p class="adm-ajuda">Desativar ou tirar o papel de administrador encerra as sessões abertas da pessoa na hora.</p>
+
+      <button type="submit" class="adm-btn">Salvar</button>
+    </form>
+  </section>
+</div>
+
+<section class="adm-card">
+  <h2>Senha</h2>
+  <p class="adm-muted">Ninguém vê a senha. Você pode mandar para <strong><%= usuario.email %></strong> o mesmo link do “Esqueci a senha” (vale 1 hora).</p>
+  <form method="POST" action="/admin/usuarios/<%= usuario.id %>/senha">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <button type="submit" class="adm-btn adm-btn-sec" data-aguarde="Enviando…">Enviar link para criar nova senha</button>
+  </form>
+</section>
+
+<section class="adm-card">
+  <h2>Últimas traduções</h2>
+  <% if (!historico.length) { %>
+    <p class="adm-vazio">Nenhuma tradução salva.</p>
+  <% } else { %>
+    <div class="adm-tabela-wrap">
+      <table class="adm-tabela">
+        <thead><tr><th scope="col">Frase</th><th scope="col">Glosa</th><th scope="col">Quando</th></tr></thead>
+        <tbody>
+          <% historico.forEach((h) => { %>
+            <tr><td><%= h.texto_original %></td><td class="adm-muted"><%= h.glosa || '—' %></td><td><%= fmt.dataHora(h.data_traducao) %></td></tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</section>
+
+<% if (!ehVoce) { %>
+  <section class="adm-card adm-zona-perigo">
+    <h2>Excluir conta</h2>
+    <p>Apaga a conta e, junto, o histórico, os feedbacks e os sinais ocultados da pessoa. Não dá para desfazer. Para só bloquear o acesso, use “Desativado”.</p>
+    <form method="POST" action="/admin/usuarios/<%= usuario.id %>/excluir" data-confirmar="Excluir a conta <%= usuario.email %> e tudo o que é dela? Não dá para desfazer.">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <button type="submit" class="adm-btn adm-btn-perigo">Excluir conta</button>
+    </form>
+  </section>
+<% } %>
+
+<%- include('partials/rodape') %>

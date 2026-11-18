@@ -1,0 +1,99 @@
+<%- include('partials/topo') %>
+
+<section class="adm-grid adm-kpis">
+  <div class="adm-card adm-kpi">
+    <span class="adm-kpi-rotulo">Palavras sem sinal</span>
+    <span class="adm-kpi-valor"><%= fmt.numero(pag.total) %></span>
+    <span class="adm-kpi-detalhe">pedidas no tradutor e ainda sem vídeo<%= q ? ' (com a busca)' : '' %></span>
+  </div>
+  <div class="adm-card adm-kpi">
+    <span class="adm-kpi-rotulo">Traduções úteis</span>
+    <span class="adm-kpi-valor"><%= fmt.porcentagem(Number(feedback.uteis), Number(feedback.total)) %></span>
+    <span class="adm-kpi-detalhe"><%= fmt.numero(feedback.uteis) %> 👍 e <%= fmt.numero(feedback.negativos) %> 👎</span>
+  </div>
+  <div class="adm-card adm-kpi">
+    <span class="adm-kpi-rotulo">Sinais marcados como errados</span>
+    <span class="adm-kpi-valor"><%= fmt.numero(marcados.length) %></span>
+    <span class="adm-kpi-detalhe">combinações palavra → sinal diferentes</span>
+  </div>
+</section>
+
+<section class="adm-card">
+  <div class="adm-card-topo">
+    <h2>Palavras pedidas sem sinal</h2>
+    <form method="GET" action="/admin/qualidade" class="adm-form-linha" role="search">
+      <label class="sr-only" for="fq">Buscar palavra</label>
+      <input class="adm-input" type="search" id="fq" name="q" value="<%= q %>" placeholder="Buscar">
+      <button type="submit" class="adm-btn adm-btn-sec adm-btn-peq">Buscar</button>
+    </form>
+  </div>
+  <p class="adm-muted">O tradutor conta cada palavra que não encontrou. As mais pedidas são as primeiras a gravar.
+    Se já existe um sinal com o mesmo significado, use <em>Usar um sinal existente</em> (ex.: “cão” → vídeo de CACHORRO). Erros de digitação podem ser removidos da lista.</p>
+  <% if (!termos.length) { %>
+    <p class="adm-vazio">Nenhuma palavra na lista.</p>
+  <% } else { %>
+    <div class="adm-tabela-wrap">
+      <table class="adm-tabela">
+        <thead>
+          <tr><th scope="col">Palavra</th><th scope="col" class="adm-num">Pedidos</th><th scope="col">Primeira vez</th><th scope="col">Última vez</th><th scope="col"><span class="sr-only">Ações</span></th></tr>
+        </thead>
+        <tbody>
+          <% termos.forEach((t) => { %>
+            <tr>
+              <td><strong><%= t.termo %></strong></td>
+              <td class="adm-num"><%= fmt.numero(t.ocorrencias) %></td>
+              <td class="adm-muted"><%= fmt.data(t.primeira_vez) %></td>
+              <td class="adm-muted"><%= fmt.dataHora(t.ultima_vez) %></td>
+              <td class="adm-acoes-celula">
+                <a href="/admin/palavras?associar=<%= encodeURIComponent(t.termo) %>" class="adm-btn adm-btn-sec adm-btn-peq">Usar um sinal existente</a>
+                <form method="POST" action="/admin/qualidade/termos/remover" data-confirmar="Tirar “<%= t.termo %>” da lista?">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  <input type="hidden" name="termo" value="<%= t.termo %>">
+                  <button type="submit" class="adm-btn adm-btn-perigo adm-btn-peq">Remover</button>
+                </form>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+    <%- include('partials/paginacao') %>
+  <% } %>
+</section>
+
+<div class="adm-duas-colunas">
+  <section class="adm-card">
+    <h2>Sinais mais marcados como errados</h2>
+    <p class="adm-muted">Cada usuário pode esconder um sinal só para ele (👎). Quando várias pessoas escondem o mesmo, vale revisar a palavra no banco.</p>
+    <% if (!marcados.length) { %>
+      <p class="adm-vazio">Ninguém marcou sinais como errados ainda.</p>
+    <% } else { %>
+      <ul class="adm-lista-simples">
+        <% marcados.forEach((m) => { %>
+          <li>
+            <span>“<%= m.termo %>” → <strong><%= m.expressao.toUpperCase() %></strong></span>
+            <span class="adm-muted"><%= fmt.numero(m.usuarios) %> usuário(s) · <a href="/admin/palavras?q=<%= encodeURIComponent(m.expressao) %>" class="adm-link">revisar</a></span>
+          </li>
+        <% }); %>
+      </ul>
+    <% } %>
+  </section>
+
+  <section class="adm-card">
+    <h2>Últimas traduções com 👎</h2>
+    <% if (!negativos.length) { %>
+      <p class="adm-vazio">Nenhum feedback negativo.</p>
+    <% } else { %>
+      <ul class="adm-lista-simples">
+        <% negativos.forEach((n) => { %>
+          <li>
+            <span><%= n.texto_original %><% if (n.glosa) { %><br><span class="adm-muted">Glosa: <%= n.glosa %></span><% } %></span>
+            <span class="adm-muted"><% if (n.id_usuario) { %><a href="/admin/usuarios/<%= n.id_usuario %>" class="adm-link"><%= n.email %></a> · <% } %><%= fmt.dataHora(n.atualizado_em) %></span>
+          </li>
+        <% }); %>
+      </ul>
+    <% } %>
+  </section>
+</div>
+
+<%- include('partials/rodape') %>

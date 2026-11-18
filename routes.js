@@ -5,6 +5,7 @@ const loginController = require('./src/controllers/loginController');
 const historicoController = require('./src/controllers/historicoController');
 const feedbackController = require('./src/controllers/feedbackController');
 const senhaController = require('./src/controllers/senhaController');
+const adminRoutes = require('./src/routes/admin');
 const {
   loginRequired, limiteLogin, limiteCadastro, limiteSenha, limiteFeedback,
 } = require('./src/middlewares/middleware');
@@ -41,5 +42,8 @@ route.post('/historico/:id/excluir', loginRequired, historicoController.excluir)
 // Feedback das traduções (salvo por usuário; visitante guarda só no navegador)
 route.post('/feedback', limiteFeedback, feedbackController.salvar); // responde 401 em JSON se não estiver logado
 route.post('/feedback/exclusoes/restaurar', loginRequired, feedbackController.restaurar);
+
+// Área de administração (só para contas com papel 'admin')
+route.use('/admin', adminRoutes);
 
 module.exports = route;

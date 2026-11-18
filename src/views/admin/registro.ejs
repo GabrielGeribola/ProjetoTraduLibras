@@ -1,0 +1,39 @@
+<%- include('partials/topo') %>
+
+<form class="adm-filtros" method="GET" action="/admin/registro" role="search">
+  <div class="adm-campo">
+    <label for="facao">Ação</label>
+    <select class="adm-input" id="facao" name="acao" data-auto-enviar>
+      <option value="">Todas</option>
+      <% Object.entries(acoes).forEach(([id, nome]) => { %><option value="<%= id %>"<%= filtros.acao === id ? ' selected' : '' %>><%= nome %></option><% }); %>
+    </select>
+  </div>
+  <div class="adm-campo adm-campo-cresce">
+    <label for="femail">Administrador</label>
+    <input class="adm-input" type="search" id="femail" name="email" value="<%= filtros.email %>" placeholder="e-mail">
+  </div>
+  <button type="submit" class="adm-btn adm-btn-sec">Filtrar</button>
+</form>
+
+<% if (!registros.length) { %>
+  <p class="adm-vazio adm-card">Nenhuma ação registrada.</p>
+<% } else { %>
+  <div class="adm-tabela-wrap">
+    <table class="adm-tabela">
+      <thead><tr><th scope="col">Quando</th><th scope="col">Quem</th><th scope="col">O quê</th><th scope="col">Detalhes</th></tr></thead>
+      <tbody>
+        <% registros.forEach((r) => { %>
+          <tr>
+            <td class="adm-nowrap"><%= fmt.dataHora(r.criado_em) %></td>
+            <td><%= r.email || 'script' %></td>
+            <td><%= acoes[r.acao] || r.acao %></td>
+            <td class="adm-codigo adm-detalhe-log"><%= r.detalhe || '' %></td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+<% } %>
+<%- include('partials/paginacao') %>
+
+<%- include('partials/rodape') %>

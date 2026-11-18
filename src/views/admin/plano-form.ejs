@@ -1,0 +1,101 @@
+<%- include('partials/topo') %>
+<% const novo = !plano.id_plano; const v = (x) => (x === null || x === undefined ? '' : x); %>
+
+<p><a href="/admin/planos" class="adm-link">← Voltar para os planos</a></p>
+
+<form method="POST" action="<%= novo ? '/admin/planos' : '/admin/planos/' + plano.id_plano %>" class="adm-card adm-form">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+  <div class="adm-campo-linha">
+    <div class="adm-campo">
+      <label for="nome">Nome</label>
+      <input class="adm-input" id="nome" name="nome" value="<%= plano.nome %>" maxlength="60" required>
+    </div>
+    <div class="adm-campo">
+      <label for="slug">Identificador</label>
+      <input class="adm-input" id="slug" name="slug" value="<%= plano.slug %>" maxlength="40" placeholder="gerado a partir do nome">
+      <p class="adm-ajuda">Sem espaços. O plano “free” define o limite citado na explicação de tokens.</p>
+    </div>
+    <div class="adm-campo">
+      <label for="selo">Selo</label>
+      <input class="adm-input" id="selo" name="selo" value="<%= v(plano.selo) %>" maxlength="40" placeholder="ex.: Mais popular">
+    </div>
+  </div>
+
+  <div class="adm-campo">
+    <label for="publico">Para quem é</label>
+    <input class="adm-input" id="publico" name="publico" value="<%= plano.publico %>" maxlength="200">
+  </div>
+
+  <fieldset class="adm-fieldset">
+    <legend>Preços (R$)</legend>
+    <p class="adm-ajuda">Deixe os três vazios para “Sob consulta”. Use 0 para grátis. Semestral ou anual vazio = mensal × meses com o desconto do ciclo
+      (<%= ciclos.filter((c) => c.desconto).map((c) => c.rotulo.toLowerCase() + ' -' + c.desconto + '%').join(', ') %>).</p>
+    <div class="adm-campo-linha">
+      <% ciclos.forEach((c) => { %>
+        <div class="adm-campo">
+          <label for="preco_<%= c.id %>"><%= c.rotulo %></label>
+          <input class="adm-input" id="preco_<%= c.id %>" name="preco_<%= c.id %>" inputmode="decimal" value="<%= v(plano['preco_' + c.id]) %>">
+        </div>
+      <% }); %>
+      <div class="adm-campo">
+        <label for="limite_tokens">Limite de tokens</label>
+        <input class="adm-input" id="limite_tokens" name="limite_tokens" inputmode="numeric" value="<%= v(plano.limite_tokens) %>" placeholder="vazio = sem limite">
+      </div>
+    </div>
+  </fieldset>
+
+  <div class="adm-campo">
+    <label for="recursos">Recursos (um por linha)</label>
+    <textarea class="adm-input" id="recursos" name="recursos" rows="6" maxlength="2000" required><%= plano.recursos %></textarea>
+    <p class="adm-ajuda"><code>**texto**</code> deixa em negrito · <code>[token]</code> no fim da linha mostra o “ⓘ O que é um token?” · <code>{limite}</code> vira o limite de tokens do plano.</p>
+  </div>
+
+  <fieldset class="adm-fieldset">
+    <legend>Botão do card</legend>
+    <div class="adm-campo-linha">
+      <div class="adm-campo">
+        <label for="cta_texto">Texto</label>
+        <input class="adm-input" id="cta_texto" name="cta_texto" value="<%= plano.cta_texto %>" maxlength="60" required>
+      </div>
+      <div class="adm-campo">
+        <label for="cta_link">Link</label>
+        <input class="adm-input" id="cta_link" name="cta_link" value="<%= v(plano.cta_link) %>" maxlength="255" placeholder="vazio = contato comercial">
+      </div>
+      <div class="adm-campo">
+        <label for="cta_assunto">Assunto do e-mail</label>
+        <input class="adm-input" id="cta_assunto" name="cta_assunto" value="<%= v(plano.cta_assunto) %>" maxlength="100" placeholder="ex.: Plano Enterprise">
+      </div>
+    </div>
+    <label class="adm-check"><input type="checkbox" name="cta_com_ciclo" value="1"<%= Number(plano.cta_com_ciclo) ? ' checked' : '' %>> Incluir no assunto o ciclo escolhido (mensal, semestral ou anual)</label>
+  </fieldset>
+
+  <div class="adm-campo-linha">
+    <div class="adm-campo">
+      <label for="ordem">Ordem</label>
+      <input class="adm-input" id="ordem" name="ordem" inputmode="numeric" value="<%= v(plano.ordem) %>">
+    </div>
+    <label class="adm-check adm-check-alinhado"><input type="checkbox" name="ativo" value="1"<%= Number(plano.ativo) ? ' checked' : '' %>> Aparece no site</label>
+  </div>
+
+  <div class="adm-botoes">
+    <button type="submit" class="adm-btn"><%= novo ? 'Criar plano' : 'Salvar' %></button>
+    <a href="/admin/planos" class="adm-btn adm-btn-sec">Cancelar</a>
+  </div>
+</form>
+
+<% if (!novo) { %>
+  <section class="adm-card adm-zona-perigo">
+    <h2>Excluir plano</h2>
+    <% if (Number(plano.usuarios) > 0) { %>
+      <p><%= fmt.numero(plano.usuarios) %> usuário(s) estão neste plano, então ele não pode ser excluído. Para tirá-lo do site, desmarque “Aparece no site”.</p>
+    <% } else { %>
+      <form method="POST" action="/admin/planos/<%= plano.id_plano %>/excluir" data-confirmar="Excluir o plano <%= plano.nome %>?">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button type="submit" class="adm-btn adm-btn-perigo">Excluir plano</button>
+      </form>
+    <% } %>
+  </section>
+<% } %>
+
+<%- include('partials/rodape') %>

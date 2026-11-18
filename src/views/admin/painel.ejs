@@ -1,0 +1,92 @@
+<%- include('partials/topo') %>
+
+<section class="adm-grid adm-kpis" aria-label="Números gerais">
+  <a class="adm-card adm-kpi" href="/admin/usuarios">
+    <span class="adm-kpi-rotulo">Usuários</span>
+    <span class="adm-kpi-valor"><%= fmt.numero(usuarios.total) %></span>
+    <span class="adm-kpi-detalhe"><%= fmt.numero(usuarios.novos7) %> novos e <%= fmt.numero(usuarios.ativos7) %> entraram nos últimos 7 dias</span>
+  </a>
+  <a class="adm-card adm-kpi" href="/admin/palavras">
+    <span class="adm-kpi-rotulo">Sinais</span>
+    <span class="adm-kpi-valor"><%= fmt.numero(sinais.palavras) %></span>
+    <span class="adm-kpi-detalhe">palavras em <%= fmt.numero(sinais.videos) %> vídeos<% if (Number(sinais.sem_embedding)) { %> · <strong><%= fmt.numero(sinais.sem_embedding) %> sem embedding</strong><% } %></span>
+  </a>
+  <a class="adm-card adm-kpi<%= Number(s3.pendentes) ? ' adm-kpi-alerta' : '' %>" href="/admin/s3">
+    <span class="adm-kpi-rotulo">Vídeos do S3 para aprovar</span>
+    <span class="adm-kpi-valor"><%= fmt.numero(s3.pendentes) %></span>
+    <span class="adm-kpi-detalhe"><%= ultimaVarredura ? 'Última varredura: ' + fmt.dataHora(ultimaVarredura.feita_em) : 'Nenhuma varredura feita ainda' %></span>
+  </a>
+  <a class="adm-card adm-kpi" href="/admin/qualidade">
+    <span class="adm-kpi-rotulo">Feedback das traduções</span>
+    <span class="adm-kpi-valor"><%= fmt.porcentagem(Number(feedback.uteis), Number(feedback.total)) %></span>
+    <span class="adm-kpi-detalhe">úteis em <%= fmt.numero(feedback.total) %> votos · <%= fmt.numero(feedback.sinais_ocultados) %> sinais marcados como errados</span>
+  </a>
+  <div class="adm-card adm-kpi">
+    <span class="adm-kpi-rotulo">Traduções</span>
+    <span class="adm-kpi-valor"><%= fmt.numero(traducoes.frases) %></span>
+    <span class="adm-kpi-detalhe">frases diferentes · <%= fmt.numero(traducoes.historico7) %> traduções salvas nos últimos 7 dias</span>
+  </div>
+  <div class="adm-card adm-kpi">
+    <span class="adm-kpi-rotulo">API de tradução</span>
+    <% if (api.online) { %>
+      <span class="adm-kpi-valor adm-ok-texto">No ar</span>
+      <span class="adm-kpi-detalhe"><%= fmt.numero(api.palavras) %> palavras carregadas às <%= api.carregado_em.slice(11, 16) %> · <%= api.modelo_spacy %></span>
+    <% } else { %>
+      <span class="adm-kpi-valor adm-perigo-texto">Sem resposta</span>
+      <span class="adm-kpi-detalhe"><%= api.erro %></span>
+    <% } %>
+  </div>
+</section>
+
+<div class="adm-duas-colunas">
+  <section class="adm-card">
+    <div class="adm-card-topo">
+      <h2>Palavras mais pedidas sem sinal</h2>
+      <a href="/admin/qualidade" class="adm-link">Ver todas →</a>
+    </div>
+    <% if (!termos.length) { %>
+      <p class="adm-vazio">Nenhuma ainda. As palavras que o tradutor não encontra aparecem aqui.</p>
+    <% } else { %>
+      <ol class="adm-ranking">
+        <% termos.forEach((t) => { %>
+          <li>
+            <span><%= t.termo %></span>
+            <span class="adm-ranking-num"><%= fmt.numero(t.ocorrencias) %>×</span>
+            <a href="/admin/palavras?associar=<%= encodeURIComponent(t.termo) %>" class="adm-link">usar um sinal existente</a>
+          </li>
+        <% }); %>
+      </ol>
+    <% } %>
+  </section>
+
+  <section class="adm-card">
+    <div class="adm-card-topo">
+      <h2>Últimas ações da administração</h2>
+      <a href="/admin/registro" class="adm-link">Ver registro →</a>
+    </div>
+    <% if (!acoes.length) { %>
+      <p class="adm-vazio">Nenhuma ação registrada ainda.</p>
+    <% } else { %>
+      <ul class="adm-lista-simples">
+        <% acoes.forEach((a) => { %>
+          <li>
+            <span><%= nomesAcoes[a.acao] || a.acao %></span>
+            <span class="adm-muted"><%= a.email || 'script' %> · <%= fmt.dataHora(a.criado_em) %></span>
+          </li>
+        <% }); %>
+      </ul>
+    <% } %>
+  </section>
+</div>
+
+<section class="adm-card adm-atalhos">
+  <h2>Atalhos</h2>
+  <div class="adm-botoes">
+    <a href="/admin/s3" class="adm-btn">Procurar vídeos novos no S3</a>
+    <a href="/admin/usuarios/novo" class="adm-btn adm-btn-sec">Criar usuário</a>
+    <a href="/admin/cursos/novo" class="adm-btn adm-btn-sec">Adicionar vídeo ou artigo</a>
+    <a href="/admin/banco" class="adm-btn adm-btn-sec">Ver o banco</a>
+  </div>
+</section>
+
+<%- include('partials/rodape') %>

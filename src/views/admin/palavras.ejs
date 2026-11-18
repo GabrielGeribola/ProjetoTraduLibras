@@ -1,0 +1,127 @@
+<%- include('partials/topo') %>
+
+<div class="adm-barra-resumo">
+  <p class="adm-muted"><strong><%= fmt.numero(resumo.palavras) %></strong> palavras em <strong><%= fmt.numero(resumo.videos) %></strong> vídeos.
+    Mudanças aqui valem no tradutor em alguns segundos.</p>
+  <div class="adm-botoes">
+    <% if (Number(resumo.sem_embedding)) { %>
+      <form method="POST" action="/admin/palavras/embeddings">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button type="submit" class="adm-btn adm-btn-sec adm-btn-peq" data-aguarde="Gerando…">Gerar <%= fmt.numero(resumo.sem_embedding) %> embeddings que faltam</button>
+      </form>
+    <% } %>
+    <form method="POST" action="/admin/palavras/recarregar">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <input type="hidden" name="voltar" value="<%= urlAtual %>">
+      <button type="submit" class="adm-btn adm-btn-sec adm-btn-peq">Recarregar o tradutor agora</button>
+    </form>
+  </div>
+</div>
+
+<% if (filtros.associar) { %>
+  <div class="adm-aviso">
+    <p><strong>Escolhendo um sinal para “<%= filtros.associar %>”.</strong>
+      Busque a palavra que tem o mesmo significado (ex.: para “cão”, busque “cachorro”) e clique em <em>Usar este vídeo</em>.
+      “<%= filtros.associar %>” passa a mostrar aquele vídeo no tradutor.</p>
+    <a href="/admin/palavras" class="adm-link">Cancelar</a>
+  </div>
+<% } %>
+
+<form class="adm-filtros" method="GET" action="/admin/palavras" role="search">
+  <% if (filtros.associar) { %><input type="hidden" name="associar" value="<%= filtros.associar %>"><% } %>
+  <div class="adm-campo adm-campo-cresce">
+    <label for="fq">Palavra</label>
+    <input class="adm-input" type="search" id="fq" name="q" value="<%= filtros.q %>" placeholder="Buscar (acentos e maiúsculas não importam)" autofocus>
+  </div>
+  <div class="adm-campo">
+    <label for="fbucket">Bucket</label>
+    <select class="adm-input" id="fbucket" name="bucket" data-auto-enviar>
+      <option value="">Todos</option>
+      <% buckets.forEach((b) => { %><option value="<%= b %>"<%= filtros.bucket === b ? ' selected' : '' %>><%= b %></option><% }); %>
+    </select>
+  </div>
+  <div class="adm-campo">
+    <label for="fsituacao">Mostrar</label>
+    <select class="adm-input" id="fsituacao" name="situacao" data-auto-enviar>
+      <option value="">Todas</option>
+      <% Object.entries(situacoes).forEach(([id, nome]) => { %><option value="<%= id %>"<%= filtros.situacao === id ? ' selected' : '' %>><%= nome %></option><% }); %>
+    </select>
+  </div>
+  <% if (filtros.video) { %><input type="hidden" name="video" value="<%= filtros.video %>"><% } %>
+  <button type="submit" class="adm-btn adm-btn-sec">Buscar</button>
+  <% if (filtros.q || filtros.bucket || filtros.situacao || filtros.video) { %><a href="/admin/palavras<%= filtros.associar ? '?associar=' + encodeURIComponent(filtros.associar) : '' %>" class="adm-link">Limpar filtros</a><% } %>
+</form>
+
+<% if (!palavras.length) { %>
+  <p class="adm-vazio adm-card">Nenhuma palavra encontrada.</p>
+<% } else { %>
+  <div class="adm-tabela-wrap">
+    <table class="adm-tabela">
+      <thead>
+        <tr>
+          <th scope="col">Palavra</th>
+          <th scope="col">Vídeo</th>
+          <th scope="col">Outras palavras com o mesmo vídeo</th>
+          <th scope="col"><span class="sr-only">Ações</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% palavras.forEach((w) => { %>
+          <tr>
+            <td>
+              <strong class="adm-sinal"><%= w.description %></strong>
+              <% if (w.sem_embedding) { %><span class="adm-tag tag-alerta">sem embedding</span><% } %>
+            </td>
+            <td class="adm-celula-video">
+              <button type="button" class="adm-btn adm-btn-sec adm-btn-peq" data-video="<%= w.url %>" data-titulo="<%= w.description %>">▶ Ver</button>
+              <span class="adm-tag"><%= w.bucket %></span>
+            </td>
+            <td class="adm-muted">
+              <% if (w.outras) { %><a href="/admin/palavras?video=<%= w.id_animation %>" class="adm-link"><%= w.outras %></a><% } else { %>—<% } %>
+            </td>
+            <td class="adm-acoes-celula">
+              <% if (filtros.associar) { %>
+                <form method="POST" action="/admin/palavras/video/<%= w.id_animation %>/adicionar">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  <input type="hidden" name="descricao" value="<%= filtros.associar %>">
+                  <input type="hidden" name="origem" value="termos">
+                  <input type="hidden" name="voltar" value="<%= urlAtual %>">
+                  <button type="submit" class="adm-btn adm-btn-peq">Usar este vídeo</button>
+                </form>
+              <% } else { %>
+                <details class="adm-detalhes">
+                  <summary class="adm-btn adm-btn-sec adm-btn-peq">Editar</summary>
+                  <div class="adm-detalhes-corpo">
+                    <form method="POST" action="/admin/palavras/<%= w.id_word %>" class="adm-form-linha">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                      <input type="hidden" name="voltar" value="<%= urlAtual %>">
+                      <label class="sr-only" for="d<%= w.id_word %>">Nova palavra para este vídeo</label>
+                      <input class="adm-input" id="d<%= w.id_word %>" name="descricao" value="<%= w.description %>" maxlength="100" required>
+                      <button type="submit" class="adm-btn adm-btn-peq">Renomear</button>
+                    </form>
+                    <form method="POST" action="/admin/palavras/video/<%= w.id_animation %>/adicionar" class="adm-form-linha">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                      <input type="hidden" name="voltar" value="<%= urlAtual %>">
+                      <label class="sr-only" for="n<%= w.id_word %>">Outra palavra com este mesmo vídeo</label>
+                      <input class="adm-input" id="n<%= w.id_word %>" name="descricao" placeholder="sinônimo (ex.: cão)" maxlength="100" required>
+                      <button type="submit" class="adm-btn adm-btn-sec adm-btn-peq">+ Adicionar</button>
+                    </form>
+                    <form method="POST" action="/admin/palavras/<%= w.id_word %>/excluir"
+                          data-confirmar="<%= w.outras ? 'Excluir a palavra “' + w.description + '”? O vídeo continua com as outras palavras.' : 'Excluir “' + w.description + '”? É a única palavra deste vídeo, então o vídeo também sai do banco (o arquivo continua no S3).' %>">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                      <input type="hidden" name="voltar" value="<%= urlAtual %>">
+                      <button type="submit" class="adm-btn adm-btn-perigo adm-btn-peq">Excluir palavra</button>
+                    </form>
+                  </div>
+                </details>
+              <% } %>
+            </td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+<% } %>
+<%- include('partials/paginacao') %>
+
+<%- include('partials/rodape') %>

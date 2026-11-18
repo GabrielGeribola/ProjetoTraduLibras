@@ -53,7 +53,9 @@ exports.login = async (req, res) => {
 
       req.session.user = login.User;
       req.flash('success', 'Login realizado com sucesso.');
-      req.session.save(() => res.redirect(voltar || '/home'));
+      // Administrador entra direto na área de administração
+      const inicio = login.User.papel === 'admin' ? '/admin' : '/home';
+      req.session.save(() => res.redirect(voltar || inicio));
     });
   } catch (e) {
     console.log(e);
