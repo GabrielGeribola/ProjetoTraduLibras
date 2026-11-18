@@ -23,7 +23,7 @@
 
   const normalizar = (texto) => texto
     .normalize('NFD').replace(/[̀-ͯ]/g, '')
-    .toLowerCase().replace(/\s+/g, ' ').trim();
+    .toLowerCase().replace(/[_\s]+/g, ' ').trim();
 
   // Padroniza a exibição: só a primeira letra maiúscula ("ABOCANHAR" -> "Abocanhar"),
   // mantendo letras do alfabeto ("letra b" -> "Letra B") e "Libras" em maiúscula.

@@ -273,10 +273,13 @@
 
     function atualizarTermo(i) {
       const item = sequencia[i];
-      termoEl.replaceChildren(
+      const partes = [
         `Sinal ${i + 1} de ${total}: `,
         criar('strong', { texto: item.expressao_libras || item.termo_original || '' }),
-      );
+      ];
+      const nota = notaDoSinal(item);
+      if (nota) partes.push(criar('span', { classe: 'termo-nota', texto: ` (${nota})` }));
+      termoEl.replaceChildren(...partes);
     }
 
     function tocar(i) {
@@ -347,6 +350,29 @@
     playerAtivo = player;
   }
 
+  // Palavras que ficaram de fora (sem sinal confiável no banco): melhor avisar do que mostrar um sinal errado
+  function avisoSemSinal(termos) {
+    if (!Array.isArray(termos) || termos.length === 0) return [];
+    return [criar('p', { classe: 'traducao-sem-sinal' }, [
+      criar('strong', { texto: 'Ainda sem sinal: ' }),
+      termos.join(', '),
+      ' · ',
+      criar('a', { texto: 'sugerir', atributos: { href: '/sugestoes' } }),
+    ])];
+  }
+
+  // Explica, ao lado do sinal, quando ele não é a palavra exata digitada
+  function notaDoSinal(item) {
+    const termo = item.termo_original || '';
+    if (item.metodo === 'datilologia') return `soletrando “${termo}”`;
+    if (item.aproximado) return `sinal aproximado para “${termo}”`;
+    if (item.metodo === 'correcao') return `você escreveu “${termo}”`;
+    if (['sinonimo', 'variacao', 'lema'].includes(item.metodo) && normalizar(termo) !== normalizar(item.expressao_libras)) {
+      return `para “${termo}”`;
+    }
+    return '';
+  }
+
   // ── Resposta da tradução ──────────────────────────────────
   function renderTraducao(dados, entrada) {
     const sequencia = dados.sequencia || [];
@@ -366,6 +392,7 @@
     const resultado = criar('div', { classe: 'traducao-resultado' }, [
       criar('p', {}, [criar('strong', { texto: 'Frase: ' }), dados.frase_original || entrada]),
       criar('p', { classe: 'traducao-glosa' }, [criar('strong', { texto: 'Glosa: ' }), dados.glosa || '']),
+      ...avisoSemSinal(dados.sem_sinal),
       criar('div', { classe: 'video-container' }, [
         palco,
         termo,
@@ -419,6 +446,7 @@
     const vistos = new Set();
     const sinais = [];
     sequencia.forEach((item, i) => {
+      if (item.metodo === 'datilologia') return; // letras soletradas não são "sinal errado"
       const termo = normalizar(item.termo_original);
       const expressao = normalizar(item.expressao_libras);
       const chave = `${termo}\u0000${expressao}`;

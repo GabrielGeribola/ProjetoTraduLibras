@@ -1,5 +1,27 @@
+"""
+Cadastra no banco os vídeos novos do bucket S3.
+
+Para cada vídeo que ainda não está em animation_sl_br (comparando pela URL), cria a animação e
+a palavra. A descrição vem do nome do arquivo: "Ano_Novo2.mp4" -> "ano novo".
+Depois de rodar, rode também:
+  python scripts/limpar_banco_sinais.py --aplicar   (recoloca acentos: "aviao" -> "avião")
+  python gerador-embeddings-db.py                   (preenche a coluna embedding)
+"""
+import os
+import re
+
 import boto3
 import mysql.connector
+
+EXTENSOES_VIDEO = (".mp4", ".webm", ".mov")
+
+
+def descricao_do_arquivo(key):
+    """'pasta/Ano_Novo2.mp4' -> 'ano novo'"""
+    nome = os.path.splitext(key.rsplit("/", 1)[-1])[0]
+    nome = re.sub(r"\(\d*\)|\d+$", " ", nome)   # "Palmada (1)", "amor1"
+    nome = nome.replace("_", " ")
+    return " ".join(nome.split()).lower()
 
 
 def listar_e_inserir(bucket_name, region_name='us-east-1'):
@@ -27,10 +49,10 @@ def listar_e_inserir(bucket_name, region_name='us-east-1'):
     # ─────────────────────────────────────────────
 
     conn = mysql.connector.connect(
-        host='db',
-        user='tradulibras',
-        password='Tradulibras2024',
-        database='app_tradu_embedding'
+        host=os.getenv('DB_HOST', 'db'),
+        user=os.getenv('DB_USER', 'tradulibras'),
+        password=os.getenv('DB_PASS', 'Tradulibras2024'),
+        database=os.getenv('DB_NAME', 'app_tradu_embedding')
     )
 
     print("Conectado ao banco:", conn.is_connected())
@@ -59,8 +81,8 @@ def listar_e_inserir(bucket_name, region_name='us-east-1'):
                 key = obj['Key']
 
 
-                # Ignora possíveis "pastas" do S3
-                if key.endswith('/'):
+                # Ignora "pastas" do S3 e arquivos que não são vídeo (logo, downloads incompletos)
+                if key.endswith('/') or not key.lower().endswith(EXTENSOES_VIDEO):
                     continue
 
 
@@ -77,14 +99,16 @@ def listar_e_inserir(bucket_name, region_name='us-east-1'):
                 # Verifica se já existe
                 # ─────────────────────────────────
 
+                # Compara pela URL: comparar o nome do arquivo com a descrição
+                # (como era antes) duplicava todos os vídeos já cadastrados.
                 cursor.execute(
                     """
-                    SELECT id_word
-                    FROM words_sl_br
-                    WHERE description = %s
+                    SELECT id_animation
+                    FROM animation_sl_br
+                    WHERE url = %s
                     LIMIT 1
                     """,
-                    (key,)
+                    (url,)
                 )
 
                 existente = cursor.fetchone()
@@ -105,6 +129,10 @@ def listar_e_inserir(bucket_name, region_name='us-east-1'):
                 # ─────────────────────────────────
                 # Novo registro
                 # ─────────────────────────────────
+
+                if not descricao_do_arquivo(key):
+                    print(f"⚠️ Nome de arquivo sem palavra, cadastre à mão: {key}")
+                    continue
 
                 print(
                     f"🆕 Novo vídeo encontrado: {key}"
@@ -142,7 +170,7 @@ def listar_e_inserir(bucket_name, region_name='us-east-1'):
                     """,
                     (
                         id_animation,
-                        key,
+                        descricao_do_arquivo(key),
                         None
                     )
                 )

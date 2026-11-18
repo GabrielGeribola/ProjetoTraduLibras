@@ -511,6 +511,8 @@ p { color: var(--text-muted); }
 .video-libras.is-visible { opacity:1; }
 .termo-atual { margin:0; text-align:center; font-size:.95em; color: var(--text-muted); overflow-wrap:anywhere; }
 .termo-atual strong { color: var(--text-dark); }
+.termo-atual .termo-nota { font-size:.9em; }
+.traducao-resultado .traducao-sem-sinal { color: var(--text-muted); font-size:.9em; }
 .player-controles { display:flex; justify-content:center; gap:8px; }
 .btn-player {
   padding:6px 14px; border-radius:20px; border:1.5px solid var(--border);

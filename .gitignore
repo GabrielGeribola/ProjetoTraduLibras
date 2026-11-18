@@ -9,3 +9,7 @@ venv/
 .venv/
 __pycache__/
 !.env.example
+
+# Cache local de embeddings da API (tradutor.py) e relatórios de scripts
+.cache_embeddings/
+limpeza_sinais_relatorio.json

@@ -1,24 +1,36 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import mysql.connector
-import numpy as np
+import collections
 import json
-from sklearn.metrics.pairwise import cosine_similarity
-from Levenshtein import distance as levenshtein_distance
-import spacy
-from sentence_transformers import SentenceTransformer
+import mysql.connector
 import os
 import logging
 import shutil
 import tempfile
 import threading
-import time
 from werkzeug.exceptions import HTTPException
 from pydub import AudioSegment
 import speech_recognition as sr
 
+from tradutor import Tradutor, normalizar_sinal
+
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 log = logging.getLogger("api_tradu")
+
+def carregar_env_local():
+    """Lê o .env da raiz do projeto (rodando fora do Docker). Variáveis já definidas no
+    ambiente têm prioridade, então no Docker/produção nada muda."""
+    caminho = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+    if not os.path.exists(caminho):
+        return
+    with open(caminho, encoding="utf-8") as f:
+        for linha in f:
+            linha = linha.strip()
+            if linha and not linha.startswith("#") and "=" in linha:
+                nome, valor = linha.split("=", 1)
+                os.environ.setdefault(nome.strip(), valor.strip().strip('"').strip("'"))
+
+carregar_env_local()
 
 # Limites de entrada
 LIMITE_TEXTO = 300                      # caracteres por tradução
@@ -31,207 +43,71 @@ app.config["MAX_CONTENT_LENGTH"] = LIMITE_UPLOAD_BYTES
 app.json.ensure_ascii = False
 CORS(app)
 
-# Carregar modelo spaCy para português (Análise Sintática / POS Tagging)
-# Certifique-se de rodar: python -m spacy download pt_core_news_sm
-try:
-    nlp = spacy.load("pt_core_news_sm")
-except OSError:
-    import os
-    os.system("python -m spacy download pt_core_news_sm")
-    nlp = spacy.load("pt_core_news_sm")
-
-model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
+# Motor de tradução (tradutor.py): carrega os sinais do banco, o spaCy e os dicionários.
+# Configuração por variáveis de ambiente: MODELO_SPACY, MODELO_EMBEDDING, LIMIAR_SEMANTICO,
+# DATILOLOGIA, CACHE_TTL_SEGUNDOS e DB_* (veja .env.example).
+log.info("[tradutor] Carregando sinais e modelos...")
+motor = Tradutor.criar_do_ambiente()
 
 def connect_to_db():
     return mysql.connector.connect(
         host=os.getenv("DB_HOST", "db"),
         user=os.getenv("DB_USER", "tradulibras"),
-        password=os.getenv("DB_PASS", "Tradulibras2024"),
+        password=os.getenv("DB_PASS", ""),
         database=os.getenv("DB_NAME", "app_tradu_embedding")
     )
 
-# ----------------- Cache dos sinais em memória -----------------
-# A tabela words_sl_br tem ~8.600 sinais com embeddings (~66 MB em JSON).
-# Baixar isso do banco a cada tradução levava 20s ou mais, então carregamos uma vez
-# e atualizamos em segundo plano a cada CACHE_TTL_SEGUNDOS (padrão: 1 hora).
-CACHE_TTL_SEGUNDOS = int(os.getenv("CACHE_TTL_SEGUNDOS", "3600"))
+# ----------------- Palavras sem sinal -----------------
+# Cada palavra que ficou sem sinal é contada na tabela termos_sem_sinal (sql/termos_sem_sinal.sql).
+# A lista ordenada por ocorrências mostra quais sinais vale a pena gravar primeiro.
+# As contagens ficam em memória e são gravadas a cada minuto, para não abrir conexão a cada tradução.
+REGISTRAR_SEM_SINAL = os.getenv("REGISTRAR_SEM_SINAL", "1").lower() not in ("0", "false", "nao", "não")
+_sem_sinal = collections.Counter()
+_sem_sinal_lock = threading.Lock()
 
-_cache_sinais = None  # (expressions, embeddings, urls_por_expressao, carregado_em)
-_cache_lock = threading.Lock()
-_cache_atualizando = threading.Event()
+def anotar_sem_sinal(termos):
+    if not REGISTRAR_SEM_SINAL or not termos:
+        return
+    with _sem_sinal_lock:
+        for t in termos:
+            t = normalizar_sinal(t)[:100]
+            if t:
+                _sem_sinal[t] += 1
 
-def carregar_cache_sinais():
-    global _cache_sinais
-    inicio = time.time()
-    db = connect_to_db()
-    cursor = db.cursor()
+def gravar_sem_sinal():
+    with _sem_sinal_lock:
+        pendentes = dict(_sem_sinal)
+        _sem_sinal.clear()
+    if not pendentes:
+        return
     try:
-        expressions, embeddings = get_expressions_and_embeddings(cursor)
-        cursor.execute("""
-            SELECT w.description, a.url
-            FROM words_sl_br w
-            JOIN animation_sl_br a ON w.id_animation = a.id_animation
-        """)
-        urls = {}
-        for descricao, url in cursor.fetchall():
-            urls.setdefault(descricao, url)  # mantém o primeiro, como o antigo "LIMIT 1"
-    finally:
-        cursor.close()
-        db.close()
-
-    _cache_sinais = (expressions, embeddings, urls, time.time())
-    log.info("[cache] %d sinais carregados em %.1fs", len(expressions), time.time() - inicio)
-
-def _atualizar_cache_em_segundo_plano():
-    try:
-        carregar_cache_sinais()
+        db = connect_to_db()
+        try:
+            cur = db.cursor()
+            cur.executemany("""
+                INSERT INTO termos_sem_sinal (termo, ocorrencias) VALUES (%s, %s) AS novo
+                ON DUPLICATE KEY UPDATE ocorrencias = termos_sem_sinal.ocorrencias + novo.ocorrencias
+            """, list(pendentes.items()))
+            db.commit()
+        finally:
+            db.close()
     except Exception:
-        log.exception("[cache] Erro ao atualizar, mantendo os dados atuais")
-    finally:
-        _cache_atualizando.clear()
+        log.warning("[sem_sinal] não foi possível gravar %d termos", len(pendentes), exc_info=True)
 
-def obter_cache_sinais():
-    # Primeira carga: bloqueia (só acontece se a API não carregou na inicialização)
-    if _cache_sinais is None:
-        with _cache_lock:
-            if _cache_sinais is None:
-                carregar_cache_sinais()
+def _gravar_periodicamente():
+    parar = threading.Event()
+    while not parar.wait(60):
+        gravar_sem_sinal()
 
-    expressions, embeddings, urls, carregado_em = _cache_sinais
+if REGISTRAR_SEM_SINAL:
+    threading.Thread(target=_gravar_periodicamente, daemon=True).start()
 
-    # Cache vencido: atualiza em segundo plano e continua respondendo com os dados atuais
-    if time.time() - carregado_em > CACHE_TTL_SEGUNDOS and not _cache_atualizando.is_set():
-        _cache_atualizando.set()
-        threading.Thread(target=_atualizar_cache_em_segundo_plano, daemon=True).start()
+def traduzir(texto, exclusoes=frozenset()):
+    resultado = motor.traduzir(texto, exclusoes)
+    anotar_sem_sinal(resultado.get("sem_sinal"))
+    return resultado
 
-    return expressions, embeddings, urls
-
-def gerar_embeddings(texto):
-    tokens = texto.split()
-    if not tokens:
-        return np.zeros(384) # Dimensão do MiniLM-L6-v2
-    vetores = [model.encode(token) for token in tokens]
-    return np.mean(vetores, axis=0)
-
-def get_expressions_and_embeddings(cursor):
-    cursor.execute("SELECT description, JSON_EXTRACT(embedding, '$') FROM words_sl_br")
-    data = cursor.fetchall()
-    expressions = [row[0] for row in data]
-    embeddings = [np.array(json.loads(row[1])) for row in data]
-    return expressions, np.array(embeddings)
-
-def portugues_para_glosa_libras(frase_portugues):
-    """
-    Converte a frase em português para a estrutura gramatical aproximada de Libras (Glosa).
-    Remove artigos, preposições vazias e reorganiza elementos (ex: Tópico/Tempo + Objeto + Verbo).
-    """
-    doc = nlp(frase_portugues.lower())
-    
-    tempos = []
-    sujeitos = []
-    objetos = []
-    verbos = []
-    outros = []
-
-    for token in doc:
-        # Ignorar pontuações, determinantes (artigos) e preposições puras de ligação
-        if token.pos_ in ["PUNCT", "DET"] or token.dep_ == "case":
-            continue
-            
-        lema = token.lemma_
-        
-        if token.dep_ in ["nsubj", "nsubj:pass"]:
-            sujeitos.append(lema)
-        elif token.dep_ in ["obj", "iobj", "obl"]:
-            objetos.append(lema)
-        elif token.pos_ == "VERB":
-            verbos.append(lema)
-        elif token.dep_ in ["advmod"] and ("ontem" in lema or "amanhã" in lema or "hoje" in lema):
-            tempos.append(lema)
-        else:
-            outros.append(lema)
-
-    # Ordem básica aproximada em Libras: [Tempo] + [Objeto/Tópico] + [Sujeito] + [Verbo]
-    glosa_tokens = tempos + objetos + sujeitos + outros + verbos
-    return " ".join([t for t in glosa_tokens if t])
-
-def normalizar_sinal(texto):
-    """Forma usada para comparar sinais: minúsculo e sem espaços repetidos."""
-    return " ".join(texto.split()).lower()
-
-def encontrar_melhor_sinal(termo, expressions, embeddings, ocultos=frozenset()):
-    """
-    Busca o melhor match no banco para um termo isolado da glosa.
-    `ocultos`: sinais que ESTE usuário marcou como incorretos para o termo; são pulados
-    e o próximo melhor candidato é usado no lugar.
-    """
-    if not expressions or len(embeddings) == 0:
-        return None, 0.0
-
-    def permitido(indice):
-        return not ocultos or normalizar_sinal(expressions[indice]) not in ocultos
-
-    # Tenta match por embedding (do mais parecido para o menos parecido)
-    embedding_termo = model.encode(termo)
-    similarity_scores = cosine_similarity([embedding_termo], embeddings)[0]
-    for indice in np.argsort(-similarity_scores):
-        score = similarity_scores[indice]
-        if score < 0.7:
-            break
-        if permitido(indice):
-            return expressions[indice], float(score)
-
-    # Fallback Levenshtein para o termo
-    distancias = np.array([levenshtein_distance(termo, expr.lower()) for expr in expressions])
-    for indice in np.argsort(distancias, kind='stable'):
-        if distancias[indice] > 2:
-            break
-        if permitido(indice):
-            return expressions[indice], 0.0
-
-    return None, 0.0
-
-def processar_traducao_frase(frase_usuario, exclusoes=frozenset()):
-    expressions, embeddings, urls = obter_cache_sinais()
-
-    # 1. Converter frase em estrutura de Libras (Glosa)
-    glosa = portugues_para_glosa_libras(frase_usuario)
-    termos_glosa = glosa.split()
-
-    sequencia_animacoes = []
-
-    # 2. Mapear cada termo da glosa para um sinal cadastrado no banco
-    for termo in termos_glosa:
-        ocultos = frozenset(sinal for (t, sinal) in exclusoes if t == normalizar_sinal(termo))
-        sinal_encontrado, score = encontrar_melhor_sinal(termo, expressions, embeddings, ocultos)
-        if sinal_encontrado:
-            url = urls.get(sinal_encontrado)
-            if url:
-                sequencia_animacoes.append({
-                    'termo_original': termo,
-                    'expressao_libras': sinal_encontrado,
-                    'url': url,
-                    'score': score
-                })
-
-    return {
-        'frase_original': frase_usuario,
-        'glosa_gerada': glosa,
-        'traducao_encontrada': len(sequencia_animacoes) > 0,
-        'sequencia': sequencia_animacoes
-    }
-
-def find_animation_url(cursor, expression):
-    cursor.execute("""
-        SELECT a.url
-        FROM words_sl_br w
-        JOIN animation_sl_br a ON w.id_animation = a.id_animation
-        WHERE w.description = %s
-        LIMIT 1
-    """, (expression,))
-    result = cursor.fetchone()
-    return result[0] if result else None
-
+# ----------------- Áudio -----------------
 class AudioIncompreensivel(Exception):
     """O áudio foi lido, mas nenhuma fala foi reconhecida."""
 
@@ -250,8 +126,11 @@ def transcrever_audio_caminho(file_path):
         raise TranscricaoIndisponivel(str(e)) from e
 
 # ----------------- Padrão de respostas da API -----------------
-# Sucesso:  {"status": "success", "frase_original", "glosa", "sequencia", ["texto_transcrito"]}
-# Sem sinal: 404 {"status": "not_found", "codigo": "SEM_SINAIS", "mensagem", "frase_original", "glosa", "sugestao_link"}
+# Sucesso:  {"status": "success", "frase_original", "glosa", "sequencia", "sem_sinal", ["texto_transcrito"]}
+#           cada item da sequência: {termo_original, expressao_libras, url, score, metodo, aproximado}
+#           metodo: exato | sinonimo | lema | variacao | correcao | semelhanca | datilologia
+# Sem sinal: 404 {"status": "not_found", "codigo": "SEM_SINAIS", "mensagem", "frase_original", "glosa",
+#                 "sem_sinal", "sugestao_link"}
 # Erro:     {"status": "error", "codigo", "mensagem"}  (nunca expõe detalhes internos)
 
 def erro(status_http, codigo, mensagem):
@@ -261,6 +140,7 @@ def resposta_traducao(resultado, **extra):
     corpo = {
         'frase_original': resultado['frase_original'],
         'glosa': resultado['glosa_gerada'],
+        'sem_sinal': resultado.get('sem_sinal', []),
         **extra,
     }
     if resultado['traducao_encontrada']:
@@ -328,21 +208,12 @@ def sugestao():
     if texto is None:
         return erro(400, 'TEXTO_INVALIDO', f'Digite um texto de 1 a {LIMITE_TEXTO} caracteres.')
 
-    return resposta_traducao(processar_traducao_frase(texto, ler_exclusoes(data.get('exclusoes'))))
+    return resposta_traducao(traduzir(texto, ler_exclusoes(data.get('exclusoes'))))
 
 # ----------------- Glossário (palavras com sinal cadastrado) -----------------
 @app.route('/api/glossario', methods=['GET'])
 def glossario():
-    expressions, _, urls = obter_cache_sinais()
-    palavras = {}
-    for expr in expressions:
-        rotulo = " ".join(expr.split())
-        # Algumas descrições no banco são nomes de arquivo (ex.: "casa.mp4"): não exibe no glossário
-        if rotulo.lower().endswith(('.mp4', '.webm', '.gif', '.mov')):
-            continue
-        if rotulo and expr in urls:
-            palavras.setdefault(rotulo.lower(), rotulo)  # sem repetição, ignorando maiúsculas/espaços
-    lista = sorted(palavras.values(), key=str.lower)
+    lista = motor.indice.glossario()
     return jsonify({'status': 'success', 'total': len(lista), 'palavras': lista}), 200
 
 # ----------------- Feedback -----------------
@@ -384,12 +255,9 @@ def transcrever():
 
         texto = ler_texto(texto) or texto[:LIMITE_TEXTO]
         exclusoes = ler_exclusoes(request.form.get('exclusoes'))
-        return resposta_traducao(processar_traducao_frase(texto, exclusoes), texto_transcrito=texto)
+        return resposta_traducao(traduzir(texto, exclusoes), texto_transcrito=texto)
     finally:
         shutil.rmtree(tmp_dir, ignore_errors=True)
 
 if __name__ == '__main__':
-    # Carrega os sinais antes de aceitar requisições, para a primeira tradução já ser rápida
-    log.info("[cache] Carregando sinais do banco (pode levar ~30s)...")
-    carregar_cache_sinais()
     app.run(host="0.0.0.0", port=5000, debug=False, threaded=True)
