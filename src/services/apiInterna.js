@@ -52,6 +52,46 @@ async function chamar(caminho, { metodo = 'GET', corpo, tempoLimiteMs = 30000 } 
   return dados;
 }
 
+/**
+ * Repassa uma tradução do navegador para a API (rotas /interno/traduzir e /interno/transcrever) e
+ * devolve { status, dados } como a API respondeu (sucesso, SEM_SINAIS, LIMITE_PLANO...), sem lançar
+ * erro por status HTTP. Só lança ErroApiInterna quando a API não pode ser usada (fora do ar, lenta,
+ * sem TOKEN_INTERNO). `corpo` é um objeto (vira JSON) ou, com `tipoConteudo`, um Buffer já lido.
+ */
+async function repassar(caminho, { corpo, tipoConteudo, limitePalavras, tempoLimiteMs = 30000 }) {
+  if (!process.env.TOKEN_INTERNO) {
+    throw new ErroApiInterna('TOKEN_INTERNO não está configurado no .env do site e da API.', 'SEM_TOKEN', 503);
+  }
+  const json = !tipoConteudo;
+  let resposta;
+  try {
+    resposta = await fetch(`${baseUrl()}${caminho}`, {
+      method: 'POST',
+      headers: {
+        'X-Token-Interno': process.env.TOKEN_INTERNO,
+        'Content-Type': json ? 'application/json' : tipoConteudo,
+        ...(limitePalavras ? { 'X-Limite-Palavras': String(limitePalavras) } : {}),
+      },
+      body: json ? JSON.stringify(corpo) : corpo,
+      signal: AbortSignal.timeout(tempoLimiteMs),
+    });
+  } catch (e) {
+    const tempo = e.name === 'TimeoutError';
+    throw new ErroApiInterna(
+      tempo ? 'A tradução está demorando mais que o normal. Tente novamente em instantes.' : 'O serviço de tradução está fora do ar.',
+      tempo ? 'API_LENTA' : 'API_FORA',
+      503,
+    );
+  }
+  if (resposta.status === 403) {
+    console.error('A API recusou o acesso: o TOKEN_INTERNO do site e da API precisam ser iguais.');
+    throw new ErroApiInterna('O serviço de tradução está com problemas agora.', 'TOKEN_DIFERENTE', 503);
+  }
+  const dados = await resposta.json().catch(() => null);
+  if (!dados) throw new ErroApiInterna('O serviço de tradução está com problemas agora.', 'API_ERRO', 502);
+  return { status: resposta.status, dados };
+}
+
 const status = () => chamar('/interno/status', { tempoLimiteMs: 5000 });
 
 const listarVideosS3 = () => chamar('/interno/s3/videos', { tempoLimiteMs: 180000 });
@@ -82,4 +122,4 @@ function pedirRecarga() {
     });
 }
 
-module.exports = { ErroApiInterna, status, listarVideosS3, sugerirDescricoes, gerarEmbeddings, pedirRecarga };
+module.exports = { ErroApiInterna, repassar, status, listarVideosS3, sugerirDescricoes, gerarEmbeddings, pedirRecarga };

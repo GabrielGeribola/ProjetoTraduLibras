@@ -32,6 +32,13 @@ Se nada for confiável, a palavra fica sem sinal e aparece como "Ainda sem sinal
 | testes da `validation_metrics` | 74,5% | 100% |
 
 
+<h3>Limite de tokens por plano</h3>
+
+Cada plano tem um limite de tokens (palavras) por tradução, editado em `/admin/planos` (vazio = sem limite). Token é cada palavra: "Eu gosto de café" = 4; pontuação não conta e "guarda-chuva" conta como uma. Visitantes, contas sem plano e planos vencidos (`plano_valido_ate` antes de hoje) seguem o limite do plano Free.
+
+O navegador não fala direto com a API Python: a tradução vai para o site (`POST /traduzir` e `POST /traduzir/voz`), que lê o plano no banco e repassa para as rotas internas da API (`/interno/traduzir` e `/interno/transcrever`, protegidas pelo `TOKEN_INTERNO`) com o limite no cabeçalho `X-Limite-Palavras`. A API conta as palavras (na voz, depois de transcrever) e responde `413` com o código `LIMITE_PLANO` se passar do limite. Por isso o `TOKEN_INTERNO` é obrigatório no `.env` do site e da API.
+
+
 <h2> 🔐 Área de administração</h2>
 <p>
 Fica em <code>/admin</code> e só abre para contas com o papel de administrador. O administrador entra pelo login normal do site e cai direto na administração; para qualquer outra pessoa o endereço responde "página não encontrada". O primeiro administrador é criado pelo terminal (depois, os outros podem ser promovidos pela própria tela de usuários):

@@ -5,6 +5,7 @@ const loginController = require('./src/controllers/loginController');
 const historicoController = require('./src/controllers/historicoController');
 const feedbackController = require('./src/controllers/feedbackController');
 const senhaController = require('./src/controllers/senhaController');
+const traducaoController = require('./src/controllers/traducaoController');
 const adminRoutes = require('./src/routes/admin');
 const {
   loginRequired, limiteLogin, limiteCadastro, limiteSenha, limiteFeedback,
@@ -18,6 +19,11 @@ route.get('/ajuda', homeController.ajuda);
 route.get('/sugestoes', homeController.sugestao);
 route.get('/sobre', homeController.sobre);
 route.get('/planos', homeController.planos);
+
+// Tradução (texto e voz), com o limite de tokens do plano de quem está usando.
+// Fora de /api de propósito: em produção o proxy manda /api direto para a API Python.
+route.post('/traduzir', traducaoController.texto);
+route.post('/traduzir/voz', traducaoController.voz);
 
 // Login (com limite de tentativas)
 route.get('/login', loginController.index);

@@ -129,10 +129,7 @@
   'use strict';
 
   // ── Configuração ──────────────────────────────────────────
-  // Em localhost a API Python roda separada na porta 5000; no servidor, /api é repassado pelo proxy
-  const API_BASE = ['localhost', '127.0.0.1'].includes(window.location.hostname)
-    ? 'http://localhost:5000'
-    : '';
+  // A tradução passa pelo servidor do site (/traduzir e /traduzir/voz), que aplica o limite de tokens do plano
   const USUARIO_LOGADO = <%= (typeof user !== 'undefined' && user) ? 'true' : 'false' %>;
   const CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]')?.content || '';
   const TEMPO_LIMITE_MS = 30000;
@@ -347,7 +344,11 @@
     const controle = new AbortController();
     const timer = setTimeout(() => controle.abort(), TEMPO_LIMITE_MS);
     try {
-      const resposta = await fetch(`${API_BASE}${caminho}`, { ...opcoes, signal: controle.signal });
+      const resposta = await fetch(caminho, {
+        ...opcoes,
+        headers: { ...(opcoes.headers || {}), 'X-CSRF-Token': CSRF_TOKEN },
+        signal: controle.signal,
+      });
       let dados = null;
       try { dados = await resposta.json(); } catch (e) { dados = null; }
       return { ok: resposta.ok, status: resposta.status, dados };
@@ -368,6 +369,13 @@
       if (Array.isArray(dados.sem_sinal) && dados.sem_sinal.length) partes.push(`Sem sinal: ${dados.sem_sinal.join(', ')}. `);
       partes.push('Veja as palavras disponíveis no ', criar('a', { texto: 'Glossário', atributos: { href: dados.sugestao_link || '/sugestoes' } }), '.');
       return criar('span', {}, partes);
+    }
+    if (dados && dados.codigo === 'LIMITE_PLANO') {
+      return criar('span', {}, [
+        `${dados.mensagem} Divida a frase em partes menores ou veja os `,
+        criar('a', { texto: 'planos sem limite', atributos: { href: dados.planos_link || '/planos' } }),
+        '.',
+      ]);
     }
     if (status >= 500 || !dados) return 'O serviço de tradução está com problemas agora. Tente novamente em alguns minutos.';
     return dados.mensagem || 'Não foi possível processar o pedido.';
@@ -787,7 +795,7 @@
     traduzindo = true;
     atualizarBloqueios();
     try {
-      const resultado = await chamarApi('/api/sugestao', {
+      const resultado = await chamarApi('/traduzir', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ texto, exclusoes: listaExclusoes() }),
@@ -925,8 +933,8 @@
     traduzindo = true;
     atualizarBloqueios();
     try {
-      // /api/transcrever já devolve a tradução: não é preciso chamar /api/sugestao de novo
-      const resultado = await chamarApi('/api/transcrever', { method: 'POST', body: formData });
+      // /traduzir/voz já devolve a tradução: não é preciso chamar /traduzir de novo
+      const resultado = await chamarApi('/traduzir/voz', { method: 'POST', body: formData });
       const transcrito = resultado.dados?.texto_transcrito;
       voz.transcrito(transcrito);
       enviada.respondida();

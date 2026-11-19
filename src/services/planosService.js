@@ -76,6 +76,40 @@ async function listarPlanos({ incluirInativos = false } = {}) {
   }
 }
 
+/** Plano Free do banco (ou o padrão, se não existir ou o banco falhar) */
+async function planoFree() {
+  try {
+    const [free] = await consultar("SELECT nome, limite_tokens FROM planos WHERE slug = 'free'");
+    if (free) return { plano: free.nome, limite: temValor(free.limite_tokens) ? Number(free.limite_tokens) : null };
+  } catch (e) {
+    console.error('Erro ao carregar o plano Free; usando o limite padrão:', e.message);
+  }
+  return { plano: 'Free', limite: LIMITE_FREE_PADRAO };
+}
+
+/**
+ * Limite de tokens (palavras) por tradução de quem está usando o tradutor: { plano, limite }.
+ * limite null = sem limite. Lido do banco a cada tradução, para valer na hora o que for mudado em
+ * /admin. Visitante, conta sem plano e plano vencido (plano_valido_ate antes de hoje) seguem o Free.
+ * Um plano desativado em /admin continua valendo para quem já o tem (só deixa de ser oferecido).
+ * Se o banco falhar, vale o limite do Free: na dúvida, não se libera a tradução sem limite.
+ */
+async function limiteDoUsuario(usuario) {
+  if (!usuario || !usuario.id) return planoFree();
+  try {
+    const [linha] = await consultar(`
+      SELECT p.nome, p.limite_tokens
+        FROM Usuarios_testes u
+        JOIN planos p ON p.id_plano = u.id_plano
+       WHERE u.id = :id
+         AND (u.plano_valido_ate IS NULL OR u.plano_valido_ate >= CURDATE())`, { id: usuario.id });
+    if (linha) return { plano: linha.nome, limite: temValor(linha.limite_tokens) ? Number(linha.limite_tokens) : null };
+  } catch (e) {
+    console.error('Erro ao carregar o plano do usuário; usando o Free:', e.message);
+  }
+  return planoFree();
+}
+
 /** Dados da página pública /planos */
 async function paginaPlanos() {
   const planos = await listarPlanos();
@@ -105,4 +139,4 @@ async function paginaPlanos() {
   };
 }
 
-module.exports = { CICLOS, EMAIL_COMERCIAL, listarPlanos, paginaPlanos, precosDoPlano, recursosDoPlano, formatarReais };
+module.exports = { CICLOS, EMAIL_COMERCIAL, LIMITE_FREE_PADRAO, listarPlanos, paginaPlanos, limiteDoUsuario, precosDoPlano, recursosDoPlano, formatarReais };
