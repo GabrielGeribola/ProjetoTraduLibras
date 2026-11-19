@@ -6,6 +6,7 @@ import json
 import mysql.connector
 import os
 import logging
+import re
 import shutil
 import tempfile
 import threading
@@ -39,6 +40,11 @@ LIMITE_TEXTO = 300                      # caracteres por tradução
 LIMITE_UPLOAD_BYTES = 5 * 1024 * 1024   # áudio de até 5 MB
 LIMITE_EXCLUSOES = 200                  # sinais ocultados pelo usuário enviados por tradução
 EXTENSOES_AUDIO = {"webm", "ogg", "m4a", "mp4", "mp3", "wav", "aac"}
+
+# Limite de tokens do plano: o servidor Node (que sabe quem é o usuário e qual o plano dele) envia o
+# limite no cabeçalho X-Limite-Palavras. Token = palavra: "Eu gosto de café" = 4; pontuação não conta
+# e "guarda-chuva" conta como uma. Sem o cabeçalho, não há limite (planos Enterprise e Customized).
+PALAVRA = re.compile(r"\w+(?:[-'’]\w+)*")
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = LIMITE_UPLOAD_BYTES
@@ -188,6 +194,29 @@ def ler_exclusoes(valor):
                 exclusoes.add((termo, expressao))
     return frozenset(exclusoes)
 
+def contar_palavras(texto):
+    return len(PALAVRA.findall(texto or ''))
+
+def ler_limite_palavras():
+    """Limite do plano enviado pelo Node (inteiro > 0) ou None, que significa sem limite."""
+    valor = request.headers.get('X-Limite-Palavras', '').strip()
+    return int(valor) if valor.isdigit() and int(valor) > 0 else None
+
+def erro_limite_plano(texto, limite, **extra):
+    """Resposta quando o texto passa do limite de tokens do plano (None se estiver dentro)."""
+    palavras = contar_palavras(texto)
+    if limite is None or palavras <= limite:
+        return None
+    return jsonify({
+        'status': 'error',
+        'codigo': 'LIMITE_PLANO',
+        'mensagem': f'Seu plano traduz até {limite} tokens (palavras) por vez, e o texto tem {palavras}.',
+        'limite': limite,
+        'palavras': palavras,
+        'planos_link': '/planos',
+        **extra,
+    }), 413
+
 @app.errorhandler(HTTPException)
 def erro_http(e):
     codigos = {404: 'ROTA_INEXISTENTE', 405: 'METODO_NAO_PERMITIDO', 413: 'ARQUIVO_GRANDE'}
@@ -200,8 +229,12 @@ def erro_inesperado(e):
     return erro(500, 'ERRO_INTERNO', 'Erro interno no processamento.')
 
 # ----------------- Rota de Tradução de Frases/Texto -----------------
-@app.route('/api/sugestao', methods=['POST'])
-def sugestao():
+# A tradução (texto e voz) é interna: o navegador chama o Node (POST /traduzir e /traduzir/voz), que
+# confere o plano do usuário e repassa para cá com X-Token-Interno e X-Limite-Palavras. Assim o limite
+# do plano não pode ser contornado chamando a API direto. As antigas /api/sugestao e /api/transcrever
+# eram públicas e foram removidas.
+@app.route('/interno/traduzir', methods=['POST'])
+def interno_traduzir():
     data = request.get_json(silent=True)
     if not isinstance(data, dict):
         return erro(400, 'JSON_INVALIDO', 'Envie um JSON no formato {"texto": "..."}.')
@@ -209,6 +242,10 @@ def sugestao():
     texto = ler_texto(data.get('texto'))
     if texto is None:
         return erro(400, 'TEXTO_INVALIDO', f'Digite um texto de 1 a {LIMITE_TEXTO} caracteres.')
+
+    excedeu = erro_limite_plano(texto, ler_limite_palavras())
+    if excedeu:
+        return excedeu
 
     return resposta_traducao(traduzir(texto, ler_exclusoes(data.get('exclusoes'))))
 
@@ -225,8 +262,8 @@ def glossario():
 # Aqui a API só aplica as exclusões que chegam junto com cada tradução (ver ler_exclusoes).
 
 # ----------------- Rota de Áudio ajustada para Frases -----------------
-@app.route('/api/transcrever', methods=['POST'])
-def transcrever():
+@app.route('/interno/transcrever', methods=['POST'])
+def interno_transcrever():
     f = request.files.get('file')
     if f is None or not f.filename:
         return erro(400, 'ARQUIVO_AUSENTE', 'Nenhum arquivo de áudio enviado.')
@@ -256,6 +293,10 @@ def transcrever():
             return erro(502, 'TRANSCRICAO_INDISPONIVEL', 'O serviço de transcrição está indisponível no momento.')
 
         texto = ler_texto(texto) or texto[:LIMITE_TEXTO]
+        # O limite vale para o que foi falado: a resposta traz a transcrição para a pessoa ver o que passou
+        excedeu = erro_limite_plano(texto, ler_limite_palavras(), texto_transcrito=texto)
+        if excedeu:
+            return excedeu
         exclusoes = ler_exclusoes(request.form.get('exclusoes'))
         return resposta_traducao(traduzir(texto, exclusoes), texto_transcrito=texto)
     finally:
