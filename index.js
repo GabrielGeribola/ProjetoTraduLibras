@@ -104,6 +104,7 @@ app.use((req, res) => {
   res.status(404).render('404', {
     titulo: 'Página não encontrada',
     mensagem: 'A página que você procura não existe ou mudou de endereço.',
+    sinal: 'onde?', // a página mostra o sinal ONDE? (404.ejs)
   });
 });
 

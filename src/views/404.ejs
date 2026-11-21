@@ -3,6 +3,19 @@
 
 <div class="faq-container erro-pagina">
   <div class="faq-title"><%= typeof titulo !== 'undefined' ? titulo : 'Página não encontrada' %></div>
+
+  <% if (typeof sinal !== 'undefined' && sinal) { %>
+    <%# O sinal vem do próprio tradutor (POST /traduzir), sempre com o vídeo atual do banco.
+        Com animações reduzidas não toca sozinho: aparece o botão de play. Se falhar, o bloco some. %>
+    <figure class="erro-sinal" id="erroSinal" data-sinal="<%= sinal %>" hidden>
+      <div class="erro-sinal-palco">
+        <video muted playsinline loop preload="auto" aria-label="Sinal ONDE? em Libras"></video>
+        <button type="button" class="erro-sinal-play" aria-label="Ver o sinal ONDE? em Libras" hidden>▶</button>
+      </div>
+      <figcaption><strong>ONDE?</strong> — em Libras</figcaption>
+    </figure>
+  <% } %>
+
   <p class="erro-mensagem">
     <%= typeof mensagem !== 'undefined' ? mensagem : 'A página que você procura não existe ou mudou de endereço.' %>
   </p>
@@ -10,5 +23,39 @@
     <a href="/home" class="btn-topic">Voltar para o tradutor</a>
   </p>
 </div>
+
+<script>
+  (() => {
+    const figura = document.getElementById('erroSinal');
+    if (!figura) return;
+    const video = figura.querySelector('video');
+    const play = figura.querySelector('.erro-sinal-play');
+    const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+
+    fetch('/traduzir', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
+      body: JSON.stringify({ texto: figura.dataset.sinal, exclusoes: [] }),
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((dados) => {
+        const url = dados && dados.sequencia && dados.sequencia[0] && dados.sequencia[0].url;
+        if (!url) return;
+        video.src = url;
+        figura.hidden = false;
+        const reduzido = window.tlMovimentoReduzido ? window.tlMovimentoReduzido() : false;
+        const mostrarPlay = () => { play.hidden = false; };
+        if (reduzido) mostrarPlay();
+        else video.play().catch(mostrarPlay); // navegador bloqueou o autoplay
+      })
+      .catch(() => { /* sem o sinal, a página continua como antes */ });
+
+    play.addEventListener('click', () => {
+      play.hidden = true;
+      video.play().catch(() => { play.hidden = false; });
+    });
+    video.addEventListener('click', () => { if (video.paused) play.click(); else { video.pause(); play.hidden = false; } });
+  })();
+</script>
 
 <%- include('includes/footer'); %>

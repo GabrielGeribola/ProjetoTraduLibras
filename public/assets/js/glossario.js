@@ -46,6 +46,7 @@
     link.className = 'glossario-tag';
     link.textContent = formatarRotulo(palavra.label);
     link.href = `/home?word=${encodeURIComponent(palavra.label)}`;
+    link.dataset.rotulo = palavra.label; // texto original do banco, usado na prévia do sinal
     return link;
   }
 
@@ -168,6 +169,123 @@
       }, 150);
     });
   }
+
+  // ── Prévia do sinal: "carta que vira" ─────────────────────
+  // Parar o mouse sobre uma palavra (ou focar e apertar Espaço) mostra o vídeo do sinal sem sair da
+  // página; Esc fecha; Enter/clique continuam levando ao tradutor. O vídeo só é buscado quando
+  // pedido (são mais de 4 mil palavras) e fica guardado. A carta é só visual (aria-hidden): o link
+  // já leva à tradução completa. Com animações reduzidas, aparece sem girar.
+  const ponteiroFino = window.matchMedia('(hover: hover) and (pointer: fine)');
+  const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+  const reduzido = () => (window.tlMovimentoReduzido ? window.tlMovimentoReduzido() : false);
+  const urlsDoSinal = new Map();
+
+  const carta = document.createElement('div');
+  carta.className = 'glossario-carta';
+  carta.hidden = true;
+  carta.setAttribute('aria-hidden', 'true');
+  const face = document.createElement('div');
+  face.className = 'glossario-carta-face';
+  const videoCarta = document.createElement('video');
+  videoCarta.muted = true;
+  videoCarta.loop = true;
+  videoCarta.playsInline = true;
+  const rotuloCarta = document.createElement('p');
+  rotuloCarta.className = 'glossario-carta-rotulo';
+  const estadoCarta = document.createElement('p');
+  estadoCarta.className = 'glossario-carta-estado';
+  face.append(videoCarta, rotuloCarta, estadoCarta);
+  carta.append(face);
+  document.body.append(carta);
+
+  let tagAtual = null;
+  let timerMostrar = null;
+  let timerEsconder = null;
+
+  function urlDoSinal(rotulo) {
+    if (!urlsDoSinal.has(rotulo)) {
+      urlsDoSinal.set(rotulo, fetch('/traduzir', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
+        body: JSON.stringify({ texto: rotulo, exclusoes: [] }),
+      }).then((r) => (r.ok ? r.json() : null))
+        .then((dados) => dados?.sequencia?.[0]?.url || null)
+        .catch(() => null));
+    }
+    return urlsDoSinal.get(rotulo);
+  }
+
+  function posicionar(tag) {
+    const r = tag.getBoundingClientRect();
+    const largura = 220;
+    const altura = carta.offsetHeight || 230;
+    const esquerda = Math.min(Math.max(8, r.left + r.width / 2 - largura / 2), window.innerWidth - largura - 8);
+    const cabeEmbaixo = r.bottom + 10 + altura < window.innerHeight;
+    carta.style.left = `${esquerda}px`;
+    carta.style.top = `${cabeEmbaixo ? r.bottom + 10 : Math.max(8, r.top - altura - 10)}px`;
+    carta.classList.toggle('acima', !cabeEmbaixo);
+  }
+
+  async function mostrarCarta(tag) {
+    clearTimeout(timerEsconder);
+    if (tagAtual === tag && !carta.hidden) return;
+    tagAtual = tag;
+    const rotulo = tag.dataset.rotulo || tag.textContent;
+    rotuloCarta.textContent = tag.textContent;
+    estadoCarta.textContent = 'Carregando o sinal…';
+    estadoCarta.hidden = false;
+    videoCarta.removeAttribute('src');
+    carta.hidden = false;
+    posicionar(tag);
+    carta.classList.remove('virando');
+    if (!reduzido()) { void carta.offsetWidth; carta.classList.add('virando'); }
+
+    const url = await urlDoSinal(rotulo);
+    if (tagAtual !== tag || carta.hidden) return;
+    if (!url) { estadoCarta.textContent = 'Não foi possível carregar o sinal.'; return; }
+    estadoCarta.hidden = true;
+    videoCarta.src = url;
+    videoCarta.play().catch(() => {});
+    posicionar(tag);
+  }
+
+  function esconderCarta() {
+    clearTimeout(timerMostrar);
+    tagAtual = null;
+    carta.hidden = true;
+    carta.classList.remove('virando');
+    videoCarta.pause();
+    videoCarta.removeAttribute('src');
+    videoCarta.load(); // para o download
+  }
+
+  const tagDe = (alvo) => (alvo && alvo.closest ? alvo.closest('.glossario-tag') : null);
+  [container, resultados].forEach((area) => {
+    area.addEventListener('pointerover', (e) => {
+      const tag = tagDe(e.target);
+      if (!tag || !ponteiroFino.matches) return;
+      clearTimeout(timerMostrar);
+      clearTimeout(timerEsconder);
+      timerMostrar = setTimeout(() => mostrarCarta(tag), 350); // só quando o mouse "para" na palavra
+    });
+    area.addEventListener('pointerout', (e) => {
+      if (!tagDe(e.target) || carta.contains(e.relatedTarget)) return;
+      clearTimeout(timerMostrar);
+      timerEsconder = setTimeout(esconderCarta, 180);
+    });
+    area.addEventListener('keydown', (e) => {
+      const tag = tagDe(e.target);
+      if (!tag) return;
+      if (e.key === ' ') { e.preventDefault(); if (carta.hidden || tagAtual !== tag) mostrarCarta(tag); else esconderCarta(); }
+      if (e.key === 'Escape') esconderCarta();
+    });
+    area.addEventListener('focusout', (e) => { if (tagDe(e.target)) esconderCarta(); });
+  });
+  carta.addEventListener('pointerenter', () => clearTimeout(timerEsconder));
+  carta.addEventListener('pointerleave', () => { timerEsconder = setTimeout(esconderCarta, 180); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !carta.hidden) esconderCarta(); });
+  window.addEventListener('scroll', () => { if (!carta.hidden) esconderCarta(); }, true);
 
   carregarPalavras()
     .then((palavras) => {

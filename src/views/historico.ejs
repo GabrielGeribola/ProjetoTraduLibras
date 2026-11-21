@@ -40,34 +40,63 @@
       </div>
 
     <% } else { %>
-      <ul class="historico-lista">
-        <% itens.forEach(function (item) {
-             const traducao = item.traducao;
-             if (!traducao) return;
-             const data = new Date(item.data_traducao).toLocaleString('pt-BR', {
-               timeZone: 'America/Sao_Paulo', dateStyle: 'short', timeStyle: 'short'
-             });
-        %>
-          <li class="historico-item">
-            <div class="historico-info">
-              <p class="historico-texto"><%= traducao.texto_original %></p>
-              <% const glosa = item.glosa || traducao.glosa; %>
-              <% if (glosa) { %>
-                <p class="historico-glosa">Glosa: <%= glosa %></p>
-              <% } %>
-              <span class="historico-data"><%= data %></span>
-            </div>
+      <%# Linha do tempo: agrupado por dia (fuso de Brasília). Hoje, Ontem, dia da semana (até 6 dias) ou data. %>
+      <%
+        const FUSO = 'America/Sao_Paulo';
+        const diaDe = (d) => new Date(d).toLocaleDateString('en-CA', { timeZone: FUSO }); // AAAA-MM-DD
+        const hoje = diaDe(Date.now());
+        const ontem = diaDe(Date.now() - 864e5);
+        const rotuloDia = (dia) => {
+          if (dia === hoje) return 'Hoje';
+          if (dia === ontem) return 'Ontem';
+          const data = new Date(`${dia}T12:00:00Z`);
+          const dias = Math.round((new Date(`${hoje}T12:00:00Z`) - data) / 864e5);
+          const texto = dias < 7
+            ? data.toLocaleDateString('pt-BR', { timeZone: 'UTC', weekday: 'long' })
+            : data.toLocaleDateString('pt-BR', { timeZone: 'UTC', day: 'numeric', month: 'long', year: 'numeric' });
+          return texto.charAt(0).toUpperCase() + texto.slice(1);
+        };
+        const grupos = [];
+        itens.forEach((item) => {
+          if (!item.traducao) return;
+          const dia = diaDe(item.data_traducao);
+          if (!grupos.length || grupos[grupos.length - 1].dia !== dia) grupos.push({ dia, itens: [] });
+          grupos[grupos.length - 1].itens.push(item);
+        });
+      %>
+      <p class="sr-only" id="historicoAviso" role="status"></p>
+      <div class="historico-linha-tempo">
+        <% grupos.forEach(function (grupo) { %>
+          <section class="historico-grupo" aria-label="<%= rotuloDia(grupo.dia) %>">
+            <h2 class="historico-dia"><%= rotuloDia(grupo.dia) %></h2>
+            <ul class="historico-lista">
+              <% grupo.itens.forEach(function (item) {
+                   const traducao = item.traducao;
+                   const hora = new Date(item.data_traducao).toLocaleTimeString('pt-BR', { timeZone: FUSO, hour: '2-digit', minute: '2-digit' });
+              %>
+                <li class="historico-item">
+                  <div class="historico-info">
+                    <p class="historico-texto"><%= traducao.texto_original %></p>
+                    <% const glosa = item.glosa || traducao.glosa; %>
+                    <% if (glosa) { %>
+                      <p class="historico-glosa">Glosa: <%= glosa %></p>
+                    <% } %>
+                    <span class="historico-data"><%= hora %></span>
+                  </div>
 
-            <div class="historico-acoes">
-              <a href="/home?word=<%= encodeURIComponent(traducao.texto_original) %>" class="btn-topic">Traduzir de novo</a>
-              <form method="POST" action="/historico/<%= item.id_historico %>/excluir" class="form-excluir">
-                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                <button type="submit" class="btn-excluir" aria-label="Remover do histórico: <%= traducao.texto_original %>">Excluir</button>
-              </form>
-            </div>
-          </li>
+                  <div class="historico-acoes">
+                    <a href="/home?word=<%= encodeURIComponent(traducao.texto_original) %>" class="btn-topic">Traduzir de novo</a>
+                    <form method="POST" action="/historico/<%= item.id_historico %>/excluir" class="form-excluir">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                      <button type="submit" class="btn-excluir" aria-label="Remover do histórico: <%= traducao.texto_original %>">Excluir</button>
+                    </form>
+                  </div>
+                </li>
+              <% }); %>
+            </ul>
+          </section>
         <% }); %>
-      </ul>
+      </div>
     <% } %>
 
     <%# Sinais que o usuário marcou como incorretos (👎) — só valem para ele %>
@@ -104,11 +133,48 @@
 </div>
 
 <script>
-  document.querySelectorAll('.form-excluir').forEach((form) => {
-    form.addEventListener('submit', (e) => {
-      if (!confirm('Remover esta tradução do histórico?')) e.preventDefault();
+  // Excluir sem recarregar: o item sai e os de baixo sobem (movimento.js: tlReorganizar).
+  // Se algo falhar, o formulário é enviado do jeito tradicional.
+  (() => {
+    const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+    const aviso = document.getElementById('historicoAviso');
+    document.querySelectorAll('.form-excluir').forEach((form) => {
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!confirm('Remover esta tradução do histórico?')) return;
+        const item = form.closest('.historico-item');
+        const botao = form.querySelector('button');
+        botao.disabled = true;
+        try {
+          const resposta = await fetch(form.action, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { Accept: 'application/json', 'X-CSRF-Token': csrf },
+            body: new URLSearchParams(new FormData(form)),
+          });
+          if (!resposta.ok) throw new Error(`HTTP ${resposta.status}`);
+        } catch (erro) {
+          botao.disabled = false;
+          form.submit();
+          return;
+        }
+        // Para onde vai o foco: o próximo item, o anterior ou o título
+        const itens = [...document.querySelectorAll('.historico-item')];
+        const posicao = itens.indexOf(item);
+        const vizinho = itens[posicao + 1] || itens[posicao - 1];
+        const grupo = item.closest('.historico-grupo');
+        const remover = () => {
+          item.remove();
+          if (grupo && !grupo.querySelector('.historico-item')) grupo.remove();
+        };
+        const tudo = [...document.querySelectorAll('.historico-item, .historico-grupo')];
+        if (window.tlReorganizar) window.tlReorganizar(tudo, remover); else remover();
+        if (aviso) aviso.textContent = 'Tradução removida do histórico.';
+        if (!document.querySelector('.historico-item')) { window.location.reload(); return; } // mostra o "ainda não fez nenhuma tradução"
+        (vizinho?.querySelector('.btn-topic') || document.querySelector('.historico-title')).focus();
+      });
     });
-  });
+  })();
 </script>
 
 <%- include('includes/footer') %>

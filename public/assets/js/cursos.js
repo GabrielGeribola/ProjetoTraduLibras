@@ -17,7 +17,13 @@
   const semAcento = (t) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
   cards.forEach((card) => { card.dataset.buscaNorm = semAcento(card.dataset.busca || ''); });
 
+  // Os cartões que ficam deslizam até o lugar novo, em vez de pular (movimento.js: tlReorganizar)
   function aplicar() {
+    const mudar = () => aplicarFiltros();
+    return window.tlReorganizar ? window.tlReorganizar([destaque, ...cards], mudar) : mudar();
+  }
+
+  function aplicarFiltros() {
     const termo = semAcento(estado.texto.trim());
     const filtrando = Boolean(estado.tipo !== 'todos' || estado.tema !== 'todos' || termo);
     const contagem = { video: 0, artigo: 0 };
@@ -96,16 +102,42 @@
   let vistos = new Set();
   try { vistos = new Set(JSON.parse(localStorage.getItem(CHAVE_VISTOS) || '[]')); } catch (e) { /* armazenamento indisponível */ }
 
+  // Barra "X de N vídeos vistos": enche com mola quando um vídeo novo é concluído (CSS --feito)
+  const progresso = document.getElementById('cursosProgresso');
+  const progressoTexto = document.getElementById('cursosProgressoTexto');
+  const progressoBarra = progresso ? progresso.querySelector('[role="progressbar"]') : null;
+  const idsVideos = [...new Set([...document.querySelectorAll('.js-video')].map((l) => l.dataset.video))];
+
+  function atualizarProgresso() {
+    if (!progresso) return;
+    const vistosAqui = idsVideos.filter((id) => vistos.has(id)).length;
+    progresso.hidden = false;
+    progressoTexto.textContent = `${vistosAqui} de ${idsVideos.length} ${idsVideos.length === 1 ? 'vídeo visto' : 'vídeos vistos'}`;
+    progressoBarra.setAttribute('aria-valuenow', String(vistosAqui));
+    progressoBarra.style.setProperty('--feito', idsVideos.length ? (vistosAqui / idsVideos.length).toFixed(4) : '0');
+  }
+
+  let recemVisto = null; // o selo "✓ Visto" desse vídeo "pula" quando a janela do vídeo fecha
+
   function marcarVistos() {
     document.querySelectorAll('.js-video').forEach((link) => {
       const selo = link.querySelector('.curso-visto');
-      if (selo) selo.hidden = !vistos.has(link.dataset.video);
+      if (!selo) return;
+      selo.hidden = !vistos.has(link.dataset.video);
+      if (link.dataset.video === recemVisto && !selo.hidden) {
+        selo.classList.remove('recem');
+        void selo.offsetWidth; // reinicia a animação
+        selo.classList.add('recem');
+      }
     });
+    recemVisto = null;
+    atualizarProgresso();
   }
   function registrarVisto(id) {
+    if (!vistos.has(id)) recemVisto = id;
     vistos.add(id);
     try { localStorage.setItem(CHAVE_VISTOS, JSON.stringify([...vistos])); } catch (e) { /* armazenamento indisponível */ }
-    marcarVistos();
+    // O selo e a barra só mudam quando a janela do vídeo fecha, para a pessoa ver acontecer
   }
 
   // ── Player em janela (sem sair do site) ───────────────────
@@ -143,6 +175,7 @@
     area.replaceChildren(); // remove o iframe e para o vídeo
     document.body.style.overflow = '';
     if (origemFoco) origemFoco.focus();
+    marcarVistos();
   }
 
   document.querySelectorAll('.js-video').forEach((link) => {
