@@ -7,7 +7,10 @@
 
   const opcoes = [...seletor.querySelectorAll('.ciclo-opcao')];
   const anuncioCiclo = document.getElementById('cicloAnuncio');
-  const reduzirMovimento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Escolha de "Reduzir animações" do site ou, sem ela, a do sistema (includes/head.ejs)
+  const reduzirMovimento = window.tlMovimentoReduzido
+    ? window.tlMovimentoReduzido()
+    : window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   let cicloAtual = (opcoes.find((o) => o.getAttribute('aria-checked') === 'true') || opcoes[0]).dataset.ciclo;
   let origemContato = null; // botão que levou ao contato (para atualizar o assunto se o ciclo mudar)
 
@@ -23,6 +26,12 @@
     });
     document.querySelectorAll('.plano-preco').forEach((preco) => {
       preco.hidden = preco.dataset.ciclo !== cicloAtual;
+    });
+    // Os cartões "respiram" com a troca (CSS .respirar; zerado com animações reduzidas)
+    document.querySelectorAll('.plano-card').forEach((card) => {
+      card.classList.remove('respirar');
+      void card.offsetWidth; // reinicia a animação
+      card.classList.add('respirar');
     });
     if (focar) opcao.focus();
 

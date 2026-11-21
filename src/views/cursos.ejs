@@ -40,6 +40,13 @@
     <p class="planos-subtitulo">Vídeos e leituras selecionados para aprender Libras e conhecer a cultura surda. Escolha por tema ou busque um assunto.</p>
   </div>
 
+  <%# Progresso dos vídeos vistos (guardado neste navegador; preenchido pelo cursos.js) %>
+  <div class="cursos-progresso" id="cursosProgresso" hidden>
+    <span class="cursos-progresso-texto" id="cursosProgressoTexto">0 de <%= videos.length %> vídeos vistos</span>
+    <div class="cursos-progresso-barra" role="progressbar" aria-labelledby="cursosProgressoTexto"
+         aria-valuemin="0" aria-valuemax="<%= videos.length %>" aria-valuenow="0"><i></i></div>
+  </div>
+
   <!-- Filtros -->
   <div class="cursos-filtros">
     <label for="cursosBusca" class="sr-only">Buscar vídeos e artigos</label>

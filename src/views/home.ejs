@@ -107,6 +107,7 @@
       <p class="conversa-gravando" id="conversaGravando" hidden>
         <span class="conversa-gravando-ponto" aria-hidden="true"></span>
         <span id="conversaGravandoTexto">Gravando… 0:05</span>
+        <span class="nivel-voz" aria-hidden="true" title="Volume captado pelo microfone"><i></i></span>
       </p>
     </div>
     <button type="button" class="conversa-botao" id="chatAcao" aria-label="Gravar áudio">
@@ -236,16 +237,66 @@
   const anunciar = (texto) => { anuncio.textContent = ''; setTimeout(() => { anuncio.textContent = texto; }, 50); };
   const horaAgora = () => new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
+  // ── Movimento ─────────────────────────────────────────────
+  const movimentoReduzido = () => (window.tlMovimentoReduzido ? window.tlMovimentoReduzido() : false);
+  const podeTransicionar = () => Boolean(document.startViewTransition) && !movimentoReduzido();
+  // Curva de mola do CSS (--mola) para animações em JS; "ease-out" se o navegador não aceitar linear()
+  function curvaMola() {
+    const curva = getComputedStyle(document.documentElement).getPropertyValue('--mola').trim();
+    return curva && CSS.supports('transition-timing-function', curva) ? curva : 'ease-out';
+  }
+
   // ── Estado da conversa ────────────────────────────────────
-  function abrirConversa() {
-    if (!conversa.hidden) return;
-    inicio.hidden = true;
-    conversa.hidden = false;
-    document.body.classList.add('em-conversa');
-    window.scrollTo(0, 0);
+  // A caixa do tradutor "vira" a janela da conversa (View Transition, CSS: janela-tradutor).
+  // montar() cria as mensagens dentro da transição e devolve o elemento para onde o texto "voa"
+  // a partir de `origem` (o campo digitado ou o exemplo clicado).
+  // chegada: veio de outra página (Glossário, Histórico: /home?word=). A conversa abre na hora, antes de
+  // a página aparecer, e o balão recebe o nome "texto-enviado": na transição entre páginas, a palavra
+  // clicada lá "voa" até ele (movimento.js nomeia a origem).
+  async function abrirConversa(montar = () => null, origem = null, { chegada = false } = {}) {
+    if (!conversa.hidden) { montar(); return; }
+    let destino = null;
+    const mostrar = () => {
+      inicio.hidden = true;
+      conversa.hidden = false;
+      document.body.classList.add('em-conversa');
+      window.scrollTo(0, 0);
+      destino = montar();
+      if ((origem || chegada) && destino) destino.style.viewTransitionName = 'texto-enviado';
+    };
+    if (chegada) {
+      mostrar();
+      const limpar = () => { if (destino) destino.style.viewTransitionName = ''; };
+      window.addEventListener('pagereveal', (e) => {
+        if (e.viewTransition) e.viewTransition.finished.finally(limpar); else limpar();
+      }, { once: true });
+      setTimeout(limpar, 4000); // garantia, caso a página apareça sem transição
+      return;
+    }
+    if (!podeTransicionar()) { mostrar(); return; }
+
+    if (origem) origem.style.viewTransitionName = 'texto-enviado';
+    const transicao = document.startViewTransition(mostrar);
+    transicao.finished.finally(() => {
+      if (origem) origem.style.viewTransitionName = '';
+      if (destino) destino.style.viewTransitionName = '';
+    });
+    await transicao.updateCallbackDone.catch(() => {});
   }
 
   function definirStatus(texto) { statusTopo.textContent = texto; }
+
+  // 4.9 Avatar 🤟 do topo da conversa acompanha o status (que continua em texto ao lado):
+  // "traduzindo" respira; "chegou" dá um pulinho; "sem-sinal" inclina. Os dois últimos acontecem uma vez.
+  const avatarEl = document.querySelector('.conversa-avatar');
+  function avatar(estado) {
+    if (!avatarEl) return;
+    avatarEl.removeAttribute('data-estado');
+    if (!estado) return;
+    void avatarEl.offsetWidth; // reinicia a animação
+    avatarEl.dataset.estado = estado;
+  }
+  if (avatarEl) avatarEl.addEventListener('animationend', () => { if (avatarEl.dataset.estado !== 'traduzindo') avatar(null); });
 
   function atualizarBloqueios() {
     const ocupado = traduzindo || gravando;
@@ -256,7 +307,17 @@
     if (gravando) definirStatus('gravando áudio…');
     else if (traduzindo) definirStatus('traduzindo…');
     else definirStatus('online');
+    if (traduzindo && !gravando) { if (avatarEl && avatarEl.dataset.estado !== 'traduzindo') avatar('traduzindo'); }
+    else if (avatarEl && avatarEl.dataset.estado === 'traduzindo') avatar(null);
   }
+
+  // 4.3 Shift segurado = câmera lenta no sinal que está tocando (fora dos campos de texto)
+  const emCampoDeTexto = (el) => el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Shift' && !e.repeat && playerAtivo && !emCampoDeTexto(document.activeElement)) playerAtivo.camera(true);
+  });
+  document.addEventListener('keyup', (e) => { if (e.key === 'Shift' && playerAtivo) playerAtivo.camera(false); });
+  window.addEventListener('blur', () => { if (playerAtivo) playerAtivo.camera(false); });
 
   // Botão redondo do rodapé: microfone com o campo vazio, "enviar" quando há texto, "parar" gravando
   function atualizarBotaoChat() {
@@ -280,14 +341,19 @@
   }
 
   // Mensagem do usuário (direita). Os tiques viram ✓✓ quando a resposta chega.
+  // Tiques em SVG: o segundo "se desenha" quando a resposta chega (CSS .msg-tiques.lida)
+  const TIQUES_SVG = '<svg viewBox="0 0 17 11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">'
+    + '<path class="tique-1" d="M1 6l3.2 3.2L10 2"/><path class="tique-2" d="M6.5 8.6l.6.6L15 2"/></svg>';
+
   function mensagemUsuario(conteudo) {
-    const tiques = criar('span', { classe: 'msg-tiques', texto: '✓', atributos: { 'aria-hidden': 'true' } });
+    const tiques = criar('span', { classe: 'msg-tiques', atributos: { 'aria-hidden': 'true' } });
+    tiques.innerHTML = TIQUES_SVG; // texto fixo do próprio código, nada vindo do usuário
     const balao = criar('div', { classe: 'msg msg-usuario' }, [...conteudo, rodape([tiques])]);
     lista.append(balao);
     rolarPara(balao);
     return {
       balao,
-      respondida() { tiques.textContent = '✓✓'; tiques.classList.add('lida'); },
+      respondida() { tiques.classList.add('lida'); },
     };
   }
 
@@ -321,11 +387,15 @@
     players.clear();
     playerAtivo = null;
     audiosGravados.splice(0).forEach((url) => URL.revokeObjectURL(url));
-    lista.replaceChildren(criar('div', { classe: 'conversa-dia' }, [criar('span', { texto: 'Hoje' })]));
-    conversa.hidden = true;
-    inicio.hidden = false;
-    document.body.classList.remove('em-conversa');
-    searchInput.focus();
+    const voltar = () => {
+      lista.replaceChildren(criar('div', { classe: 'conversa-dia' }, [criar('span', { texto: 'Hoje' })]));
+      conversa.hidden = true;
+      inicio.hidden = false;
+      document.body.classList.remove('em-conversa');
+    };
+    // A conversa "encolhe" de volta para a caixa do tradutor
+    if (!podeTransicionar()) { voltar(); searchInput.focus(); return; }
+    document.startViewTransition(voltar).updateCallbackDone.then(() => searchInput.focus(), () => searchInput.focus());
   }
   document.getElementById('btnLimpar').addEventListener('click', () => {
     if (lista.querySelector('.msg') && !window.confirm('Apagar esta conversa e voltar ao início?')) return;
@@ -416,17 +486,79 @@
   // ── Player dos sinais ─────────────────────────────────────
   // Dois <video> alternados: enquanto um toca, o outro já carrega o próximo sinal (sem pausa entre sinais).
   // A sequência toca uma vez; depois aparece "Repetir". Clicar num sinal da lista toca a partir dele.
-  function criarPlayer({ palco, legenda, botaoPausa, botaoRepetir, chips, grupos, sequencia }) {
+  // introducao(): animação antes do 1º sinal (glosa cinética), ao iniciar e ao repetir; devolve
+  //   { promessa, pular }. aoTerminar(): chamado quando o último sinal acaba.
+  // aoMudarSinal(g): avisa o sinal atual (g) para a frase sincronizada e a linha do tempo; trechos: a régua.
+  function criarPlayer({ palco, legenda, botaoPausa, botaoRepetir, chips, grupos, sequencia, trechos = [], introducao, aoTerminar, aoMudarSinal }) {
     let [atual, proximo] = palco.querySelectorAll('video');
     const total = sequencia.length;
     let indice = 0;
     let terminou = false;
+    let comecou = false;
+    let quadro = 0;
+    let intro = null; // introdução em andamento
+    let lento = false; // 4.3 câmera lenta enquanto segura o vídeo (ou a tecla Shift)
+
+    // ── 4.3 Câmera lenta: segurar o quadro (ou Shift) toca a 0,5×; soltar volta à velocidade escolhida ──
+    const seloLento = criar('span', { classe: 'selo-lento', texto: '0,5×', atributos: { 'aria-hidden': 'true' } });
+    seloLento.hidden = true;
+    palco.append(seloLento);
+    function camera(sim) {
+      if (lento === sim) return;
+      lento = sim;
+      seloLento.hidden = !sim;
+      aplicarVelocidade(atual);
+      aplicarVelocidade(proximo);
+    }
+    let timerSegurar = null;
+    let segurou = false;
+    palco.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0) return;
+      segurou = false;
+      timerSegurar = setTimeout(() => { segurou = true; camera(true); }, 280);
+    });
+    const soltarQuadro = () => { clearTimeout(timerSegurar); if (lento) camera(false); };
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach((ev) => palco.addEventListener(ev, soltarQuadro));
+    // Depois de segurar, o "clique" ao soltar não pausa o vídeo
+    palco.addEventListener('click', (e) => {
+      if (!segurou) return;
+      segurou = false;
+      e.stopImmediatePropagation();
+    }, { capture: true });
+    palco.addEventListener('contextmenu', (e) => e.preventDefault()); // toque longo no celular não abre menu
+
+    function interromperIntro() {
+      if (!intro) return;
+      const emCurso = intro;
+      intro = null;
+      emCurso.pular();
+    }
 
     const grupoDoIndice = (i) => grupos.findIndex((g) => i >= g.inicio && i <= g.fim);
 
+    // O chip do sinal atual se preenche enquanto o vídeo toca (CSS --progresso).
+    // Num nome soletrado (A-N-A), o chip só termina de encher na última letra.
+    function acompanharProgresso() {
+      cancelAnimationFrame(quadro);
+      if (movimentoReduzido()) return;
+      const passo = () => {
+        const g = grupoDoIndice(indice);
+        const grupo = grupos[g];
+        if (grupo && chips[g] && atual.duration > 0) {
+          const partes = grupo.fim - grupo.inicio + 1;
+          const fracao = Math.min(1, (indice - grupo.inicio + atual.currentTime / atual.duration) / partes);
+          chips[g].style.setProperty('--progresso', fracao.toFixed(3));
+          if (trechos[g]) trechos[g].style.setProperty('--progresso', fracao.toFixed(3));
+        }
+        if (!atual.paused && !atual.ended) quadro = requestAnimationFrame(passo);
+      };
+      quadro = requestAnimationFrame(passo);
+    }
+
     function aplicarVelocidade(video) {
-      video.defaultPlaybackRate = velocidade;
-      video.playbackRate = velocidade;
+      const taxa = lento ? Math.min(0.5, velocidade) : velocidade;
+      video.defaultPlaybackRate = taxa;
+      video.playbackRate = taxa;
     }
 
     function carregar(video, i) {
@@ -445,13 +577,16 @@
       legenda.replaceChildren(...partes);
       chips.forEach((chip, k) => {
         if (k === g) chip.setAttribute('aria-current', 'step');
-        else chip.removeAttribute('aria-current');
+        else { chip.removeAttribute('aria-current'); chip.style.removeProperty('--progresso'); }
       });
+      if (aoMudarSinal) aoMudarSinal(g);
     }
 
     function tocar(i) {
+      interromperIntro(); // tocar num sinal ou no quadro durante a glosa pula a glosa
       indice = i;
       terminou = false;
+      comecou = true;
       botaoRepetir.hidden = true;
       botaoPausa.hidden = false;
       botaoPausa.textContent = '⏸ Pausar';
@@ -477,21 +612,61 @@
         terminou = true;
         botaoPausa.hidden = true;
         botaoRepetir.hidden = false;
+        chips.forEach((chip) => chip.style.removeProperty('--progresso'));
+        if (aoMudarSinal) aoMudarSinal(grupos.length); // fim: nenhuma palavra em destaque, régua toda percorrida
+        // "Frase completa": os sinais fazem uma ola e o "Repetir" entra com mola (só depois do vídeo)
+        if (!movimentoReduzido() && botaoRepetir.animate) {
+          const mola = curvaMola();
+          chips.forEach((chip, k) => chip.animate(
+            [{ translate: '0 0' }, { translate: '0 -7px', offset: 0.4 }, { translate: '0 0' }],
+            { duration: 460, delay: Math.min(k * 55, 440), easing: 'ease-in-out' },
+          ));
+          botaoRepetir.animate([{ scale: 0.6, opacity: 0 }, { scale: 1, opacity: 1 }], { duration: 520, easing: mola });
+        }
+        if (aoTerminar) aoTerminar();
       }
+    }
+
+    // Começa do zero: glosa (se houver) e depois o 1º sinal. O primeiro sinal já vai carregando.
+    function comecar() {
+      interromperIntro();
+      atual.pause();
+      terminou = false;
+      comecou = false;
+      carregar(atual, 0);
+      if (total > 1) carregar(proximo, 1);
+      botaoRepetir.hidden = true;
+      botaoPausa.hidden = false;
+      const nova = introducao ? introducao() : null;
+      if (!nova) { tocar(0); return; }
+      intro = nova;
+      botaoPausa.textContent = '⏭ Pular';
+      nova.promessa.then(() => {
+        if (intro !== nova) return; // pulada, ou outro player assumiu
+        intro = null;
+        if (players.has(controle) && playerAtivo === controle) tocar(0);
+      });
     }
 
     [atual, proximo].forEach((video) => {
       video.addEventListener('ended', avancar);
       video.addEventListener('error', avancar); // vídeo indisponível: pula para o próximo sinal
+      video.addEventListener('playing', (e) => { if (e.target === atual) acompanharProgresso(); });
     });
 
     const controle = {
-      iniciar() { tocar(0); },
+      iniciar() { ativar(controle); comecar(); },
       pausar() {
+        if (intro || !comecou) { // ainda na glosa: para tudo e espera o "Reproduzir"
+          interromperIntro();
+          botaoPausa.textContent = '▶ Reproduzir';
+          return;
+        }
         atual.pause();
         if (!terminou) botaoPausa.textContent = '▶ Continuar';
       },
       alternar() {
+        if (intro || !comecou) { ativar(controle); tocar(0); return; } // "Pular" ou toque no quadro durante a glosa
         if (atual.paused) {
           ativar(controle);
           atual.play().catch(() => {});
@@ -506,7 +681,10 @@
         atual.dataset.indice = '';
         tocar(i);
       },
-      repetir() { controle.irPara(0); },
+      repetir() { ativar(controle); comecar(); }, // a glosa toca de novo antes dos sinais
+      camera,
+      grupoAtual() { return comecou ? grupoDoIndice(indice) : -1; },
+      comecou() { return comecou; },
       velocidade() { aplicarVelocidade(atual); aplicarVelocidade(proximo); },
     };
 
@@ -577,15 +755,77 @@
 
     // Com um sinal só, a legenda embaixo do vídeo já explica; a lista de notas seria repetição
     const notas = grupos.length > 1 ? grupos.filter((g) => g.nota) : [];
+    const fileira = criar('div', { classe: 'sinais-sequencia', atributos: { role: 'group', 'aria-label': 'Sinais da tradução, na ordem da Libras: escolha um para ver' } }, chips);
+
+    // 4.1 A frase digitada embaixo do vídeo: a palavra do sinal que está tocando fica sublinhada.
+    // (Visual: a legenda "Sinal 1 de 3: CAFÉ" já informa o leitor de tela.)
+    const palavras = palavrasDe(entrada);
+    const origens = origemDosSinais(palavras, grupos);
+    const spansFrase = palavras.map((p, i) => criar('span', {
+      classe: origens.some((o) => o.includes(i)) ? 'com-sinal' : 'sem-sinal', texto: p,
+    }));
+    const marca = criar('span', { classe: 'glosa-sync-marca' });
+    const fraseSync = palavras.length > 1
+      ? criar('p', { classe: 'glosa-sync', atributos: { 'aria-hidden': 'true' } },
+        [marca, ...spansFrase.flatMap((s, i) => (i ? [' ', s] : [s]))])
+      : null;
+    function destacarPalavra(g) {
+      if (!fraseSync) return;
+      const indices = g >= 0 ? origens[g] || [] : [];
+      spansFrase.forEach((s, i) => s.classList.toggle('atual', indices.includes(i)));
+      if (!indices.length) { marca.style.opacity = '0'; return; }
+      const primeira = spansFrase[indices[0]];
+      const ultima = spansFrase[indices[indices.length - 1]];
+      const mesmaLinha = primeira.offsetTop === ultima.offsetTop;
+      marca.style.opacity = '1';
+      marca.style.width = `${(mesmaLinha ? ultima.offsetLeft + ultima.offsetWidth : primeira.offsetLeft + primeira.offsetWidth) - primeira.offsetLeft}px`;
+      marca.style.transform = `translate(${primeira.offsetLeft}px, ${primeira.offsetTop + primeira.offsetHeight}px)`;
+    }
+
+    // 4.2 Linha do tempo arrastável: um trecho por sinal (largura proporcional às letras de um nome
+    // soletrado). Arrastar "esfrega" a sequência; setas, Home e End pulam de sinal em sinal.
+    const trechos = grupos.map((g) => criar('span', { classe: 'linha-tempo-trecho', atributos: { style: `flex-grow:${g.fim - g.inicio + 1}` } }));
+    const regua = grupos.length > 1
+      ? criar('div', {
+        classe: 'linha-tempo',
+        atributos: {
+          role: 'slider', tabindex: '0', 'aria-label': 'Linha do tempo dos sinais',
+          'aria-valuemin': '1', 'aria-valuemax': String(grupos.length), 'aria-valuenow': '1',
+          'aria-valuetext': `Sinal 1 de ${grupos.length}: ${grupos[0].rotulo}`,
+        },
+      }, trechos)
+      : null;
+    function marcarRegua(g) {
+      if (!regua) return;
+      trechos.forEach((t, k) => {
+        t.classList.toggle('atual', k === g);
+        t.classList.toggle('passado', g >= 0 && k < g);
+        if (k !== g) t.style.removeProperty('--progresso');
+      });
+      if (g >= 0 && g < grupos.length) {
+        regua.setAttribute('aria-valuenow', String(g + 1));
+        regua.setAttribute('aria-valuetext', `Sinal ${g + 1} de ${grupos.length}: ${grupos[g].rotulo}`);
+      }
+    }
+
+    // O balão da tradução fica numa linha própria; no fim do vídeo, as sugestões aparecem ao lado.
+    // (Feito antes de o vídeo existir: mover um <video> no documento depois o faria pausar.)
+    if (!resposta.balao.parentElement.classList.contains('msg-linha')) {
+      const linha = criar('div', { classe: 'msg-linha' });
+      resposta.balao.replaceWith(linha);
+      linha.append(resposta.balao);
+    }
 
     resposta.mostrar([
       palco,
+      ...(fraseSync ? [fraseSync] : []),
       legenda,
       criar('div', { classe: 'player-barra' }, [
         criar('div', { classe: 'player-controles' }, [botaoPausa, botaoRepetir]),
         seletorVelocidade(),
       ]),
-      criar('div', { classe: 'sinais-sequencia', atributos: { role: 'group', 'aria-label': 'Sinais da tradução, na ordem da Libras: escolha um para ver' } }, chips),
+      ...(regua ? [regua] : []),
+      fileira,
       ...(notas.length
         ? [criar('ul', { classe: 'traducao-notas' }, notas.map((g) => criar('li', {}, [criar('strong', { texto: g.rotulo }), ` — ${g.nota}`])))]
         : []),
@@ -593,10 +833,351 @@
       criarFeedback({ texto: entrada, glosa: dados.glosa || '', sequencia }),
     ]);
 
-    const player = criarPlayer({ palco, legenda, botaoPausa, botaoRepetir, chips, grupos, sequencia });
-    ativar(player);
-    player.iniciar();
+    // O vídeo só começa quando a glosa termina de se montar: as duas coisas não disputam o olhar.
+    // "Repetir" mostra a glosa de novo. Ao fim da sequência, aparece o balão de sugestões (uma vez).
+    let sugestoesCriadas = false;
+    const player = criarPlayer({
+      palco, legenda, botaoPausa, botaoRepetir, chips, grupos, sequencia, trechos,
+      aoMudarSinal(g) { destacarPalavra(g); marcarRegua(g); },
+      introducao() {
+        try { return animarGlosa({ palco, entrada, grupos, chips }); } catch (e) { return null; } // nunca impede o vídeo
+      },
+      aoTerminar() {
+        if (sugestoesCriadas) return; // se a pessoa fechou, não volta a abrir no "Repetir"
+        sugestoesCriadas = true;
+        mostrarSugestoes(resposta.balao, { entrada, sequencia });
+      },
+    });
+    if (regua) {
+      // Trecho sob o ponteiro; só troca de sinal quando muda de trecho (não reinicia o mesmo)
+      const trechoEm = (x) => {
+        const k = trechos.findIndex((t) => { const r = t.getBoundingClientRect(); return x >= r.left && x <= r.right; });
+        if (k >= 0) return k;
+        return x < trechos[0].getBoundingClientRect().left ? 0 : trechos.length - 1;
+      };
+      const irParaTrecho = (k) => { if (k !== player.grupoAtual() || !player.comecou()) player.irPara(grupos[k].inicio); };
+      let arrastando = false;
+      regua.addEventListener('pointerdown', (e) => {
+        arrastando = true;
+        regua.setPointerCapture(e.pointerId);
+        regua.classList.add('arrastando');
+        irParaTrecho(trechoEm(e.clientX));
+      });
+      regua.addEventListener('pointermove', (e) => { if (arrastando) irParaTrecho(trechoEm(e.clientX)); });
+      const soltar = () => { arrastando = false; regua.classList.remove('arrastando'); };
+      regua.addEventListener('pointerup', soltar);
+      regua.addEventListener('pointercancel', soltar);
+      regua.addEventListener('keydown', (e) => {
+        const atual = Math.max(0, player.grupoAtual());
+        const destino = { ArrowRight: atual + 1, ArrowUp: atual + 1, ArrowLeft: atual - 1, ArrowDown: atual - 1, Home: 0, End: grupos.length - 1 }[e.key];
+        if (destino === undefined) return;
+        e.preventDefault();
+        player.irPara(grupos[Math.min(grupos.length - 1, Math.max(0, destino))].inicio);
+      });
+    }
+
     anunciar(`Tradução pronta: ${grupos.length} ${grupos.length === 1 ? 'sinal' : 'sinais'}.`);
+    window.tlVibrar?.(25);
+    avatar('chegou');
+    player.iniciar();
+  }
+
+  // ── Glosa cinética ────────────────────────────────────────
+  // A frase digitada aparece sobre a fileira de sinais: as palavras que a Libras não usa
+  // (artigos, preposições, verbos de ligação) caem, e as outras deslizam até virar o sinal
+  // na ordem da Libras ("eu sou lindo" → EU LINDO). Mostra, em menos de 0,7 s, como a glosa funciona.
+  // É só visual: os botões dos sinais estão no lugar desde o início para teclado e leitor de tela.
+  const PALAVRA = /[\p{L}\p{N}]+(?:[-'’][\p{L}\p{N}]+)*/gu;
+  const palavrasDe = (texto) => String(texto || '').match(PALAVRA) || [];
+  const semAcento = (texto) => normalizar(texto).normalize('NFD').replace(/[̀-ͯ]/g, '');
+
+  // Para cada sinal, quais palavras digitadas viraram ele (termo_original da API)
+  function origemDosSinais(palavras, grupos) {
+    const usadas = new Set();
+    const comparaveis = palavras.map(semAcento);
+    return grupos.map((grupo) => {
+      const alvo = palavrasDe(grupo.termo).map(semAcento);
+      if (!alvo.length) return [];
+      for (let i = 0; i + alvo.length <= comparaveis.length; i++) {
+        if (alvo.every((p, k) => comparaveis[i + k] === p && !usadas.has(i + k))) {
+          const indices = alvo.map((_, k) => i + k);
+          indices.forEach((k) => usadas.add(k));
+          return indices;
+        }
+      }
+      return [];
+    });
+  }
+
+  // Acontece DENTRO do quadro do vídeo, que fica preto enquanto o primeiro sinal carrega: é para onde
+  // o olho já está indo. Etapas (~2 s no total; tocar no quadro pula):
+  //   1. "Você escreveu": a frase aparece como foi digitada;
+  //   2. as palavras que a Libras não usa caem, e as que ficam acendem;
+  //   3. "Em Libras": as que ficaram deslizam para a ordem da Libras, já como sinais (EU LINDO);
+  //   4. a glosa some e o primeiro sinal começa.
+  // Devolve { promessa, pular } (promessa: hora de começar o vídeo) ou null quando não há glosa a mostrar.
+  function animarGlosa({ palco, entrada, grupos, chips }) {
+    const palavras = palavrasDe(entrada);
+    if (movimentoReduzido() || !palavras.length || !grupos.length || !palco.animate) return null;
+    palco.querySelectorAll('.glosa-palco').forEach((resto) => resto.remove());
+
+    const origens = origemDosSinais(palavras, grupos);
+    const sinalDaPalavra = new Map();
+    origens.forEach((indices, k) => indices.forEach((i) => sinalDaPalavra.set(i, k)));
+
+    const mola = curvaMola();
+
+    const legenda = criar('span', { classe: 'glosa-legenda', texto: 'Você escreveu' });
+    const spans = palavras.map((p) => criar('span', { classe: 'glosa-palavra', texto: p }));
+    const linha = criar('div', { classe: 'glosa-linha' }, spans);
+    const camada = criar('div', { classe: 'glosa-palco', atributos: { 'aria-hidden': 'true' } }, [legenda, linha]);
+    palco.append(camada);
+
+    // Tocar no quadro pula a glosa (o clique segue para o player, que começa o vídeo)
+    let pulou = false;
+    const pular = () => {
+      pulou = true;
+      palco.removeEventListener('click', pular, { capture: true });
+      camada.getAnimations({ subtree: true }).forEach((a) => a.cancel());
+      camada.remove();
+    };
+    palco.addEventListener('click', pular, { capture: true });
+    const parar = () => pulou;
+    const espera = (ms) => new Promise((r) => { setTimeout(r, ms); });
+    const fim = (a) => a.finished.catch(() => {});
+
+    const promessa = (async () => {
+      // 1. a frase como foi escrita
+      await fim(camada.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 220, easing: 'ease-out', fill: 'both' }));
+      await espera(380);
+      if (parar()) return;
+
+      // 2. o que a Libras não usa cai; o que fica acende
+      const quedas = [];
+      spans.forEach((span, i) => {
+        if (sinalDaPalavra.has(i)) { span.classList.add('mantida'); return; }
+        quedas.push(fim(span.animate([
+          { transform: 'none', opacity: 1 },
+          { transform: `translateY(34px) rotate(${i % 2 ? 12 : -12}deg)`, opacity: 0 },
+        ], { duration: 420, delay: quedas.length * 60, easing: 'cubic-bezier(.4,0,1,1)', fill: 'forwards' })));
+      });
+      await Promise.all(quedas);
+      await espera(quedas.length ? 120 : 260);
+      if (parar()) return;
+
+      // 3. o que ficou desliza para a ordem da Libras (FLIP: mede antes, troca, anima a diferença)
+      const antes = new Map(spans.map((span) => [span, span.getBoundingClientRect()]));
+      const sinais = grupos.map((grupo, k) => {
+        const indices = origens[k];
+        const span = indices.length ? spans[indices[0]] : criar('span', { classe: 'glosa-palavra mantida' });
+        span.textContent = grupo.rotulo; // EU, LINDO, A-N-A...
+        return span;
+      });
+      linha.replaceChildren(...sinais);
+      legenda.textContent = 'Em Libras';
+      fim(legenda.animate([{ opacity: 0, transform: 'translateY(4px)' }, { opacity: 1, transform: 'none' }], { duration: 260, easing: 'ease-out' }));
+      const movimentos = sinais.map((span, k) => {
+        const depois = span.getBoundingClientRect();
+        const inicio = antes.get(span);
+        const quadros = inicio
+          ? [{ transform: `translate(${inicio.left - depois.left}px, ${inicio.top - depois.top}px)` }, { transform: 'none' }]
+          : [{ transform: 'scale(.4)', opacity: 0 }, { transform: 'none', opacity: 1 }]; // sinal sem palavra digitada (ex.: "te" → VOCÊ)
+        return fim(span.animate(quadros, { duration: 560, delay: k * 45, easing: mola, fill: 'backwards' }));
+      });
+      // Os botões dos sinais, embaixo, acompanham a mesma ordem
+      chips.forEach((chip, k) => chip.animate([{ transform: 'scale(.85)', opacity: 0.35 }, { transform: 'none', opacity: 1 }],
+        { duration: 420, delay: 120 + k * 45, easing: mola, fill: 'backwards' }));
+      await Promise.all(movimentos);
+      await espera(520);
+      if (parar()) return;
+
+      // 4. a glosa sai enquanto o vídeo começa
+      palco.removeEventListener('click', pular, { capture: true });
+      fim(camada.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 240, easing: 'ease-in', fill: 'forwards' }))
+        .then(() => camada.remove());
+    })().catch(() => { camada.remove(); });
+    return { promessa, pular };
+  }
+
+  // ── Sugestões: balão ao lado do vídeo quando a sequência termina ──
+  // Vêm do glossário (só palavras e expressões que têm sinal):
+  //   "Com essas palavras": expressões e derivadas dos sinais traduzidos (café → café da manhã, cafezinho);
+  //   "Do mesmo tema": outras palavras da mesma categoria (Alimentos e bebidas...);
+  //   "Para experimentar": frases do dia a dia.
+  // Normal: 4 sugestões. Ampliar: tudo. Recolher: só o título. Fechar: some (e não volta no "Repetir").
+  const API_GLOSSARIO = ['localhost', '127.0.0.1'].includes(window.location.hostname)
+    ? 'http://localhost:5000/api/glossario'
+    : '/api/glossario';
+  const FRASES_EXEMPLO = ['bom dia', 'tudo bem?', 'eu te amo', 'obrigado', 'por favor', 'desculpa', 'qual é o seu nome?', 'meu nome é Ana'];
+  const CATEGORIAS_FORA = new Set(['Alfabeto', 'Outros', 'Números e quantidades']);
+  const SUGESTOES_VISIVEIS = 4;
+  const caixasSugestoes = new Set();
+  let glossarioCarregado = null;
+
+  const textoComparavel = (t) => semAcento(String(t || '').replace(/_/g, ' ')).replace(/[^\p{L}\p{N}\s-]/gu, '').replace(/\s+/g, ' ').trim();
+  const formatarSugestao = (t) => {
+    const texto = String(t).replace(/_/g, ' ').replace(/\s+/g, ' ').trim().toLocaleLowerCase('pt-BR');
+    return texto.charAt(0).toLocaleUpperCase('pt-BR') + texto.slice(1);
+  };
+
+  // Palavras com sinal (API, com acentos) + categorias (glossario.json); baixado uma vez, só quando preciso
+  function carregarGlossario() {
+    if (!glossarioCarregado) {
+      const json = (url) => fetch(url).then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))));
+      glossarioCarregado = Promise.allSettled([json('/data/glossario.json'), json(API_GLOSSARIO)]).then(([arquivo, api]) => {
+        const categorias = new Map();
+        if (arquivo.status === 'fulfilled') arquivo.value.forEach((item) => categorias.set(textoComparavel(item.label), item.categoria || 'Outros'));
+        let rotulos = [];
+        if (api.status === 'fulfilled' && Array.isArray(api.value.palavras)) rotulos = api.value.palavras;
+        else if (arquivo.status === 'fulfilled') rotulos = arquivo.value.map((item) => item.label);
+        return rotulos.map((rotulo) => {
+          const chave = textoComparavel(rotulo);
+          return { texto: String(rotulo).replace(/_/g, ' '), chave, palavras: chave.split(/[\s-]+/), categoria: categorias.get(chave) || 'Outros' };
+        }).filter((p) => p.chave.length > 1);
+      }).catch(() => []);
+    }
+    return glossarioCarregado;
+  }
+
+  function montarSugestoes({ entrada, sequencia }, glossario) {
+    const usados = new Set([textoComparavel(entrada)]);
+    const alvo = new Set(); // palavras dos sinais traduzidos
+    sequencia.forEach((item) => {
+      if (item.metodo === 'datilologia') return;
+      [item.expressao_libras, item.termo_original].forEach((t) => {
+        usados.add(textoComparavel(t));
+        palavrasDe(t).forEach((p) => { const c = textoComparavel(p); if (c.length >= 3) alvo.add(c); });
+      });
+    });
+    const novo = (p) => !usados.has(p.chave);
+    const acertos = (p) => p.palavras.filter((w) => alvo.has(w)).length;
+
+    const expressoes = glossario.filter((p) => novo(p) && p.palavras.length > 1 && acertos(p) > 0)
+      .sort((a, b) => acertos(b) - acertos(a) || a.palavras.length - b.palavras.length || a.chave.localeCompare(b.chave))
+      .slice(0, 6);
+    expressoes.forEach((p) => usados.add(p.chave));
+    const derivadas = glossario.filter((p) => novo(p) && p.palavras.length === 1
+      && [...alvo].some((w) => w.length >= 4 && p.chave.startsWith(w) && p.chave.length <= w.length + 5)).slice(0, 4);
+    derivadas.forEach((p) => usados.add(p.chave));
+
+    // Mesmo tema: categoria dos sinais traduzidos; sorteio que muda a cada frase (mas é estável para ela)
+    const porChave = new Map(glossario.map((p) => [p.chave, p]));
+    const temas = new Set();
+    sequencia.forEach((item) => {
+      const p = porChave.get(textoComparavel(item.expressao_libras));
+      if (p && !CATEGORIAS_FORA.has(p.categoria)) temas.add(p.categoria);
+    });
+    let semente = [...textoComparavel(entrada)].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
+    const candidatos = glossario.filter((p) => novo(p) && temas.has(p.categoria));
+    const doTema = [];
+    while (candidatos.length && doTema.length < 8) {
+      semente = (Math.imul(semente, 1103515245) + 12345) >>> 0;
+      doTema.push(candidatos.splice(semente % candidatos.length, 1)[0]);
+    }
+
+    const frases = FRASES_EXEMPLO.filter((f) => !usados.has(textoComparavel(f)));
+    const tema = temas.size === 1 ? `Mais em ${[...temas][0]}` : 'Do mesmo tema';
+    return [
+      { titulo: 'Com essas palavras', itens: [...expressoes, ...derivadas].map((p) => p.texto) },
+      { titulo: tema, itens: doTema.map((p) => p.texto) },
+      { titulo: 'Para experimentar', itens: frases.slice(0, 6) },
+    ].filter((s) => s.itens.length);
+  }
+
+  const ICONES_SUGESTOES = {
+    ampliar: '<svg class="icone-ampliar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>'
+      + '<svg class="icone-reduzir" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7"/></svg>',
+    recolher: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>',
+    fechar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  };
+
+  function botaoSugestoes(acao, rotulo) {
+    const botao = criar('button', { classe: 'sugestoes-acao', atributos: { type: 'button', 'data-acao': acao, 'aria-label': rotulo, title: rotulo } });
+    botao.innerHTML = ICONES_SUGESTOES[acao]; // ícones fixos do próprio código
+    return botao;
+  }
+
+  let contadorSugestoes = 0;
+  async function mostrarSugestoes(balao, dados) {
+    const secoes = montarSugestoes(dados, await carregarGlossario());
+    const linha = balao.parentElement;
+    if (!secoes.length || !balao.isConnected || !linha || !linha.classList.contains('msg-linha')) return;
+
+    // Só uma caixa aberta por vez: as anteriores ficam recolhidas
+    caixasSugestoes.forEach((c) => { if (c.caixa.isConnected) c.recolher(true); else caixasSugestoes.delete(c); });
+
+    const idCorpo = `sugestoes-${++contadorSugestoes}`;
+    const btnAmpliar = botaoSugestoes('ampliar', 'Ampliar sugestões');
+    const btnRecolher = botaoSugestoes('recolher', 'Recolher sugestões');
+    const btnFechar = botaoSugestoes('fechar', 'Fechar sugestões');
+    btnAmpliar.setAttribute('aria-pressed', 'false');
+    btnRecolher.setAttribute('aria-expanded', 'true');
+    btnRecolher.setAttribute('aria-controls', idCorpo);
+
+    const total = secoes.reduce((n, s) => n + s.itens.length, 0);
+    const visiveis = Math.min(SUGESTOES_VISIVEIS, secoes[0].itens.length);
+    const verMais = total > visiveis
+      ? criar('button', { classe: 'sugestoes-mais', texto: `Ver mais (${total - visiveis})`, atributos: { type: 'button' } })
+      : null;
+
+    const corpo = criar('div', { classe: 'sugestoes-corpo', atributos: { id: idCorpo } }, [
+      ...secoes.map((secao) => criar('section', { classe: 'sugestoes-secao' }, [
+        criar('h3', { texto: secao.titulo }),
+        criar('div', { classe: 'sugestoes-lista' }, secao.itens.map((item) => {
+          const botao = criar('button', { classe: 'sugestao', texto: formatarSugestao(item), atributos: { type: 'button', title: `Traduzir “${formatarSugestao(item)}”` } });
+          botao.addEventListener('click', () => traduzirTexto(item));
+          return botao;
+        })),
+      ])),
+      ...(verMais ? [verMais] : []),
+    ]);
+
+    const caixa = criar('aside', { classe: 'sugestoes', atributos: { 'aria-label': 'Sugestões de outras frases e palavras' } }, [
+      criar('div', { classe: 'sugestoes-topo' }, [
+        criar('p', { classe: 'sugestoes-titulo' }, [criar('span', { texto: '💡', atributos: { 'aria-hidden': 'true' } }), 'Experimente também']),
+        btnAmpliar, btnRecolher, btnFechar,
+      ]),
+      corpo,
+    ]);
+
+    const reanimar = () => { corpo.classList.remove('surgir'); void corpo.offsetWidth; corpo.classList.add('surgir'); };
+    function ampliar(sim) {
+      caixa.classList.toggle('ampliado', sim);
+      btnAmpliar.setAttribute('aria-pressed', String(sim));
+      btnAmpliar.setAttribute('aria-label', sim ? 'Reduzir sugestões' : 'Ampliar sugestões');
+      btnAmpliar.title = btnAmpliar.getAttribute('aria-label');
+      if (sim) recolher(false);
+      reanimar();
+    }
+    function recolher(sim) {
+      caixa.classList.toggle('recolhido', sim);
+      corpo.hidden = sim;
+      btnRecolher.setAttribute('aria-expanded', String(!sim));
+      btnRecolher.setAttribute('aria-label', sim ? 'Mostrar sugestões' : 'Recolher sugestões');
+      btnRecolher.title = btnRecolher.getAttribute('aria-label');
+      if (!sim) reanimar();
+    }
+    function fechar() {
+      const tinhaFoco = caixa.contains(document.activeElement);
+      const registro = [...caixasSugestoes].find((c) => c.caixa === caixa);
+      if (registro) caixasSugestoes.delete(registro);
+      const remover = () => {
+        caixa.remove();
+        if (tinhaFoco) (balao.querySelector('.btn-player:not([hidden])') || chatInput).focus();
+      };
+      if (movimentoReduzido() || !caixa.animate) return remover();
+      caixa.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateX(-10px) scale(.96)' }],
+        { duration: 200, easing: 'ease-in', fill: 'forwards' }).finished.then(remover, remover);
+    }
+
+    btnAmpliar.addEventListener('click', () => ampliar(!caixa.classList.contains('ampliado')));
+    btnRecolher.addEventListener('click', () => recolher(!caixa.classList.contains('recolhido')));
+    btnFechar.addEventListener('click', fechar);
+    if (verMais) verMais.addEventListener('click', () => { ampliar(true); btnAmpliar.focus(); });
+
+    linha.append(caixa);
+    caixasSugestoes.add({ caixa, recolher });
+    caixa.scrollIntoView({ block: 'nearest', behavior: movimentoReduzido() ? 'auto' : 'smooth' });
   }
 
   // ── Feedback ──────────────────────────────────────────────
@@ -700,6 +1281,9 @@
       }
       if (!USUARIO_LOGADO) partes.push(avisoSessao());
       status.replaceChildren(...partes);
+      status.classList.remove('surgir');
+      void status.offsetWidth; // reinicia a animação de entrada
+      status.classList.add('surgir');
     }
 
     async function enviar(foiUtil, marcados = []) {
@@ -727,7 +1311,7 @@
         : (r.dados?.mensagem || 'Não foi possível enviar o feedback agora. Tente novamente.');
     }
 
-    sim.addEventListener('click', () => enviar(true));
+    sim.addEventListener('click', () => { sim.classList.add('pop'); enviar(true); });
     nao.addEventListener('click', () => {
       if (sinais.length === 0) return enviar(false);
       const abrir = detalhe.hidden;
@@ -767,32 +1351,40 @@
     }).catch((err) => console.warn('Não foi possível salvar no histórico:', err));
   }
 
-  function tratarResultadoTraducao(resposta, resultado, entrada) {
+  // opcoes.demo: a demonstração da primeira visita não vai para o histórico da pessoa
+  function tratarResultadoTraducao(resposta, resultado, entrada, opcoes = {}) {
     const { ok, dados } = resultado;
     if (ok && dados && dados.status === 'success' && (dados.sequencia || []).length > 0) {
       renderTraducao(resposta, dados, entrada);
-      salvarHistorico(entrada, dados.glosa, dados.sequencia);
+      if (!opcoes.demo) salvarHistorico(entrada, dados.glosa, dados.sequencia);
     } else {
       const mensagem = mensagemDeErro(resultado);
       resposta.erro(mensagem);
+      avatar('sem-sinal');
       anunciar(typeof mensagem === 'string' ? mensagem : mensagem.textContent);
     }
   }
 
   // ── Tradução por texto ────────────────────────────────────
-  async function traduzirTexto(textoBruto) {
+  // origem: elemento de onde o texto saiu (campo ou exemplo), para ele "voar" até o balão
+  async function traduzirTexto(textoBruto, origem = null, opcoes = {}) {
     const texto = (textoBruto || '').trim().slice(0, LIMITE_TEXTO);
     if (!texto || traduzindo || gravando) return;
+    traduzindo = true; // já aqui: a transição de abertura leva um quadro e não pode haver envio duplo
+    // Uma pergunta nova pausa o sinal que estava tocando: o "traduzindo…" não disputa o olhar com ele
+    if (playerAtivo) playerAtivo.pausar();
 
-    abrirConversa();
-    searchInput.value = '';
-    chatInput.value = '';
-    statusInicio.textContent = '';
-    atualizarBotaoChat();
-
-    const enviada = mensagemUsuario([criar('p', { classe: 'msg-texto', texto })]);
-    const resposta = mensagemBot();
-    traduzindo = true;
+    let enviada;
+    let resposta;
+    await abrirConversa(() => {
+      searchInput.value = '';
+      chatInput.value = '';
+      statusInicio.textContent = '';
+      atualizarBotaoChat();
+      enviada = mensagemUsuario([criar('p', { classe: 'msg-texto', texto })]);
+      resposta = mensagemBot();
+      return enviada.balao.querySelector('.msg-texto');
+    }, origem, opcoes);
     atualizarBloqueios();
     try {
       const resultado = await chamarApi('/traduzir', {
@@ -801,7 +1393,7 @@
         body: JSON.stringify({ texto, exclusoes: listaExclusoes() }),
       });
       enviada.respondida();
-      tratarResultadoTraducao(resposta, resultado, texto);
+      tratarResultadoTraducao(resposta, resultado, texto, opcoes);
     } finally {
       traduzindo = false;
       atualizarBloqueios();
@@ -816,13 +1408,13 @@
       searchInput.focus();
       return;
     }
-    traduzirTexto(searchInput.value);
+    traduzirTexto(searchInput.value, searchInput);
   });
   chatForm.addEventListener('submit', (e) => {
     e.preventDefault();
     traduzirTexto(chatInput.value);
   });
-  exemplos.forEach((botao) => botao.addEventListener('click', () => traduzirTexto(botao.dataset.exemplo)));
+  exemplos.forEach((botao) => botao.addEventListener('click', () => traduzirTexto(botao.dataset.exemplo, botao)));
 
   // ── Tradução por áudio (mensagem de voz) ──────────────────
   function extensaoDoAudio(mimeType) {
@@ -833,14 +1425,30 @@
 
   const formatarDuracao = (s) => `0:${String(Math.max(0, Math.round(s))).padStart(2, '0')}`;
 
-  // Balão de voz do usuário: dá para ouvir de novo o que foi gravado; a transcrição aparece embaixo
-  function balaoDeVoz(blob, segundos) {
+  // Balão de voz do usuário: dá para ouvir de novo o que foi gravado; a transcrição aparece embaixo.
+  // 4.4 A onda é a da gravação de verdade (volumes medidos enquanto a pessoa falava) e acende
+  // conforme o áudio toca. Sem medição (navegador sem Web Audio), usa uma onda ilustrativa.
+  const BARRAS_ONDA = 22;
+  function ondaDosNiveis(niveis) {
+    if (!niveis || niveis.length < 4) return null;
+    const pico = Math.max(...niveis, 0.05);
+    return Array.from({ length: BARRAS_ONDA }, (_, i) => {
+      const ini = Math.floor((i * niveis.length) / BARRAS_ONDA);
+      const fim = Math.max(ini + 1, Math.floor(((i + 1) * niveis.length) / BARRAS_ONDA));
+      return Math.max(...niveis.slice(ini, fim)) / pico; // 0 a 1, relativo ao trecho mais alto
+    });
+  }
+
+  function balaoDeVoz(blob, segundos, niveis) {
     const url = URL.createObjectURL(blob);
     audiosGravados.push(url);
     const audio = new Audio(url);
     const botao = criar('button', { classe: 'voz-play', texto: '▶', atributos: { type: 'button', 'aria-label': 'Ouvir o áudio gravado' } });
-    const barra = criar('span', { classe: 'voz-onda', atributos: { 'aria-hidden': 'true' } },
-      Array.from({ length: 22 }, (_, i) => criar('i', { atributos: { style: `height:${30 + Math.round(Math.abs(Math.sin(i * 1.7)) * 70)}%` } })));
+    const onda = ondaDosNiveis(niveis);
+    const barras = Array.from({ length: BARRAS_ONDA }, (_, i) => criar('i', {
+      atributos: { style: `height:${onda ? 14 + Math.round(onda[i] * 86) : 30 + Math.round(Math.abs(Math.sin(i * 1.7)) * 70)}%` },
+    }));
+    const barra = criar('span', { classe: `voz-onda${onda ? ' real' : ''}`, atributos: { 'aria-hidden': 'true' } }, barras);
     const duracao = criar('span', { classe: 'voz-duracao', texto: formatarDuracao(segundos) });
     botao.addEventListener('click', () => {
       if (audio.paused) { if (playerAtivo) playerAtivo.pausar(); audio.play(); } else { audio.pause(); }
@@ -849,6 +1457,14 @@
     const parado = () => { botao.textContent = '▶'; botao.setAttribute('aria-label', 'Ouvir o áudio gravado'); };
     audio.addEventListener('pause', parado);
     audio.addEventListener('ended', parado);
+    // As barras já tocadas acendem
+    const acender = () => {
+      const fracao = audio.duration && Number.isFinite(audio.duration) ? audio.currentTime / audio.duration : 0;
+      const ate = audio.ended ? 0 : Math.round(fracao * BARRAS_ONDA);
+      barras.forEach((b, i) => b.classList.toggle('tocada', i < ate));
+    };
+    audio.addEventListener('timeupdate', acender);
+    audio.addEventListener('ended', acender);
     const transcricao = criar('p', { classe: 'msg-transcricao', texto: 'transcrevendo…' });
     return {
       conteudo: [criar('div', { classe: 'voz' }, [criar('span', { classe: 'voz-mic', texto: '🎤', atributos: { 'aria-hidden': 'true' } }), botao, barra, duracao]), transcricao],
@@ -860,6 +1476,57 @@
   }
 
   let pararGravacao = null;
+
+  // Volume real do microfone durante a gravação (Web Audio): o anel em volta do botão cresce com a
+  // voz e o medidor no campo "Gravando…" enche. Se o anel não se mexe, o microfone não está captando.
+  // Devolve { parar, niveis } (niveis: volume de cada quadro, para a onda do balão de voz), ou null
+  // sem suporte; aí fica o pulso de antes.
+  function medirVolume(stream) {
+    const Contexto = window.AudioContext || window.webkitAudioContext;
+    if (!Contexto) return null;
+    try {
+      const contexto = new Contexto();
+      if (contexto.state === 'suspended') contexto.resume().catch(() => {}); // sem isso, o começo da gravação mede silêncio
+      const analisador = contexto.createAnalyser();
+      analisador.fftSize = 512;
+      contexto.createMediaStreamSource(stream).connect(analisador);
+      const amostras = new Uint8Array(analisador.fftSize);
+      let suave = 0;
+      let quadro = 0;
+      const niveis = [];
+      chatAcao.classList.add('com-nivel');
+      // Volume (RMS) do instante, de 0 a 1
+      const ler = () => {
+        analisador.getByteTimeDomainData(amostras);
+        let soma = 0;
+        for (let i = 0; i < amostras.length; i++) { const d = (amostras[i] - 128) / 128; soma += d * d; }
+        return Math.min(1, Math.sqrt(soma / amostras.length) * 5);
+      };
+      // Anel e medidor: a cada quadro
+      const medir = () => {
+        suave = suave * 0.7 + ler() * 0.3; // sem tremer a cada quadro
+        chatForm.style.setProperty('--nivel', suave.toFixed(3));
+        quadro = requestAnimationFrame(medir);
+      };
+      medir();
+      // Onda do balão: 10 amostras por segundo (intervalo, que continua mesmo com a aba em segundo plano)
+      const guardar = () => { if (niveis.length < 600) niveis.push(ler()); };
+      guardar();
+      const reserva = setInterval(guardar, 100);
+      return {
+        niveis,
+        parar() {
+          cancelAnimationFrame(quadro);
+          clearInterval(reserva);
+          chatAcao.classList.remove('com-nivel');
+          chatForm.style.removeProperty('--nivel');
+          contexto.close().catch(() => {});
+        },
+      };
+    } catch (e) {
+      return null;
+    }
+  }
 
   async function gravarAudio() {
     if (gravando) { if (pararGravacao) pararGravacao(); return; } // tocar de novo encerra e envia antes dos 5 s
@@ -874,9 +1541,9 @@
       return;
     }
 
-    abrirConversa();
+    gravando = true; // antes da transição de abertura, para não aceitar um segundo clique
+    await abrirConversa();
     if (playerAtivo) playerAtivo.pausar();
-    gravando = true;
     atualizarBloqueios();
     atualizarBotaoChat();
     chatInput.hidden = true;
@@ -886,6 +1553,7 @@
     let tipo = 'audio/webm';
     let gravou = false;
     let relogio = null;
+    let medidor = null;
     const comeco = Date.now();
     try {
       const recorder = new MediaRecorder(stream);
@@ -899,6 +1567,8 @@
       };
       atualizarRelogio();
       relogio = setInterval(atualizarRelogio, 250);
+      medidor = medirVolume(stream);
+      window.tlVibrar?.(15); // começou a gravar
       setTimeout(pararGravacao, DURACAO_GRAVACAO_MS);
       await terminou;
       tipo = recorder.mimeType || tipo;
@@ -907,6 +1577,8 @@
       console.warn('Falha na gravação:', e);
     } finally {
       clearInterval(relogio);
+      if (medidor) medidor.parar();
+      window.tlVibrar?.([10, 60, 10]); // parou de gravar
       pararGravacao = null;
       stream.getTracks().forEach((t) => t.stop());
       gravandoEl.hidden = true;
@@ -922,7 +1594,7 @@
     }
 
     const blob = new Blob(partes, { type: tipo });
-    const voz = balaoDeVoz(blob, (Date.now() - comeco) / 1000);
+    const voz = balaoDeVoz(blob, (Date.now() - comeco) / 1000, medidor ? medidor.niveis : null);
     const enviada = mensagemUsuario(voz.conteudo);
     const resposta = mensagemBot();
 
@@ -955,7 +1627,65 @@
 
   // ── Tradução automática pela URL (?word=) ─────────────────
   const palavraUrl = new URLSearchParams(window.location.search).get('word');
-  if (palavraUrl) traduzirTexto(palavraUrl.slice(0, LIMITE_TEXTO));
+  if (palavraUrl) traduzirTexto(palavraUrl.slice(0, LIMITE_TEXTO), null, { chegada: true });
+
+  // ── 4.8 Primeira visita: demonstração guiada ──────────────
+  // Na primeira vez em /home, o campo "digita sozinho" bom dia, a tradução acontece (com a glosa) e
+  // um balão convida: "Agora é sua vez". Uma vez só (guardado no navegador); qualquer tecla, clique
+  // ou toque durante a digitação cancela; nunca roda com animações reduzidas, com ?word= ou com o
+  // tutorial aberto. A demonstração não entra no histórico da pessoa.
+  const CHAVE_DEMO = 'tradulibras:demoVista';
+  const espera = (ms) => new Promise((r) => { setTimeout(r, ms); });
+  function demoJaVista() {
+    try { return Boolean(localStorage.getItem(CHAVE_DEMO)); } catch (e) { return true; }
+  }
+
+  function dicaSuaVez() {
+    const dica = criar('p', { classe: 'dica-vez', atributos: { role: 'status' } }, [
+      criar('strong', { texto: 'Agora é sua vez!' }), ' Escreva uma frase ou toque no microfone.',
+    ]);
+    conversa.append(dica);
+    const sumir = () => {
+      if (!dica.isConnected) return;
+      dica.classList.add('saindo');
+      setTimeout(() => dica.remove(), 300);
+    };
+    chatInput.addEventListener('input', sumir, { once: true });
+    setTimeout(sumir, 9000);
+    chatInput.focus({ preventScroll: true });
+  }
+
+  async function demonstracao() {
+    try { localStorage.setItem(CHAVE_DEMO, '1'); } catch (e) { /* armazenamento indisponível */ }
+    const FRASE = 'bom dia';
+    let cancelada = false;
+    const cancelar = () => { cancelada = true; };
+    // A pessoa já começou a usar (conversa aberta ou traduzindo): a demonstração não se intromete
+    const emUso = () => !conversa.hidden || traduzindo || gravando;
+    const eventos = ['keydown', 'pointerdown', 'wheel', 'touchstart'];
+    eventos.forEach((ev) => window.addEventListener(ev, cancelar, { capture: true, once: true }));
+    await espera(900);
+    anunciar(`Demonstração: traduzindo “${FRASE}”. Aperte qualquer tecla para pular.`);
+    for (const letra of FRASE) {
+      if (cancelada || emUso()) break;
+      searchInput.value += letra;
+      await espera(120);
+    }
+    eventos.forEach((ev) => window.removeEventListener(ev, cancelar, { capture: true }));
+    if (cancelada || emUso()) {
+      if (FRASE.startsWith(searchInput.value)) searchInput.value = ''; // limpa só o que a demonstração escreveu
+      return;
+    }
+    await espera(350);
+    if (emUso()) { searchInput.value = ''; return; }
+    await traduzirTexto(FRASE, searchInput, { demo: true });
+    dicaSuaVez();
+  }
+
+  if (!palavraUrl && !demoJaVista() && !movimentoReduzido()
+      && new URLSearchParams(window.location.search).get('tutorial') !== '1') {
+    demonstracao();
+  }
 })();
 </script>
 

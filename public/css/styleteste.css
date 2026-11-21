@@ -67,6 +67,37 @@ html { font-size: var(--base-font, 16px); }
   --settings-border:#3a3830;
 }
 
+/* ============================================================
+   MOVIMENTO — durações e curvas usadas em todo o site
+   "Reduzir animações" (configurações) ou o pedido do sistema zeram tudo de uma vez:
+   data-motion="reduce" | "full" no <html> (includes/head.ejs); sem escolha, vale o sistema.
+   ============================================================ */
+:root {
+  --dur-rapida: 120ms;   /* toque, hover, aperto */
+  --dur-media:  240ms;   /* troca de estado, ícones, confirmações */
+  --dur-lenta:  420ms;   /* deslocamentos maiores, transição entre telas */
+  --ease-saida:   cubic-bezier(.2, .8, .2, 1);   /* chega suave */
+  --ease-entrada: cubic-bezier(.4, 0, 1, 1);     /* sai rápido */
+  --mola: cubic-bezier(.34, 1.45, .64, 1);       /* reserva para navegadores sem linear() */
+}
+@supports (transition-timing-function: linear(0, 1)) {
+  :root {
+    /* mola com ~8% de passagem do ponto: viva, sem balançar demais */
+    --mola: linear(0, .06 2.4%, .23 5.4%, .5 9.6%, .79 15.2%, .98 21%, 1.06 26.6%, 1.08 31%,
+                   1.07 36%, 1.03 44%, 1.005 52%, .995 62%, 1);
+  }
+}
+[data-motion="reduce"] *, [data-motion="reduce"] *::before, [data-motion="reduce"] *::after {
+  animation-duration:.01ms !important; animation-iteration-count:1 !important; animation-delay:0s !important;
+  transition-duration:.01ms !important; transition-delay:0s !important; scroll-behavior:auto !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion="full"]) *, :root:not([data-motion="full"]) *::before, :root:not([data-motion="full"]) *::after {
+    animation-duration:.01ms !important; animation-iteration-count:1 !important; animation-delay:0s !important;
+    transition-duration:.01ms !important; transition-delay:0s !important; scroll-behavior:auto !important;
+  }
+}
+
 /* ── RESET ──────────────────────────────────────────────── */
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 html { scroll-behavior:smooth; }
@@ -207,7 +238,11 @@ p { color: var(--text-muted); }
 
 /* Toggle switch */
 .toggle-switch { position:relative; display:inline-block; cursor:pointer; }
-.toggle-switch input { display:none; }
+/* Invisível, mas continua no teclado e no leitor de tela (display:none tirava os dois) */
+.toggle-switch input {
+  position:absolute; inset:0; z-index:1; width:100%; height:100%; margin:0; opacity:0; cursor:pointer;
+}
+.toggle-switch input:focus-visible + .toggle-track { outline:3px solid var(--orange); outline-offset:2px; }
 .toggle-track {
   display:block; width:44px; height:24px;
   background: var(--border); border-radius:12px;
@@ -249,19 +284,6 @@ p { color: var(--text-muted); }
   height: auto;
 }
 
-/* 🟡 Modo claro (default) */
-.nav-img-dark {
-  display: none;
-}
-
-/* 🌙 Modo escuro */
-[data-theme="dark"] .nav-img-light {
-  display: none;
-}
-
-[data-theme="dark"] .nav-img-dark {
-  display: block;
-}
 
 .sidebar {
   position:fixed; top:0; left:0;
@@ -474,8 +496,9 @@ p { color: var(--text-muted); }
 .carregando-pontos span:nth-child(2) { animation-delay:.15s; }
 .carregando-pontos span:nth-child(3) { animation-delay:.3s; }
 @keyframes pontos { 0%,80%,100%{ opacity:.25; transform:scale(.8);} 40%{ opacity:1; transform:scale(1);} }
+[data-motion="reduce"] .carregando-pontos span, [data-motion="reduce"] .seta { animation:none; }
 @media (prefers-reduced-motion: reduce) {
-  .carregando-pontos span, .seta { animation:none; }
+  :root:not([data-motion="full"]) .carregando-pontos span, :root:not([data-motion="full"]) .seta { animation:none; }
 }
 @keyframes fadeIn { from{opacity:0;transform:translateY(8px);} to{opacity:1;transform:translateY(0);} }
 
@@ -658,10 +681,16 @@ body.em-conversa { overflow:hidden; }
 .conversa-botao:active { transform:scale(.94); }
 .conversa-botao:disabled { opacity:.5; cursor:not-allowed; }
 .conversa-botao:focus-visible { outline:3px solid var(--orange); outline-offset:2px; }
-.conversa-botao svg { width:22px; height:22px; display:none; }
+/* Os três ícones ficam empilhados e se transformam um no outro (girando e crescendo) */
+.conversa-botao { position:relative; }
+.conversa-botao svg {
+  position:absolute; inset:0; margin:auto; width:22px; height:22px;
+  opacity:0; transform:scale(.4) rotate(-90deg);
+  transition:opacity var(--dur-rapida) var(--ease-saida), transform var(--dur-media) var(--mola);
+}
 .conversa-botao[data-modo="mic"] .icone-mic,
 .conversa-botao[data-modo="enviar"] .icone-enviar,
-.conversa-botao[data-modo="parar"] .icone-parar { display:block; }
+.conversa-botao[data-modo="parar"] .icone-parar { opacity:1; transform:none; }
 .conversa-botao[data-modo="parar"] { background:#c0392b; color:#fff; animation:pulsar 1s ease-in-out infinite; }
 
 /* Player dos sinais (dentro do balão) */
@@ -734,9 +763,9 @@ body.em-conversa { overflow:hidden; }
   .conversa-rodape { padding:8px; padding-bottom:max(8px, env(safe-area-inset-bottom)); }
   .voz { min-width:200px; }
 }
+[data-motion="reduce"] :is(.btn-falar.gravando, .msg, .conversa-botao[data-modo="parar"], .conversa-gravando-ponto) { animation:none; }
 @media (prefers-reduced-motion: reduce) {
-  .btn-falar.gravando, .msg, .conversa-botao[data-modo="parar"], .conversa-gravando-ponto { animation:none; }
-  .conversa-mensagens { scroll-behavior:auto; }
+  :root:not([data-motion="full"]) :is(.btn-falar.gravando, .msg, .conversa-botao[data-modo="parar"], .conversa-gravando-ponto) { animation:none; }
 }
 
 /* ============================================================
@@ -760,6 +789,8 @@ header { font-family:'DM Serif Display',serif; font-size:1.625rem; font-style:it
 .entrar { font-family:'DM Serif Display',serif; font-size:1.5rem; font-weight:400; font-style:italic; text-align:left; margin:20px 20px 10px; color: var(--text-dark); }
 .logo-boasvindas, .logo-boasvindas-login { display:flex; justify-content:flex-start; align-items:center; margin:28px 20px 20px; }
 .logo-boasvindas img, .logo-boasvindas-login img { width:120px; }
+/* Fundo claro: o texto branco do logo some; o filtro da navbar.ejs (#logo-texto-escuro) o deixa grafite */
+:root:not([data-theme="dark"]) .logo-boasvindas-login img { filter:url(#logo-texto-escuro); }
 .content { padding:20px 30px; }
 p.lead { color: var(--text-muted); margin-bottom:20px; }
 .form-group { margin-bottom:20px; text-align:center; }
@@ -1149,7 +1180,7 @@ form:hover { transform:scale(1.005); }
 }
 @media (min-width:1024px) {
   .planos-grid { gap:26px; }
-  .plano-destaque { transform:translateY(-10px); }
+  .plano-destaque { --elevar:-10px; } /* usado no transform do cartão, junto com a inclinação (MOVIMENTO 3.3) */
 }
 @media (min-width:768px) and (max-width:1023px) {
   .plano-card { padding:28px 16px 20px; }
@@ -1435,4 +1466,427 @@ form:hover { transform:scale(1.005); }
 @media (max-width:600px) {
   .ajuda-item summary { padding:14px 16px; font-size:0.9688rem; }
   .ajuda-resposta { padding:0 16px 16px; }
+}
+
+/* ============================================================
+   MOVIMENTO — microinterações, transições entre telas e glosa cinética
+   Regra da casa: nada se mexe perto do vídeo do sinal enquanto ele toca
+   (o movimento disputaria a atenção com a sinalização).
+   Com "Reduzir animações", as regras do topo (data-motion) zeram as durações.
+   ============================================================ */
+
+/* ── 1.1 Pílula deslizante nos seletores (public/assets/js/movimento.js) ── */
+.ciclo-seletor { position:relative; }
+.ciclo-pilula {
+  position:absolute; top:0; left:0; z-index:0; border-radius:999px; pointer-events:none;
+  background: var(--orange); box-shadow:0 2px 10px rgba(244,147,64,.35); opacity:0;
+}
+.ciclo-pilula.pronta {
+  transition:transform var(--dur-lenta) var(--mola), width var(--dur-lenta) var(--mola),
+             height var(--dur-media) var(--ease-saida), opacity var(--dur-rapida);
+}
+.com-pilula .ciclo-opcao { position:relative; z-index:1; transition:color var(--dur-media) var(--ease-saida), scale var(--dur-rapida) var(--ease-saida); }
+.com-pilula .ciclo-opcao[aria-checked="true"],
+.com-pilula .ciclo-opcao[aria-pressed="true"] { background:transparent; }
+.com-pilula .ciclo-desconto { transition:background var(--dur-media), color var(--dur-media); }
+
+/* Preço "odômetro": o valor novo sobe para o lugar e o preço cheio é riscado na hora */
+.plano-preco:not([hidden]) .plano-preco-valor { animation:odometro var(--dur-lenta) var(--mola) both; }
+.plano-preco:not([hidden]) .plano-preco-periodo,
+.plano-preco:not([hidden]) .plano-preco-detalhe { animation:surgir var(--dur-lenta) var(--ease-saida) 60ms both; }
+.plano-preco-riscado { position:relative; width:fit-content; text-decoration:none; }
+.plano-preco-riscado::after {
+  content:''; position:absolute; left:-2px; right:-2px; top:55%; height:1.5px;
+  background:currentColor; transform-origin:left center;
+}
+.plano-preco:not([hidden]) .plano-preco-riscado::after { animation:riscar var(--dur-lenta) var(--ease-saida) 140ms both; }
+@keyframes odometro { from { opacity:0; transform:translateY(.55em); } }
+@keyframes surgir   { from { opacity:0; transform:translateY(6px); } }
+@keyframes riscar   { from { transform:scaleX(0); } }
+
+/* ── 1.2 Aperto físico nos botões ───────────────────────── */
+/* "scale" (e não "transform") para não brigar com o translateY do hover */
+.plano-botao, .btn-player, .curso-chip, .feedback-botao, .feedback-chip, .sinal-chip,
+.tradutor-tutorial, .glossario-tag, .conversa-icone, .font-size-btn, .voz-play {
+  transition-property:background, border-color, color, box-shadow, transform, scale;
+  transition-duration:.2s, .2s, .2s, .2s, .15s, var(--dur-rapida);
+  transition-timing-function:ease, ease, ease, ease, ease, var(--ease-saida);
+}
+:is(.plano-botao, .btn-player, .curso-chip, .feedback-botao, .feedback-chip, .sinal-chip, .ciclo-opcao,
+    .tradutor-tutorial, .glossario-tag, .conversa-icone, .font-size-btn, .voz-play):active:not(:disabled) { scale:.96; }
+.conversa-botao:active:not(:disabled) { transform:scale(.92); }
+
+/* A seta do "Traduzir →" avança no hover */
+.btn-traduzir svg { transition:transform var(--dur-media) var(--mola); }
+.btn-traduzir:hover:not(:disabled) svg, .btn-traduzir:focus-visible svg { transform:translateX(4px); }
+
+/* ── 1.3 Chip do sinal como barra de progresso ─────────── */
+/* O JS do player atualiza --progresso (0 a 1); a faixa fica atrás do texto (isolation + z-index:-1) */
+.sinal-chip { position:relative; isolation:isolate; overflow:hidden; }
+.sinal-chip::after {
+  content:''; position:absolute; inset:0; z-index:-1; pointer-events:none; border-radius:inherit;
+  background:rgba(0,0,0,.16); transform-origin:left center; transform:scaleX(var(--progresso, 0));
+}
+.sinal-chip:not([aria-current="step"])::after { display:none; }
+
+/* ── 1.4 Confirmações que se desenham ──────────────────── */
+.msg-tiques { display:inline-flex; letter-spacing:0; }
+.msg-tiques svg { width:17px; height:11px; overflow:visible; }
+.msg-tiques .tique-2 { stroke-dasharray:12; stroke-dashoffset:12; }
+.msg-tiques.lida .tique-2 { stroke-dashoffset:0; transition:stroke-dashoffset var(--dur-media) var(--ease-saida); }
+.msg-tiques.lida svg { animation:pop var(--dur-media) var(--mola); }
+.feedback-botao.pop, .plano-botao.copiado { animation:pop var(--dur-lenta) var(--mola); }
+.feedback-status.surgir { animation:surgir var(--dur-lenta) var(--ease-saida) both; }
+@keyframes pop { 0% { scale:1; } 40% { scale:1.18; } 100% { scale:1; } }
+
+/* ── 1.5 Menu, engrenagem e botões de liga/desliga ───────── */
+/* O hambúrguer não some mais: vira "X" e desliza para o canto do menu aberto */
+.hamburger-btn {
+  transition:background .35s ease, box-shadow var(--dur-media), transform var(--dur-lenta) var(--ease-saida);
+}
+.hamburger-btn.active { transform:translateX(calc(var(--sidebar-width) - 80px)); box-shadow:none; }
+.hamburger-btn:focus-visible, .settings-btn:focus-visible { outline:3px solid var(--orange); outline-offset:3px; }
+.settings-btn svg { transition:stroke .35s ease, transform var(--dur-lenta) var(--mola); }
+.settings-btn[aria-expanded="true"] svg { transform:rotate(60deg); }
+.settings-btn.hidden { opacity:0; pointer-events:none; scale:.7; transition:opacity var(--dur-media), scale var(--dur-media); }
+
+.toggle-thumb { transition:left var(--dur-lenta) var(--mola); display:flex; align-items:center; justify-content:center; }
+.toggle-icone {
+  position:absolute; width:12px; height:12px; color: var(--orange-dark);
+  transition:opacity var(--dur-media), transform var(--dur-lenta) var(--mola);
+}
+.toggle-lua { opacity:0; transform:rotate(-90deg) scale(.5); }
+.toggle-switch input:checked + .toggle-track .toggle-sol { opacity:0; transform:rotate(90deg) scale(.5); }
+.toggle-switch input:checked + .toggle-track .toggle-lua { opacity:1; transform:none; }
+[data-theme="dark"] .toggle-icone { color:#030303; }
+
+/* ── 2.1 Transição entre páginas (View Transitions entre documentos) ── */
+/* A adesão (@view-transition) fica num <style> em includes/head.ejs: aqui seria lida tarde demais.
+   Navegadores sem suporte simplesmente trocam de página como antes. Reduzido: cancelada em head.ejs. */
+.planos-titulo, .sugestoes-title, .historico-title { view-transition-name:titulo-pagina; }
+.planos-subtitulo { view-transition-name:subtitulo-pagina; }
+.hamburger-btn { view-transition-name:botao-menu; }   /* os botões fixos ficam parados na troca */
+.settings-btn  { view-transition-name:botao-config; }
+::view-transition-old(root) { animation:vt-sair var(--dur-media) var(--ease-entrada) both; }
+::view-transition-new(root) { animation:vt-entrar var(--dur-lenta) var(--ease-saida) both; }
+::view-transition-group(titulo-pagina),
+::view-transition-group(subtitulo-pagina) { animation-duration:var(--dur-lenta); animation-timing-function:var(--ease-saida); }
+@keyframes vt-sair   { to   { opacity:0; transform:translateY(-6px); } }
+@keyframes vt-entrar { from { opacity:0; transform:translateY(14px); } }
+
+/* ── 2.2 A caixa do tradutor vira a conversa (e volta, em "Nova conversa") ── */
+/* Só uma das duas está visível por vez, então o nome é único na captura */
+.tradutor-caixa, .conversa { view-transition-name:janela-tradutor; }
+::view-transition-group(janela-tradutor) {
+  animation-duration:var(--dur-lenta); animation-timing-function:var(--ease-saida);
+  overflow:clip; border-radius:18px;
+}
+::view-transition-old(janela-tradutor), ::view-transition-new(janela-tradutor) { height:100%; object-fit:cover; object-position:top; }
+::view-transition-group(texto-enviado) { animation-duration:480ms; animation-timing-function:var(--mola); }
+
+/* ── 3.1 Glosa cinética ─────────────────────────────────── */
+/* Dentro do quadro do vídeo (preto enquanto o 1º sinal carrega): a frase digitada vira a ordem da Libras */
+.glosa-palco {
+  position:absolute; inset:0; z-index:2; pointer-events:none;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px;
+  padding:18px; background:#0d0d0c; text-align:center;
+}
+.glosa-legenda {
+  font-size:0.75rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:rgba(255,255,255,.62);
+}
+.glosa-linha { display:flex; flex-wrap:wrap; justify-content:center; align-items:baseline; gap:8px 12px; max-width:100%; }
+.glosa-palavra {
+  display:inline-block; font-family:'DM Sans',sans-serif; font-size:1.5rem; font-weight:700; line-height:1.25;
+  color:rgba(255,255,255,.88); transition:color var(--dur-media) var(--ease-saida);
+}
+.glosa-palavra.mantida { color: var(--orange); }
+@media (max-width:600px) { .glosa-palavra { font-size:1.25rem; } }
+
+/* ── Sugestões ao lado do vídeo (aparecem quando a sequência de sinais termina) ── */
+.conversa-mensagens { container-type:inline-size; container-name:conversa; }
+.msg-linha { display:flex; align-items:flex-start; gap:16px; align-self:stretch; }
+.msg-linha > .msg { flex:0 0 auto; }
+
+.sugestoes {
+  position:relative; flex:0 1 300px; min-width:0; margin-top:4px;
+  background: var(--surface); border:1.5px solid var(--border); border-radius:14px;
+  box-shadow:0 8px 24px rgba(55,55,53,.12);
+  transform-origin:left top; animation:sugestoes-entrar var(--dur-lenta) var(--mola) both;
+}
+/* "Rabinho" apontando para o vídeo */
+.sugestoes::before {
+  content:''; position:absolute; left:-8px; top:20px; width:14px; height:14px; background: var(--surface);
+  border-left:1.5px solid var(--border); border-bottom:1.5px solid var(--border); transform:rotate(45deg);
+}
+@keyframes sugestoes-entrar { from { opacity:0; transform:translateX(-14px) scale(.94); } }
+.sugestoes.ampliado { flex:1 1 auto; }
+
+.sugestoes-topo { position:relative; display:flex; align-items:center; gap:2px; padding:6px 6px 6px 12px; }
+.sugestoes:not(.recolhido) .sugestoes-topo { border-bottom:1px solid var(--border); }
+.sugestoes-titulo {
+  flex:1 1 auto; display:flex; align-items:center; gap:6px; min-width:0;
+  font-size:0.875rem; font-weight:700; color: var(--text-dark);
+}
+.sugestoes-acao {
+  display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; width:32px; height:32px;
+  border:0; border-radius:8px; background:transparent; color: var(--text-muted); cursor:pointer;
+  transition:background .2s, color .2s, scale var(--dur-rapida) var(--ease-saida);
+}
+.sugestoes-acao:hover { background: var(--surface-2); color: var(--text-dark); }
+.sugestoes-acao:active { scale:.92; }
+.sugestoes-acao:focus-visible { outline:3px solid var(--orange); outline-offset:1px; }
+.sugestoes-acao svg { width:16px; height:16px; }
+.sugestoes-acao[data-acao="recolher"] svg { transition:transform var(--dur-media) var(--mola); }
+.sugestoes.recolhido .sugestoes-acao[data-acao="recolher"] svg { transform:rotate(180deg); }
+.sugestoes-acao .icone-reduzir, .sugestoes.ampliado .sugestoes-acao .icone-ampliar { display:none; }
+.sugestoes.ampliado .sugestoes-acao .icone-reduzir { display:block; }
+
+.sugestoes-corpo { display:flex; flex-direction:column; gap:12px; padding:10px 12px 12px; }
+.sugestoes-corpo[hidden] { display:none; }
+.sugestoes-corpo.surgir { animation:surgir var(--dur-media) var(--ease-saida) both; }
+.sugestoes.ampliado .sugestoes-corpo { max-height:min(60vh, 440px); overflow-y:auto; overscroll-behavior:contain; }
+.sugestoes-secao h3 {
+  margin-bottom:6px; font-family:'DM Sans',sans-serif; font-size:0.6875rem; font-weight:700;
+  letter-spacing:.08em; text-transform:uppercase; color: var(--text-muted);
+}
+.sugestoes-lista { display:flex; flex-wrap:wrap; gap:6px; }
+.sugestao {
+  padding:6px 12px; border-radius:999px; border:1.5px solid var(--border); background: var(--surface-2);
+  color: var(--text-dark); font-family:inherit; font-size:0.8125rem; font-weight:600; cursor:pointer; text-align:left;
+  transition:border-color .2s, background .2s, color .2s, scale var(--dur-rapida) var(--ease-saida);
+}
+.sugestao:hover { border-color: var(--orange); }
+.sugestao:active { scale:.96; }
+.sugestao:focus-visible, .sugestoes-mais:focus-visible { outline:3px solid var(--orange); outline-offset:2px; }
+/* Normal: só a primeira seção, até 4 sugestões; "Ampliar" mostra tudo */
+.sugestoes:not(.ampliado) .sugestoes-secao + .sugestoes-secao { display:none; }
+.sugestoes:not(.ampliado) .sugestao:nth-child(n+5) { display:none; }
+.sugestoes.ampliado .sugestoes-mais { display:none; }
+.sugestoes-mais {
+  align-self:flex-start; padding:2px 0; border:0; background:none; cursor:pointer;
+  font-family:inherit; font-size:0.8125rem; font-weight:700; color: var(--orange-dark);
+}
+[data-theme="dark"] .sugestoes-mais { color: var(--orange); }
+
+/* Conversa estreita (celular, janela pequena): as sugestões descem para baixo do vídeo */
+@container conversa (max-width: 720px) {
+  .msg-linha { flex-direction:column; gap:10px; }
+  .sugestoes, .sugestoes.ampliado { flex:0 0 auto; width:min(100%, 440px); transform-origin:left top; }
+  .sugestoes::before { left:26px; top:-8px; transform:rotate(135deg); }
+}
+
+/* ── 2.3 Menu em camadas ───────────────────────────────── */
+/* Itens entram em cascata (--i vem do movimento.js; cascata inteira < 200 ms) e saem juntos */
+.sidebar .sidebar-header, .sidebar .nav-link, .sidebar .nav-linha {
+  opacity:0; transform:translateX(-14px);
+  transition:opacity var(--dur-media) var(--ease-saida), transform var(--dur-lenta) var(--ease-saida),
+             background .2s ease, color .2s ease;
+}
+.sidebar.open .sidebar-header, .sidebar.open .nav-link, .sidebar.open .nav-linha {
+  opacity:1; transform:none;
+  transition-delay:calc(40ms + var(--i, 0) * 11ms), calc(40ms + var(--i, 0) * 11ms), 0s, 0s;
+}
+/* Indicador que desliza até o item sob o mouse/foco e volta para a página atual */
+.nav-indicador {
+  position:absolute; top:0; left:14px; right:14px; z-index:0; border-radius:10px; pointer-events:none;
+  background: var(--sidebar-hover); opacity:0;
+}
+.nav-indicador.pronto {
+  transition:transform var(--dur-lenta) var(--mola), height var(--dur-media) var(--ease-saida), opacity var(--dur-rapida);
+}
+.com-indicador .nav-link { position:relative; z-index:1; }
+.com-indicador .nav-link:hover, .com-indicador .nav-link.active { background:transparent; }
+.com-indicador .nav-link.active::before { /* marca da página atual, independente do indicador */
+  content:''; position:absolute; left:0; top:50%; width:3px; height:18px; margin-top:-9px; border-radius:2px; background: var(--orange);
+}
+/* A página ao fundo recua enquanto o menu está aberto */
+body > :is(main, .conversa, .faq-container, .sugestoes-container, .historico-container, .container) {
+  transition:transform var(--dur-lenta) var(--ease-saida); transform-origin:50% 35vh;
+}
+body.menu-aberto > :is(main, .conversa, .faq-container, .sugestoes-container, .historico-container, .container) { transform:scale(.97); }
+
+/* ── 3.2 Modo escuro como eclipse (navbar.ejs) ─────────── */
+/* Durante a troca: tudo numa captura só (sem nomes) e sem transições de cor, para o círculo valer para a página inteira */
+html.vt-tema *, html.vt-tema *::before, html.vt-tema *::after { view-transition-name:none !important; transition:none !important; }
+html.vt-tema::view-transition-old(root), html.vt-tema::view-transition-new(root) { animation:none; mix-blend-mode:normal; }
+
+/* ── 3.3 Planos com inclinação e mola (movimento.js e planos.js) ── */
+.plano-card {
+  /* --elevar vem da .plano-destaque (telas largas); o padrão fica no var() para não anular aquela regra */
+  transform:perspective(1000px) translateY(var(--elevar, 0px)) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition:transform var(--dur-lenta) var(--mola), background .35s, border-color .35s;
+}
+.plano-card.inclinando { transition:transform 90ms linear, background .35s, border-color .35s; }
+.plano-card::after { /* brilho que acompanha o cursor */
+  content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none; opacity:0;
+  background:radial-gradient(circle at var(--brilho-x, 50%) var(--brilho-y, 50%), rgba(255,255,255,.28), transparent 55%);
+  transition:opacity var(--dur-media);
+}
+[data-theme="dark"] .plano-card::after {
+  background:radial-gradient(circle at var(--brilho-x, 50%) var(--brilho-y, 50%), rgba(255,219,137,.10), transparent 55%);
+}
+.plano-card.inclinando::after { opacity:1; }
+.plano-selo { animation:selo-entrar 700ms var(--mola) 250ms both; }
+@keyframes selo-entrar { from { opacity:0; transform:translateX(-50%) translateY(-10px) rotate(-10deg) scale(.8); } }
+/* Ao trocar o ciclo de cobrança, os cartões "respiram" */
+.plano-card.respirar { animation:respirar var(--dur-lenta) var(--mola); }
+@keyframes respirar { 45% { scale:1.018; } }
+
+/* ── 3.4 Onda de voz real ao gravar (home.ejs: Web Audio mede o volume e define --nivel) ── */
+.conversa-botao[data-modo="parar"].com-nivel {
+  animation:none; transition:background .2s, box-shadow 80ms linear;
+  box-shadow:0 0 0 calc(3px + var(--nivel, 0) * 12px) rgba(192,57,43,.24), 0 0 0 calc(var(--nivel, 0) * 24px) rgba(192,57,43,.10);
+}
+/* Medidor no campo "Gravando…": informa que o microfone está captando (fica mesmo com animações reduzidas) */
+.nivel-voz { flex:0 0 auto; width:56px; height:6px; margin-left:auto; border-radius:3px; background:rgba(192,57,43,.16); overflow:hidden; }
+.nivel-voz i { display:block; height:100%; width:calc(var(--nivel, 0) * 100%); border-radius:inherit; background:#c0392b; transition:width 80ms linear; }
+[data-motion="reduce"] .conversa-botao[data-modo="parar"].com-nivel { box-shadow:none; }
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion="full"]) .conversa-botao[data-modo="parar"].com-nivel { box-shadow:none; }
+}
+
+/* ── 3.5 Página 404 que sinaliza "ONDE?" ──────────────────── */
+.erro-sinal { margin:18px auto 8px; max-width:300px; text-align:center; }
+.erro-sinal[hidden] { display:none; }
+.erro-sinal-palco { position:relative; aspect-ratio:4 / 3; border-radius:12px; overflow:hidden; background:#000; }
+.erro-sinal video { display:block; width:100%; height:100%; object-fit:contain; }
+.erro-sinal-play {
+  position:absolute; inset:0; margin:auto; width:64px; height:64px; border-radius:50%; border:0; cursor:pointer;
+  background: var(--orange); color:#fff; font-size:1.4rem; box-shadow:0 6px 18px rgba(0,0,0,.35);
+}
+.erro-sinal-play[hidden] { display:none; }
+.erro-sinal-play:focus-visible { outline:3px solid #fff; outline-offset:3px; }
+.erro-sinal figcaption { margin-top:8px; font-size:0.875rem; color: var(--text-muted); }
+.erro-sinal figcaption strong { color: var(--text-dark); letter-spacing:.04em; }
+
+/* ============================================================
+   MOVIMENTO 2 — ideias 4.x
+   ============================================================ */
+
+/* ── 4.1 Frase sincronizada embaixo do vídeo ───────────── */
+.glosa-sync {
+  position:relative; margin:8px 0 0; padding-bottom:4px; text-align:center;
+  font-size:0.9375rem; line-height:1.7; color: var(--text-dark);
+}
+.glosa-sync .sem-sinal { color: var(--text-muted); opacity:.7; }
+.glosa-sync .atual { font-weight:700; color: var(--orange-dark); }
+[data-theme="dark"] .glosa-sync .atual { color: var(--orange); }
+.glosa-sync-marca {
+  position:absolute; top:0; left:0; height:3px; margin-top:-3px; border-radius:2px; background: var(--orange);
+  opacity:0; pointer-events:none;
+  transition:transform var(--dur-lenta) var(--mola), width var(--dur-lenta) var(--mola), opacity var(--dur-rapida);
+}
+
+/* ── 4.2 Linha do tempo arrastável ─────────────────────── */
+.linha-tempo {
+  display:flex; gap:3px; height:14px; margin-top:12px; padding:4px 0; cursor:pointer; touch-action:none;
+  border-radius:6px;
+}
+.linha-tempo:focus-visible { outline:3px solid var(--orange); outline-offset:3px; }
+.linha-tempo-trecho {
+  position:relative; flex-basis:0; min-width:8px; border-radius:3px; overflow:hidden; background: var(--border);
+  transition:background var(--dur-media), transform var(--dur-media) var(--mola);
+}
+.linha-tempo-trecho.passado { background: var(--peach); }
+.linha-tempo-trecho.atual { background: var(--peach); transform:scaleY(1.5); }
+.linha-tempo-trecho::after { /* o trecho atual se preenche como o chip (--progresso) */
+  content:''; position:absolute; inset:0; background: var(--orange);
+  transform-origin:left center; transform:scaleX(var(--progresso, 0));
+}
+.linha-tempo-trecho.passado::after { transform:scaleX(1); }
+.linha-tempo.arrastando { cursor:grabbing; }
+
+/* ── 4.3 Câmera lenta segurando ────────────────────────── */
+.video-stage { user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; }
+.selo-lento {
+  position:absolute; top:10px; right:10px; z-index:3; padding:3px 9px; border-radius:999px;
+  background:rgba(0,0,0,.62); color:#fff; font-size:0.8125rem; font-weight:700; pointer-events:none;
+  animation:pop var(--dur-media) var(--mola);
+}
+.selo-lento[hidden] { display:none; }
+
+/* ── 4.4 Onda real do balão de voz ─────────────────────── */
+.voz-onda i { transition:opacity var(--dur-rapida), color var(--dur-rapida); }
+.voz-onda i.tocada { opacity:1; color: var(--orange-dark); }
+[data-theme="dark"] .voz-onda i.tocada { color: var(--orange); }
+
+/* ── 4.5 Glossário: carta com o sinal ──────────────────── */
+.glossario-carta { position:fixed; z-index:400; width:220px; perspective:900px; }
+.glossario-carta[hidden] { display:none; }
+.glossario-carta-face {
+  padding:8px; border-radius:14px; background: var(--surface); border:1.5px solid var(--border);
+  box-shadow:0 14px 36px rgba(0,0,0,.22); transform-origin:center top;
+}
+.glossario-carta.acima .glossario-carta-face { transform-origin:center bottom; }
+.glossario-carta.virando .glossario-carta-face { animation:carta-virar 460ms var(--mola) both; }
+@keyframes carta-virar { from { opacity:0; transform:rotateY(-95deg) scale(.92); } 40% { opacity:1; } }
+.glossario-carta video { display:block; width:100%; aspect-ratio:4 / 3; border-radius:9px; background:#000; object-fit:contain; }
+.glossario-carta-rotulo { margin:6px 0 0; text-align:center; font-weight:700; color: var(--text-dark); }
+.glossario-carta-estado { margin:2px 0 0; text-align:center; font-size:0.8125rem; color: var(--text-muted); }
+.glossario-carta-estado[hidden] { display:none; }
+
+/* ── 4.6 Cursos: progresso dos vídeos vistos ───────────── */
+.cursos-progresso { display:flex; align-items:center; gap:12px; max-width:520px; margin:-6px auto 22px; }
+.cursos-progresso[hidden] { display:none; }
+.cursos-progresso-texto { flex-shrink:0; font-size:0.875rem; font-weight:600; color: var(--text-muted); }
+.cursos-progresso-barra { flex:1 1 auto; height:8px; border-radius:999px; background: var(--border); overflow:hidden; }
+.cursos-progresso-barra i {
+  display:block; height:100%; border-radius:inherit; background: var(--orange);
+  transform-origin:left center; transform:scaleX(var(--feito, 0));
+  transition:transform 700ms var(--mola);
+}
+.curso-visto.recem { animation:pop 520ms var(--mola); }
+
+/* ── 4.7 Histórico como linha do tempo ─────────────────── */
+.historico-linha-tempo { display:flex; flex-direction:column; gap:22px; }
+.historico-dia {
+  margin:0 0 10px; font-family:'DM Sans',sans-serif; font-size:0.8125rem; font-weight:700;
+  letter-spacing:.08em; text-transform:uppercase; color: var(--text-muted);
+}
+.historico-grupo .historico-lista { position:relative; padding-left:22px; }
+.historico-grupo .historico-lista::before { /* a linha */
+  content:''; position:absolute; left:6px; top:8px; bottom:8px; width:2px; border-radius:1px; background: var(--border);
+}
+.historico-grupo .historico-item { position:relative; }
+.historico-grupo .historico-item::before { /* o ponto de cada tradução */
+  content:''; position:absolute; left:-21px; top:22px; width:12px; height:12px; border-radius:50%;
+  background: var(--surface); border:2.5px solid var(--orange);
+}
+
+/* ── 4.8 Primeira visita: "Agora é sua vez" ────────────── */
+.conversa { position:relative; }
+.dica-vez {
+  position:absolute; left:16px; bottom:76px; z-index:4; max-width:min(340px, calc(100% - 32px));
+  padding:10px 14px; border-radius:12px; background: var(--charcoal); color:#fff;
+  font-size:0.875rem; box-shadow:0 10px 26px rgba(0,0,0,.25);
+  animation:sugestoes-entrar var(--dur-lenta) var(--mola) both; transform-origin:left bottom;
+}
+[data-theme="dark"] .dica-vez { background: var(--orange); color:#030303; }
+.dica-vez::after { /* seta apontando para o campo */
+  content:''; position:absolute; left:26px; bottom:-6px; width:12px; height:12px; background:inherit; transform:rotate(45deg);
+}
+.dica-vez strong { color:inherit; }
+.dica-vez.saindo { opacity:0; transform:translateY(6px); transition:opacity .25s, transform .25s; }
+
+/* ── 4.9 Avatar 🤟 que reage ───────────────────────────── */
+.conversa-avatar[data-estado="traduzindo"] { animation:avatar-respirar 1.6s ease-in-out infinite; }
+.conversa-avatar[data-estado="chegou"] { animation:avatar-pular 620ms var(--mola); }
+.conversa-avatar[data-estado="sem-sinal"] { animation:avatar-inclinar 900ms var(--ease-saida); }
+@keyframes avatar-respirar { 50% { scale:1.08; } }
+@keyframes avatar-pular { 30% { translate:0 -7px; scale:1.06; } 60% { translate:0 0; scale:.97; } }
+@keyframes avatar-inclinar { 25%, 70% { rotate:-14deg; } }
+
+/* ── 4.10 / 4.11 Painel: "Seguir o sistema" e "Vibração" ── */
+.settings-panel { max-height:calc(100dvh - 90px); overflow-y:auto; }
+.settings-item-sub { padding-top:0; }
+.settings-item[hidden] { display:none; } /* ex.: "Vibração" fora do celular */
+.settings-item-sub .settings-item-info { font-size:0.8125rem; color: var(--text-muted); }
+.settings-item-info small { font-size:0.75rem; font-weight:400; color: var(--text-muted); }
+
+/* Alto contraste do Windows: sem pílula nem traço desenhado, usa as cores do sistema */
+@media (forced-colors: active) {
+  .ciclo-pilula, .plano-preco-riscado::after, .sinal-chip::after { display:none; }
+  .plano-preco-riscado { text-decoration:line-through; }
+  .com-pilula .ciclo-opcao[aria-checked="true"],
+  .com-pilula .ciclo-opcao[aria-pressed="true"] { background:Highlight; color:HighlightText; forced-color-adjust:none; }
 }

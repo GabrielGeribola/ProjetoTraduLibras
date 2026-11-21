@@ -174,13 +174,17 @@
     busca.addEventListener('input', () => {
       const termo = semAcento(busca.value.trim());
       let total = 0;
-      itens.forEach((item) => {
-        const confere = !termo || item.dataset.texto.includes(termo);
-        item.hidden = !confere;
-        item.open = Boolean(termo) && confere;
-        if (confere) total += 1;
-      });
-      secoes.forEach((s) => { s.hidden = !s.querySelector('.ajuda-item:not([hidden])'); });
+      // As perguntas que ficam deslizam até o lugar novo, em vez de pular (movimento.js: tlReorganizar)
+      const filtrar = () => {
+        itens.forEach((item) => {
+          const confere = !termo || item.dataset.texto.includes(termo);
+          item.hidden = !confere;
+          item.open = Boolean(termo) && confere;
+          if (confere) total += 1;
+        });
+        secoes.forEach((s) => { s.hidden = !s.querySelector('.ajuda-item:not([hidden])'); });
+      };
+      if (window.tlReorganizar) window.tlReorganizar(itens, filtrar); else filtrar();
       vazio.hidden = total > 0;
       status.textContent = termo ? (total ? `${total} ${total === 1 ? 'resposta encontrada' : 'respostas encontradas'}.` : 'Nenhuma resposta encontrada.') : '';
     });

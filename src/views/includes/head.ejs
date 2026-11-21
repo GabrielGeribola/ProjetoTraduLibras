@@ -10,14 +10,47 @@
     // Aplica tema e tamanho de fonte salvos antes de pintar a página (evita o "piscar" do modo escuro)
     (function () {
       try {
-        if (localStorage.getItem('theme') === 'dark') {
+        // Tema: 'dark', 'light' ou 'auto' (segue o claro/escuro do sistema)
+        var tema = localStorage.getItem('theme');
+        if (tema === 'dark' || (tema === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
           document.documentElement.setAttribute('data-theme', 'dark');
         }
         var tamanho = localStorage.getItem('fontSize');
         if (tamanho) document.documentElement.setAttribute('data-font-size', tamanho);
+        // "Reduzir animações" das configurações: 'reduce' ou 'full'. Sem escolha, segue o sistema.
+        var movimento = localStorage.getItem('motion');
+        if (movimento === 'reduce' || movimento === 'full') document.documentElement.setAttribute('data-motion', movimento);
       } catch (e) { /* armazenamento indisponível: usa o padrão */ }
     })();
+
+    // Animações reduzidas? (escolha feita no site ou, sem ela, a do sistema operacional)
+    window.tlMovimentoReduzido = function () {
+      var escolha = document.documentElement.getAttribute('data-motion');
+      if (escolha === 'reduce') return true;
+      if (escolha === 'full') return false;
+      return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    };
+
+    // Vibração curta em momentos-chave (gravar, tradução pronta). Só no celular e só se a pessoa
+    // ligou "Vibração" nas configurações (desligada por padrão).
+    window.tlVibrar = function (padrao) {
+      try {
+        if (localStorage.getItem('vibracao') === 'on' && navigator.vibrate
+            && window.matchMedia('(pointer: coarse)').matches) navigator.vibrate(padrao);
+      } catch (e) { /* sem suporte */ }
+    };
+
+    // Transição entre páginas: cancelada quando as animações estão reduzidas
+    window.addEventListener('pagereveal', function (e) {
+      if (!e.viewTransition) return;
+      e.viewTransition.ready.catch(function () {}); // pular a transição rejeita "ready": não é erro
+      if (window.tlMovimentoReduzido()) e.viewTransition.skipTransition();
+    });
   </script>
+  <%# A adesão à transição entre páginas fica aqui, no próprio HTML, e não no styleteste.css: o Chrome
+      decide assim que a página nova chega e, se o CSS externo ainda estiver carregando, cancela a
+      transição ("ViewTransition opt-in disabled"). O visual da transição continua no styleteste.css. %>
+  <style>@view-transition { navigation: auto; }</style>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

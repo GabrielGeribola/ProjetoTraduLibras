@@ -65,14 +65,22 @@ exports.salvar = async (req, res) => {
 };
 
 // POST /historico/:id/excluir — só apaga se o item for do usuário logado
+// Pela página (fetch, pede JSON) responde em JSON e a lista se reorganiza sem recarregar;
+// sem JavaScript, o formulário continua funcionando com redirecionamento.
 exports.excluir = async (req, res) => {
   const id = Number.parseInt(req.params.id, 10);
+  const querJson = req.accepts(['html', 'json']) === 'json';
 
   try {
     const apagados = Number.isInteger(id)
       ? await Historico.destroy({ where: { id_historico: id, id_usuario: req.session.user.id } })
       : 0;
 
+    if (querJson) {
+      return apagados > 0
+        ? res.json({ status: 'success', mensagem: 'Tradução removida do histórico.' })
+        : res.status(404).json({ status: 'error', mensagem: 'Item do histórico não encontrado.' });
+    }
     if (apagados > 0) {
       req.flash('success', 'Tradução removida do histórico.');
     } else {
@@ -80,6 +88,7 @@ exports.excluir = async (req, res) => {
     }
   } catch (e) {
     console.error('Erro ao excluir item do histórico:', e);
+    if (querJson) return res.status(500).json({ status: 'error', mensagem: 'Não foi possível remover o item do histórico.' });
     req.flash('errors', 'Não foi possível remover o item do histórico.');
   }
 
