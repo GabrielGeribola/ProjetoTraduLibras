@@ -513,6 +513,8 @@ p { color: var(--text-muted); }
   transition:border-color .2s, background .35s;
 }
 .tradutor-tutorial svg { width:18px; height:18px; color: var(--orange); }
+.tradutor-ajudas { display:flex; justify-content:center; flex-wrap:wrap; gap:8px; margin-top:14px; }
+.tradutor-ajudas .tradutor-tutorial { margin-top:0; }
 .tradutor-tutorial:hover { border-color: var(--orange); }
 .tradutor-tutorial:focus-visible { outline:3px solid var(--orange); outline-offset:2px; }
 
