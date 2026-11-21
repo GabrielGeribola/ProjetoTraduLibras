@@ -22,6 +22,29 @@ function urlBase() {
   return `http://localhost:${process.env.PORT || 3000}`;
 }
 
+// Configuração que faria o link não funcionar: melhor não enviar e avisar quem administra
+class ErroLinkSenha extends Error {
+  constructor(mensagem) {
+    super(mensagem);
+    this.codigo = 'APP_URL';
+  }
+}
+const ehLocal = (host) => /^(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/i.test(String(host || ''));
+
+function conferirBase(base, hostAcesso) {
+  if (!base) {
+    throw new ErroLinkSenha('APP_URL não está configurada no .env do servidor: o e-mail com o link de senha não foi enviado.');
+  }
+  // Ex.: APP_URL=http://localhost:3000 copiado do .env.example para o servidor. O Host serve só para
+  // perceber o erro (o link nunca é montado com ele).
+  let hostBase = '';
+  try { hostBase = new URL(base).host; } catch (e) { /* APP_URL inválida: cai no aviso abaixo */ }
+  if (!hostBase || (hostAcesso && !ehLocal(hostAcesso) && ehLocal(hostBase))) {
+    throw new ErroLinkSenha(`APP_URL (${base}) não é o endereço público do site, então o link do e-mail não abriria para quem o recebesse. `
+      + 'Configure APP_URL no .env do servidor com o endereço do site (ex.: https://tradulibras.com.br) e reinicie o site.');
+  }
+}
+
 // Token válido = existe, não foi usado e não venceu
 async function buscarPedidoValido(token) {
   if (!tokenComFormatoValido(token)) return null;
@@ -30,12 +53,10 @@ async function buscarPedidoValido(token) {
   });
 }
 
-async function enviarLink(usuario) {
+// hostAcesso: o Host da requisição atual, só para detectar APP_URL apontando para localhost em produção
+async function enviarLink(usuario, { hostAcesso } = {}) {
   const base = urlBase();
-  if (!base) {
-    console.error('APP_URL não configurada: o link de redefinição de senha não foi enviado.');
-    return;
-  }
+  conferirBase(base, hostAcesso);
 
   const token = crypto.randomBytes(32).toString('hex');
   await sequelize.transaction(async (transaction) => {
@@ -76,6 +97,12 @@ async function enviarLink(usuario) {
 
 // Também usado pela administração (criar conta e "enviar link para criar senha")
 exports.enviarLink = enviarLink;
+exports.ErroLinkSenha = ErroLinkSenha;
+// Reaproveitados pela confirmação de e-mail do cadastro (confirmacaoController)
+exports.urlBase = urlBase;
+exports.conferirBase = conferirBase;
+exports.hashToken = hashToken;
+exports.tokenComFormatoValido = tokenComFormatoValido;
 
 // GET /esqueci-senha
 exports.esqueciPage = (req, res) => res.render('esqueci-senha', { enviado: false });
@@ -92,7 +119,10 @@ exports.esqueci = async (req, res) => {
     const usuario = await User.findOne({ attributes: ['id', 'email'], where: { email } });
     if (usuario) {
       // Envio em segundo plano: o tempo de resposta não indica se o e-mail existe
-      enviarLink(usuario).catch((e) => console.error('Erro ao enviar link de redefinição de senha:', e));
+      enviarLink(usuario, { hostAcesso: req.get('host') }).catch((e) => console.error(
+        e instanceof ErroLinkSenha ? `Link de redefinição de senha NÃO enviado: ${e.message}` : 'Erro ao enviar link de redefinição de senha:',
+        e instanceof ErroLinkSenha ? '' : e,
+      ));
     }
   } catch (e) {
     console.error('Erro ao processar "esqueci a senha":', e);
@@ -140,7 +170,8 @@ exports.redefinir = async (req, res) => {
       );
       if (usados !== 1) throw new Error('LINK_JA_USADO');
 
-      await User.update({ password: hash }, { where: { id: pedido.id_usuario }, transaction });
+      // Quem abriu o link recebido por e-mail provou que o endereço é seu: confirma o e-mail também
+      await User.update({ password: hash, email_pendente: false }, { where: { id: pedido.id_usuario }, transaction });
 
       // Encerra as sessões abertas dessa conta (ex.: alguém que estava usando a senha antiga)
       await sequelize.query(

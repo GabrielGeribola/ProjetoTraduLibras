@@ -1,4 +1,5 @@
 const Login = require('../models/LoginModel');
+const { enviarConfirmacao } = require('./confirmacaoController');
 
 // Para onde voltar depois do login (ex.: /historico). Só caminhos internos simples,
 // para o parâmetro não ser usado como redirecionamento para outro site.
@@ -9,7 +10,14 @@ function destinoSeguro(valor) {
 
 exports.index = (req, res) => {
   if (req.session.user) return res.render('login-logado');
-  return res.render('login', { voltar: destinoSeguro(req.query.voltar) || '' });
+  // "Reenviar link de confirmação": aberto quando o login foi barrado por e-mail pendente
+  // (com o e-mail já preenchido) ou quando um link de confirmação venceu
+  const [emailReenvio] = req.flash('emailReenvio');
+  return res.render('login', {
+    voltar: destinoSeguro(req.query.voltar) || '',
+    reenviar: Boolean(emailReenvio) || req.query.reenviar === '1',
+    emailReenvio: emailReenvio || '',
+  });
 };
 
 exports.register = async (req, res) => {
@@ -23,7 +31,15 @@ exports.register = async (req, res) => {
       return;
     }
 
-    req.flash('success', 'Seu usuário foi criado com sucesso. Faça login para continuar.');
+    // Conta criada como pendente: só entra depois de clicar no link enviado por e-mail
+    try {
+      await enviarConfirmacao(login.User, { hostAcesso: req.get('host') });
+      req.flash('success', `Quase lá! Enviamos um link de confirmação para ${login.User.email}. Abra o e-mail e clique no link para ativar sua conta (vale 24 horas). Confira também a caixa de spam.`);
+    } catch (e) {
+      console.error('Conta criada, mas o e-mail de confirmação não foi enviado:', e.message);
+      req.flash('errors', 'Sua conta foi criada, mas não conseguimos enviar o e-mail de confirmação agora. Use "Reenviar link de confirmação" abaixo em alguns minutos.');
+      req.flash('emailReenvio', login.User.email);
+    }
     req.session.save(() => res.redirect('/login'));
   } catch (e) {
     console.log(e);
@@ -40,6 +56,7 @@ exports.login = async (req, res) => {
 
     if (login.errors.length > 0) {
       req.flash('errors', login.errors);
+      if (login.emailPendente) req.flash('emailReenvio', login.body.email);
       req.session.save(() => res.redirect(voltar ? `/login?voltar=${encodeURIComponent(voltar)}` : '/login'));
       return;
     }

@@ -1883,6 +1883,17 @@ html.vt-tema::view-transition-old(root), html.vt-tema::view-transition-new(root)
 .settings-item-sub .settings-item-info { font-size:0.8125rem; color: var(--text-muted); }
 .settings-item-info small { font-size:0.75rem; font-weight:400; color: var(--text-muted); }
 
+/* ── Confirmação de e-mail: "Reenviar link" na tela de entrar ── */
+.reenviar-confirmacao { margin:6px auto 0; width:90%; text-align:center; }
+.reenviar-confirmacao summary {
+  display:inline-block; cursor:pointer; padding:4px 0; font-size:0.875rem; font-weight:600; color: var(--orange-dark);
+}
+[data-theme="dark"] .reenviar-confirmacao summary { color: var(--orange); }
+.reenviar-confirmacao summary:focus-visible { outline:3px solid var(--orange); outline-offset:2px; border-radius:4px; }
+.reenviar-confirmacao form { margin-top:10px; text-align:left; }
+.reenviar-confirmacao .form-control { width:100%; }
+.reenviar-confirmacao[open] form { animation:surgir var(--dur-media) var(--ease-saida) both; }
+
 /* Alto contraste do Windows: sem pílula nem traço desenhado, usa as cores do sistema */
 @media (forced-colors: active) {
   .ciclo-pilula, .plano-preco-riscado::after, .sinal-chip::after { display:none; }

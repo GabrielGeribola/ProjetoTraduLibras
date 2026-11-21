@@ -1,6 +1,7 @@
 const validator = require('validator');
 const bcryptjs = require('bcryptjs');
 const User = require('./UserModel');
+const { validarEmail } = require('../services/dominioEmail');
 
 
 
@@ -9,6 +10,7 @@ class Login {
     this.body = body;
     this.errors = [];
     this.User = null;
+    this.emailPendente = false; // login de conta que ainda não confirmou o e-mail
   }
 
   async login() {
@@ -17,7 +19,7 @@ class Login {
      if(this.errors.length > 0) return;
 
     const user = await User.findOne({
-      attributes: ['id', 'email', 'password', 'papel', 'ativo'],
+      attributes: ['id', 'email', 'password', 'papel', 'ativo', 'email_pendente'],
       where: {
         email: this.body.email
       }
@@ -32,6 +34,13 @@ class Login {
 
     if (!user.ativo) {
       this.errors.push('Esta conta está desativada. Fale com a equipe do TraduLibras.');
+      return;
+    }
+
+    // Só depois da senha certa: assim a mensagem não revela quais e-mails têm cadastro
+    if (user.email_pendente) {
+      this.emailPendente = true;
+      this.errors.push('Confirme seu e-mail antes de entrar: abra o link que enviamos quando você se cadastrou.');
       return;
     }
 
@@ -50,6 +59,14 @@ class Login {
   async register() {
     this.valida();
     if(this.errors.length > 0) return;
+
+    // Domínio: existe, recebe e-mail, não é reservado nem descartável (src/services/dominioEmail.js)
+    const dominio = await validarEmail(this.body.email);
+    if (!dominio.valido) {
+      this.errors.push(dominio.mensagem);
+      return;
+    }
+
     await this.userExists();
     if(this.errors.length > 0) return;
     if(this.User) return;
@@ -58,9 +75,11 @@ class Login {
     const hashedPassword = bcryptjs.hashSync(this.body.password, salt);
 
     try {
+      // A conta só entra depois de confirmar o e-mail pelo link (confirmacaoController)
       this.User = await User.create({
         email: this.body.email,
-        password: hashedPassword
+        password: hashedPassword,
+        email_pendente: true,
     });
     } catch(error) {
         console.log("Erro ao criar novo usuário: ", error);

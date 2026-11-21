@@ -3,7 +3,8 @@ const bcryptjs = require('bcryptjs');
 const validator = require('validator');
 const { consultar, umaLinha, executar, transacao } = require('../../config/consulta');
 const { registrar } = require('../../services/auditoria');
-const { enviarLink } = require('../senhaController');
+const { enviarLink, ErroLinkSenha } = require('../senhaController');
+const { validarEmail } = require('../../services/dominioEmail');
 const {
   texto, inteiro, like, paginacao, voltar, destinoAdmin,
 } = require('./util');
@@ -64,6 +65,9 @@ exports.criar = async (req, res) => {
   const idPlano = inteiro(req.body.id_plano) || null;
 
   if (!validator.isEmail(email)) return voltar(req, res, '/admin/usuarios/novo', 'errors', 'Digite um e-mail válido.');
+  // Domínio que existe e recebe e-mail (a pessoa precisa receber o link para criar a senha)
+  const dominio = await validarEmail(email);
+  if (!dominio.valido) return voltar(req, res, '/admin/usuarios/novo', 'errors', dominio.mensagem);
   if (await umaLinha('SELECT id FROM Usuarios_testes WHERE email = :email', { email })) {
     return voltar(req, res, '/admin/usuarios/novo', 'errors', 'Já existe uma conta com esse e-mail.');
   }
@@ -76,10 +80,12 @@ exports.criar = async (req, res) => {
 
   let aviso = 'Conta criada. Enviamos um e-mail para a pessoa criar a senha (o link vale 1 hora).';
   try {
-    await enviarLink({ id, email });
+    await enviarLink({ id, email }, { hostAcesso: req.get('host') });
   } catch (e) {
     console.error('Erro ao enviar o e-mail da conta nova:', e);
-    aviso = 'Conta criada, mas o e-mail não foi enviado. Use "Enviar link para criar senha" na página do usuário.';
+    aviso = e instanceof ErroLinkSenha
+      ? `Conta criada, mas o e-mail não foi enviado. ${e.message}`
+      : 'Conta criada, mas o e-mail não foi enviado. Use "Enviar link para criar senha" na página do usuário.';
   }
   await registrar(req, 'usuario.criar', { id, email, papel });
   return voltar(req, res, `/admin/usuarios/${id}`, 'success', aviso);
@@ -159,10 +165,12 @@ exports.enviarSenha = async (req, res, next) => {
   const usuario = await umaLinha('SELECT id, email FROM Usuarios_testes WHERE id = :id', { id });
   if (!usuario) return next();
   try {
-    await enviarLink(usuario);
+    await enviarLink(usuario, { hostAcesso: req.get('host') });
   } catch (e) {
     console.error('Erro ao enviar link de senha pela administração:', e);
-    return voltar(req, res, `/admin/usuarios/${id}`, 'errors', 'Não foi possível enviar o e-mail agora. Confira a configuração de e-mail (SMTP).');
+    return voltar(req, res, `/admin/usuarios/${id}`, 'errors', e instanceof ErroLinkSenha
+      ? e.message
+      : 'Não foi possível enviar o e-mail agora. Confira a configuração de e-mail (SMTP).');
   }
   await registrar(req, 'usuario.link_senha', { id, email: usuario.email });
   return voltar(req, res, `/admin/usuarios/${id}`, 'success', `Link para criar nova senha enviado para ${usuario.email}.`);
