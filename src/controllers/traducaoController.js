@@ -35,11 +35,12 @@ function responderErro(res, next, e) {
 }
 
 exports.texto = async (req, res, next) => {
-  const { texto, exclusoes } = req.body || {};
+  // soletrar: palavras sem sinal que a pessoa escolheu soletrar (a API valida)
+  const { texto, exclusoes, soletrar } = req.body || {};
   const { limite } = await limiteDoUsuario(req.session.user);
   try {
     const { status, dados } = await repassar('/interno/traduzir', {
-      corpo: { texto, exclusoes },
+      corpo: { texto, exclusoes, soletrar },
       limitePalavras: limite,
     });
     return res.status(status).json(dados);

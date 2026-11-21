@@ -738,6 +738,11 @@ body.em-conversa { overflow:hidden; }
   font-size:0.8125rem; color: var(--text-dark);
 }
 
+/* Palavra sem sinal: escolher entre soletrar e procurar no Glossário */
+.sem-sinal-pergunta { margin:0; }
+.sem-sinal-opcoes { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+.msg .sem-sinal-opcoes a.btn-player { display:inline-flex; align-items:center; color: var(--text-dark); text-decoration:none; }
+
 /* Feedback dentro do balão */
 .feedback-inline { display:flex; flex-wrap:wrap; gap:8px 12px; align-items:center; }
 .feedback-pergunta { font-size:0.875rem; color: var(--text-muted); }

@@ -15,7 +15,7 @@ from pydub import AudioSegment
 import speech_recognition as sr
 
 import servico_admin
-from tradutor import Tradutor, normalizar_sinal
+from tradutor import Tradutor, chave, normalizar_sinal
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 log = logging.getLogger("api_tradu")
@@ -39,6 +39,7 @@ carregar_env_local()
 LIMITE_TEXTO = 300                      # caracteres por tradução
 LIMITE_UPLOAD_BYTES = 5 * 1024 * 1024   # áudio de até 5 MB
 LIMITE_EXCLUSOES = 200                  # sinais ocultados pelo usuário enviados por tradução
+LIMITE_SOLETRAR = 20                    # palavras que a pessoa pediu para soletrar, por tradução
 EXTENSOES_AUDIO = {"webm", "ogg", "m4a", "mp4", "mp3", "wav", "aac"}
 
 # Limite de tokens do plano: o servidor Node (que sabe quem é o usuário e qual o plano dele) envia o
@@ -110,8 +111,10 @@ def _gravar_periodicamente():
 if REGISTRAR_SEM_SINAL:
     threading.Thread(target=_gravar_periodicamente, daemon=True).start()
 
-def traduzir(texto, exclusoes=frozenset()):
-    resultado = motor.traduzir(texto, exclusoes)
+def traduzir(texto, exclusoes=frozenset(), soletrar=frozenset()):
+    # O site sempre pergunta antes de soletrar: só as palavras de `soletrar` viram letras.
+    # As outras sem sinal voltam em `soletraveis` (ver resposta_traducao).
+    resultado = motor.traduzir(texto, exclusoes, soletrar)
     anotar_sem_sinal(resultado.get("sem_sinal"))
     return resultado
 
@@ -134,11 +137,14 @@ def transcrever_audio_caminho(file_path):
         raise TranscricaoIndisponivel(str(e)) from e
 
 # ----------------- Padrão de respostas da API -----------------
-# Sucesso:  {"status": "success", "frase_original", "glosa", "sequencia", "sem_sinal", ["texto_transcrito"]}
+# Sucesso:  {"status": "success", "frase_original", "glosa", "sequencia", "sem_sinal", "soletraveis",
+#            ["texto_transcrito"]}
 #           cada item da sequência: {termo_original, expressao_libras, url, score, metodo, aproximado}
 #           metodo: exato | sinonimo | lema | variacao | correcao | semelhanca | datilologia
+#           soletraveis: palavras de sem_sinal que podem ser soletradas; o site pergunta e, se a pessoa
+#           escolher soletrar, traduz de novo com {"soletrar": [...]}
 # Sem sinal: 404 {"status": "not_found", "codigo": "SEM_SINAIS", "mensagem", "frase_original", "glosa",
-#                 "sem_sinal", "sugestao_link"}
+#                 "sem_sinal", "soletraveis", "sugestao_link"}
 # Erro:     {"status": "error", "codigo", "mensagem"}  (nunca expõe detalhes internos)
 
 def erro(status_http, codigo, mensagem):
@@ -149,6 +155,7 @@ def resposta_traducao(resultado, **extra):
         'frase_original': resultado['frase_original'],
         'glosa': resultado['glosa_gerada'],
         'sem_sinal': resultado.get('sem_sinal', []),
+        'soletraveis': resultado.get('soletraveis', []),
         **extra,
     }
     if resultado['traducao_encontrada']:
@@ -193,6 +200,13 @@ def ler_exclusoes(valor):
             if termo and expressao:
                 exclusoes.add((termo, expressao))
     return frozenset(exclusoes)
+
+def ler_soletrar(valor):
+    """Palavras sem sinal que a pessoa escolheu soletrar (lista de textos), como chaves de busca."""
+    if not isinstance(valor, list):
+        return frozenset()
+    palavras = (chave(p)[:40] for p in valor[:LIMITE_SOLETRAR] if isinstance(p, str))
+    return frozenset(p for p in palavras if p)
 
 def contar_palavras(texto):
     return len(PALAVRA.findall(texto or ''))
@@ -247,7 +261,8 @@ def interno_traduzir():
     if excedeu:
         return excedeu
 
-    return resposta_traducao(traduzir(texto, ler_exclusoes(data.get('exclusoes'))))
+    return resposta_traducao(traduzir(texto, ler_exclusoes(data.get('exclusoes')),
+                                      ler_soletrar(data.get('soletrar'))))
 
 # ----------------- Glossário (palavras com sinal cadastrado) -----------------
 @app.route('/api/glossario', methods=['GET'])

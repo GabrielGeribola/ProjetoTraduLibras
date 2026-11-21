@@ -55,7 +55,7 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </button>
       </div>
-      <p class="tradutor-dica" id="tradutorDica">Frases curtas funcionam melhor. Nomes próprios são soletrados letra por letra.</p>
+      <p class="tradutor-dica" id="tradutorDica">Frases curtas funcionam melhor. Nomes e palavras sem sinal podem ser soletrados letra por letra.</p>
       <p class="tradutor-status" id="tradutorStatus" role="status" aria-live="polite"></p>
     </form>
 
@@ -386,6 +386,11 @@
       },
       mostrar(elementos) {
         balao.className = 'msg msg-bot msg-traducao';
+        balao.replaceChildren(...elementos, rodape());
+        rolarPara(balao);
+      },
+      responder(elementos) {
+        balao.className = 'msg msg-bot';
         balao.replaceChildren(...elementos, rodape());
         rolarPara(balao);
       },
@@ -742,6 +747,51 @@
     ])];
   }
 
+  // ── Palavra sem sinal: perguntar antes de soletrar ────────
+  // A API não soletra sozinha: devolve em `soletraveis` as palavras sem sinal que dá para soletrar.
+  // A pessoa escolhe entre ver a palavra soletrada em Libras, letra por letra (a frase é traduzida de
+  // novo pedindo a soletração), ou procurar no Glossário (em outra aba, para não perder a conversa).
+  function listaDePalavras(palavras) {
+    const entre = palavras.map((p) => `“${p}”`);
+    try { return new Intl.ListFormat('pt-BR', { type: 'conjunction' }).format(entre); } catch (e) { return entre.join(', '); }
+  }
+
+  function palavrasSemSinal(dados) {
+    const soletraveis = Array.isArray(dados?.soletraveis) ? dados.soletraveis : [];
+    const semSinal = Array.isArray(dados?.sem_sinal) ? dados.sem_sinal : [];
+    return { soletraveis, outras: semSinal.filter((p) => !soletraveis.includes(p)) };
+  }
+
+  function opcoesSemSinal(texto, palavras, outras = []) {
+    const varias = palavras.length > 1;
+    const soletrar = criar('button', {
+      classe: 'btn-player btn-player-primario',
+      texto: varias ? '🔤 Soletrar as palavras' : '🔤 Soletrar',
+      atributos: { type: 'button' },
+    });
+    const glossario = criar('a', {
+      classe: 'btn-player',
+      texto: '📖 Ver o Glossário',
+      atributos: { href: '/sugestoes', target: '_blank', rel: 'noopener' },
+    });
+    soletrar.addEventListener('click', async () => {
+      if (traduzindo || gravando) return;
+      soletrar.disabled = true;
+      const ok = await traduzirTexto(texto, null, { soletrar: palavras });
+      if (!ok) soletrar.disabled = false; // falhou: dá para tentar de novo
+    });
+    return [
+      criar('p', { classe: 'sem-sinal-pergunta' }, [
+        `Ainda não temos sinal para ${listaDePalavras(palavras)}. `,
+        varias
+          ? 'Quer ver essas palavras soletradas, letra por letra, ou procurar no Glossário?'
+          : 'Quer ver a palavra soletrada, letra por letra, ou procurar no Glossário?',
+        ...(outras.length ? [` Também sem sinal: ${outras.join(', ')}.`] : []),
+      ]),
+      criar('div', { classe: 'sem-sinal-opcoes', atributos: { role: 'group', 'aria-label': 'O que fazer com as palavras sem sinal' } }, [soletrar, glossario]),
+    ];
+  }
+
   // ── Resposta da tradução (balão com vídeo) ────────────────
   function renderTraducao(resposta, dados, entrada) {
     const sequencia = dados.sequencia || [];
@@ -826,6 +876,12 @@
       linha.append(resposta.balao);
     }
 
+    // Palavras sem sinal: as que dá para soletrar viram a pergunta; as outras, o aviso de sempre
+    const { soletraveis, outras } = palavrasSemSinal(dados);
+    const pergunta = soletraveis.length && entrada
+      ? [criar('div', { classe: 'traducao-sem-sinal' }, opcoesSemSinal(entrada, soletraveis))]
+      : [];
+
     resposta.mostrar([
       palco,
       ...(fraseSync ? [fraseSync] : []),
@@ -839,7 +895,8 @@
       ...(notas.length
         ? [criar('ul', { classe: 'traducao-notas' }, notas.map((g) => criar('li', {}, [criar('strong', { texto: g.rotulo }), ` — ${g.nota}`])))]
         : []),
-      ...avisoSemSinal(dados.sem_sinal),
+      ...avisoSemSinal(pergunta.length ? outras : dados.sem_sinal),
+      ...pergunta,
       criarFeedback({ texto: entrada, glosa: dados.glosa || '', sequencia }),
     ]);
 
@@ -1365,9 +1422,16 @@
   // opcoes.demo: a demonstração da primeira visita não vai para o histórico da pessoa
   function tratarResultadoTraducao(resposta, resultado, entrada, opcoes = {}) {
     const { ok, dados } = resultado;
+    const { soletraveis, outras } = palavrasSemSinal(dados);
     if (ok && dados && dados.status === 'success' && (dados.sequencia || []).length > 0) {
       renderTraducao(resposta, dados, entrada);
       if (!opcoes.demo) salvarHistorico(entrada, dados.glosa, dados.sequencia);
+    } else if (dados && dados.codigo === 'SEM_SINAIS' && soletraveis.length && entrada) {
+      // Nenhuma palavra com sinal, mas dá para soletrar: em vez do aviso de erro, a pergunta
+      const elementos = opcoesSemSinal(entrada, soletraveis, outras);
+      resposta.responder(elementos);
+      avatar('sem-sinal');
+      anunciar(elementos[0].textContent);
     } else {
       const mensagem = mensagemDeErro(resultado);
       resposta.erro(mensagem);
@@ -1377,10 +1441,13 @@
   }
 
   // ── Tradução por texto ────────────────────────────────────
-  // origem: elemento de onde o texto saiu (campo ou exemplo), para ele "voar" até o balão
+  // origem: elemento de onde o texto saiu (campo ou exemplo), para ele "voar" até o balão.
+  // opcoes.soletrar: palavras sem sinal que a pessoa escolheu ver soletradas (a escolha aparece como
+  // mensagem dela). Devolve true se o serviço respondeu.
   async function traduzirTexto(textoBruto, origem = null, opcoes = {}) {
     const texto = (textoBruto || '').trim().slice(0, LIMITE_TEXTO);
-    if (!texto || traduzindo || gravando) return;
+    if (!texto || traduzindo || gravando) return false;
+    const soletrar = Array.isArray(opcoes.soletrar) ? opcoes.soletrar : [];
     traduzindo = true; // já aqui: a transição de abertura leva um quadro e não pode haver envio duplo
     // Uma pergunta nova pausa o sinal que estava tocando: o "traduzindo…" não disputa o olhar com ele
     if (playerAtivo) playerAtivo.pausar();
@@ -1392,7 +1459,10 @@
       chatInput.value = '';
       statusInicio.textContent = '';
       atualizarBotaoChat();
-      enviada = mensagemUsuario([criar('p', { classe: 'msg-texto', texto })]);
+      enviada = mensagemUsuario([criar('p', {
+        classe: 'msg-texto',
+        texto: soletrar.length ? `🔤 Soletrar ${listaDePalavras(soletrar)}` : texto,
+      })]);
       resposta = mensagemBot();
       return enviada.balao.querySelector('.msg-texto');
     }, origem, opcoes);
@@ -1401,10 +1471,11 @@
       const resultado = await chamarApi('/traduzir', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ texto, exclusoes: listaExclusoes() }),
+        body: JSON.stringify({ texto, exclusoes: listaExclusoes(), ...(soletrar.length ? { soletrar } : {}) }),
       });
       enviada.respondida();
       tratarResultadoTraducao(resposta, resultado, texto, opcoes);
+      return resultado.status > 0 && resultado.status < 500; // sem rede ou serviço fora: não foi feita
     } finally {
       traduzindo = false;
       atualizarBloqueios();

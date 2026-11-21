@@ -921,10 +921,15 @@ class Tradutor:
         return sinais if all(sinais) else None
 
     # -- API pública ----------------------------------------------------------------------------
-    def traduzir(self, frase, exclusoes=frozenset()):
-        """exclusoes: {(termo, expressao)} normalizados, que o usuário marcou como errados."""
+    def traduzir(self, frase, exclusoes=frozenset(), soletrar=None):
+        """exclusoes: {(termo, expressao)} normalizados, que o usuário marcou como errados.
+
+        soletrar: None (padrão, é o que o avaliador mede) soletra sozinho os nomes próprios sem sinal.
+        Um conjunto de chaves (ver chave()) liga o modo "perguntar antes", usado pelo site: só as palavras
+        do conjunto são soletradas. As outras sem sinal voltam em `sem_sinal` e, se der para soletrar,
+        também em `soletraveis`, para o site oferecer a escolha entre ver o glossário e soletrar."""
         unidades = self.analisar(frase)
-        sequencia, glosa, sem_sinal = [], [], []
+        sequencia, glosa, sem_sinal, soletraveis = [], [], [], []
 
         for u in unidades:
             termo = normalizar_sinal(u.texto)
@@ -946,7 +951,8 @@ class Tradutor:
                 glosa.append(achado.sinal.descricao.lower())
                 continue
 
-            letras = self._soletrar(u) if (self.datilologia and u.nome_proprio) else None
+            pedido = u.nome_proprio if soletrar is None else chave(u.texto) in soletrar
+            letras = self._soletrar(u) if (self.datilologia and pedido) else None
             if letras:
                 for s in letras:
                     sequencia.append({
@@ -961,6 +967,9 @@ class Tradutor:
             else:
                 sem_sinal.append(u.texto.lower())
                 glosa.append(u.forma)
+                if (self.datilologia and u.texto.lower() not in soletraveis and not pedido
+                        and self._soletrar(u)):
+                    soletraveis.append(u.texto.lower())
 
         return {
             "frase_original": frase,
@@ -968,4 +977,5 @@ class Tradutor:
             "traducao_encontrada": bool(sequencia),
             "sequencia": sequencia,
             "sem_sinal": sem_sinal,
+            "soletraveis": soletraveis,
         }
