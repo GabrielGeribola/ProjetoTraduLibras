@@ -111,6 +111,21 @@ const TABELAS = [
       KEY idx_admin_log_data (criado_em),
       KEY idx_admin_log_acao (acao)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci`],
+
+  // Links de confirmação de e-mail do cadastro (só o hash do token, como em redefinicao_senha)
+  ['confirmacao_email', `
+    CREATE TABLE IF NOT EXISTS confirmacao_email (
+      id           INT       NOT NULL AUTO_INCREMENT,
+      id_usuario   INT       NOT NULL,
+      token_hash   CHAR(64)  NOT NULL,
+      expira_em    DATETIME  NOT NULL,
+      usado_em     DATETIME           DEFAULT NULL,
+      criado_em    DATETIME  NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (id),
+      UNIQUE KEY uk_confirmacao_token (token_hash),
+      KEY idx_confirmacao_usuario (id_usuario),
+      CONSTRAINT fk_confirmacao_usuario FOREIGN KEY (id_usuario) REFERENCES Usuarios_testes (id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci`],
 ];
 
 // Colunas novas na tabela de usuários
@@ -120,6 +135,9 @@ const COLUNAS_USUARIOS = [
   ['id_plano', 'INT NULL DEFAULT NULL'],
   ['plano_valido_ate', 'DATE NULL DEFAULT NULL'],
   ['ultimo_login', 'DATETIME NULL DEFAULT NULL'],
+  // 1 = cadastro esperando a confirmação do e-mail (não entra até clicar no link).
+  // Padrão 0: contas antigas e as criadas por versões anteriores do site continuam entrando normalmente.
+  ['email_pendente', 'TINYINT(1) NOT NULL DEFAULT 0'],
 ];
 
 // Outro processo pode ter criado a mesma coluna/índice/ligação ao mesmo tempo: não é erro

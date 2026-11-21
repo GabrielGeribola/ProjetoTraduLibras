@@ -6,6 +6,7 @@ const historicoController = require('./src/controllers/historicoController');
 const feedbackController = require('./src/controllers/feedbackController');
 const senhaController = require('./src/controllers/senhaController');
 const traducaoController = require('./src/controllers/traducaoController');
+const confirmacaoController = require('./src/controllers/confirmacaoController');
 const adminRoutes = require('./src/routes/admin');
 const {
   loginRequired, limiteLogin, limiteCadastro, limiteSenha, limiteFeedback,
@@ -33,6 +34,10 @@ route.post('/logout', loginController.logout);
 // Cadastro (com limite de tentativas)
 route.get('/register', loginController.registerPage);
 route.post('/register', limiteCadastro, loginController.register);
+
+// Confirmação do e-mail do cadastro (link enviado por e-mail) e reenvio do link
+route.get('/confirmar-email/:token', confirmacaoController.confirmar);
+route.post('/confirmar-email/reenviar', limiteSenha, confirmacaoController.reenviar);
 
 // Esqueci a senha: pede o link por e-mail e cria a nova senha pelo link
 route.get('/esqueci-senha', senhaController.esqueciPage);

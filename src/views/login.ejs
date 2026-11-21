@@ -34,6 +34,18 @@
         <button type="submit" class="btn-btn-primary botaoacessar">Acessar</button>
       </form>
 
+      <%# Reenviar o link de confirmação do cadastro (aberto quando o login foi barrado por e-mail não confirmado) %>
+      <details class="reenviar-confirmacao" <%= (typeof reenviar !== 'undefined' && reenviar) ? 'open' : '' %>>
+        <summary>Não recebeu o e-mail de confirmação?</summary>
+        <form action="/confirmar-email/reenviar" method="POST">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <label class="diminutivo" for="reenvio_email">Seu e-mail</label>
+          <input type="email" class="form-control" id="reenvio_email" name="email" placeholder="Email" autocomplete="email" required
+                 value="<%= typeof emailReenvio !== 'undefined' ? emailReenvio : '' %>">
+          <button type="submit" class="btn-btn-primary botaoacessar">Reenviar link de confirmação</button>
+        </form>
+      </details>
+
       <div class="linha"></div>
       <p class="tem-conta">Ainda não tem conta?</p>
       <a class="linkp-register" href="/register">Crie uma agora</a>

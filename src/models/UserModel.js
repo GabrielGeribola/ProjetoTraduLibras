@@ -22,6 +22,7 @@ const User = db.define('Usuarios_testes', {
   id_plano: { type: Sequelize.INTEGER, allowNull: true },
   plano_valido_ate: { type: Sequelize.DATEONLY, allowNull: true },
   ultimo_login: { type: Sequelize.DATE, allowNull: true },
+  email_pendente: { type: Sequelize.BOOLEAN, allowNull: false, defaultValue: false },
 }, {
     tableName: 'Usuarios_testes'
 });
