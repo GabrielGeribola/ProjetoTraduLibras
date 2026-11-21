@@ -20,12 +20,21 @@
   <div class="planos-cabecalho">
     <h1 class="planos-titulo">Tradutor</h1>
     <p class="planos-subtitulo">Escreva ou fale em português e veja a frase em Libras, sinal por sinal.</p>
-    <button type="button" class="tradutor-tutorial" data-tutorial>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/>
-      </svg>
-      Como usar (vídeo tutorial)
-    </button>
+    <div class="tradutor-ajudas">
+      <button type="button" class="tradutor-tutorial" data-tutorial>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/>
+        </svg>
+        Como usar (vídeo tutorial)
+      </button>
+      <%# Demonstração só quando a pessoa pede (antes rodava sozinha na primeira visita) %>
+      <button type="button" class="tradutor-tutorial" id="verExemplo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/>
+        </svg>
+        Ver um exemplo
+      </button>
+    </div>
   </div>
 
   <section class="tradutor-caixa" aria-label="Traduzir para Libras">
@@ -33,7 +42,7 @@
       <label for="input_text" class="tradutor-rotulo">Palavra ou frase em português</label>
       <div class="tradutor-linha">
         <input type="text" class="input-home tradutor-input" id="input_text" name="input_text"
-               placeholder="Ex.: bom dia, tudo bem?" maxlength="300" autocomplete="off" enterkeyhint="go"
+               placeholder="Ex.: tudo bem? eu gosto de café" maxlength="300" autocomplete="off" enterkeyhint="go"
                aria-describedby="tradutorDica">
         <button type="button" class="plano-botao plano-botao-secundario btn-falar" id="recordBtn" aria-label="Falar: grava sua voz por até 5 segundos">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -52,7 +61,8 @@
 
     <div class="tradutor-exemplos" role="group" aria-label="Exemplos para experimentar">
       <span class="tradutor-exemplos-rotulo">Experimente:</span>
-      <% ['bom dia', 'eu te amo', 'obrigado', 'qual é o seu nome?', 'meu nome é Ana'].forEach((exemplo) => { %>
+      <%# Só frases que o banco traduz por inteiro ("bom dia" e "qual é o seu nome?" ficavam sem BOM e SEU) %>
+      <% ['tudo bem?', 'eu te amo', 'obrigado', 'eu gosto de café', 'meu nome é Ana'].forEach((exemplo) => { %>
         <button type="button" class="curso-chip" data-exemplo="<%= exemplo %>"><%= exemplo %></button>
       <% }); %>
     </div>
@@ -1008,7 +1018,8 @@
   const API_GLOSSARIO = ['localhost', '127.0.0.1'].includes(window.location.hostname)
     ? 'http://localhost:5000/api/glossario'
     : '/api/glossario';
-  const FRASES_EXEMPLO = ['bom dia', 'tudo bem?', 'eu te amo', 'obrigado', 'por favor', 'desculpa', 'qual é o seu nome?', 'meu nome é Ana'];
+  // Conferidas na API: todos os sinais existem no banco
+  const FRASES_EXEMPLO = ['tudo bem?', 'eu te amo', 'obrigado', 'por favor', 'desculpa', 'eu gosto de café', 'minha família é grande', 'meu nome é Ana'];
   const CATEGORIAS_FORA = new Set(['Alfabeto', 'Outros', 'Números e quantidades']);
   const SUGESTOES_VISIVEIS = 4;
   const caixasSugestoes = new Set();
@@ -1629,16 +1640,13 @@
   const palavraUrl = new URLSearchParams(window.location.search).get('word');
   if (palavraUrl) traduzirTexto(palavraUrl.slice(0, LIMITE_TEXTO), null, { chegada: true });
 
-  // ── 4.8 Primeira visita: demonstração guiada ──────────────
-  // Na primeira vez em /home, o campo "digita sozinho" bom dia, a tradução acontece (com a glosa) e
-  // um balão convida: "Agora é sua vez". Uma vez só (guardado no navegador); qualquer tecla, clique
-  // ou toque durante a digitação cancela; nunca roda com animações reduzidas, com ?word= ou com o
-  // tutorial aberto. A demonstração não entra no histórico da pessoa.
-  const CHAVE_DEMO = 'tradulibras:demoVista';
+  // ── Demonstração guiada (botão "Ver um exemplo") ──────────
+  // Só quando a pessoa pede: o campo "digita sozinho" eu gosto de café, a tradução acontece (com a glosa) e
+  // um balão convida: "Agora é sua vez". Antes rodava sozinha na primeira visita, o que começava uma
+  // tradução sem ninguém pedir (e gastava uma chamada à API a cada visitante novo).
+  // Qualquer tecla, clique ou toque durante a digitação cancela. Não entra no histórico da pessoa.
+  // Com animações reduzidas, a frase aparece de uma vez em vez de ser digitada.
   const espera = (ms) => new Promise((r) => { setTimeout(r, ms); });
-  function demoJaVista() {
-    try { return Boolean(localStorage.getItem(CHAVE_DEMO)); } catch (e) { return true; }
-  }
 
   function dicaSuaVez() {
     const dica = criar('p', { classe: 'dica-vez', atributos: { role: 'status' } }, [
@@ -1655,21 +1663,34 @@
     chatInput.focus({ preventScroll: true });
   }
 
+  let demonstrando = false;
   async function demonstracao() {
-    try { localStorage.setItem(CHAVE_DEMO, '1'); } catch (e) { /* armazenamento indisponível */ }
-    const FRASE = 'bom dia';
+    if (demonstrando) return;
+    demonstrando = true;
+    try { await rodarDemonstracao(); } finally { demonstrando = false; }
+  }
+
+  async function rodarDemonstracao() {
+    // Todos os sinais existem no banco e a glosa fica visível: o "de" cai e a ordem muda (CAFÉ EU GOSTAR).
+    // ("bom dia" não serve: o banco não tem o sinal BOM, e a tradução sairia só DIA.)
+    const FRASE = 'eu gosto de café';
     let cancelada = false;
     const cancelar = () => { cancelada = true; };
     // A pessoa já começou a usar (conversa aberta ou traduzindo): a demonstração não se intromete
     const emUso = () => !conversa.hidden || traduzindo || gravando;
     const eventos = ['keydown', 'pointerdown', 'wheel', 'touchstart'];
-    eventos.forEach((ev) => window.addEventListener(ev, cancelar, { capture: true, once: true }));
-    await espera(900);
-    anunciar(`Demonstração: traduzindo “${FRASE}”. Aperte qualquer tecla para pular.`);
-    for (const letra of FRASE) {
-      if (cancelada || emUso()) break;
-      searchInput.value += letra;
-      await espera(120);
+    searchInput.value = '';
+    anunciar(`Exemplo: traduzindo “${FRASE}”. Aperte qualquer tecla para cancelar.`);
+    if (movimentoReduzido()) {
+      searchInput.value = FRASE;
+    } else {
+      eventos.forEach((ev) => window.addEventListener(ev, cancelar, { capture: true, once: true }));
+      await espera(250);
+      for (const letra of FRASE) {
+        if (cancelada || emUso()) break;
+        searchInput.value += letra;
+        await espera(120);
+      }
     }
     eventos.forEach((ev) => window.removeEventListener(ev, cancelar, { capture: true }));
     if (cancelada || emUso()) {
@@ -1682,10 +1703,7 @@
     dicaSuaVez();
   }
 
-  if (!palavraUrl && !demoJaVista() && !movimentoReduzido()
-      && new URLSearchParams(window.location.search).get('tutorial') !== '1') {
-    demonstracao();
-  }
+  document.getElementById('verExemplo').addEventListener('click', demonstracao);
 })();
 </script>
 
