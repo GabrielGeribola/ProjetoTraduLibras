@@ -1,24 +1,51 @@
-<% if(errors.length > 0) { %>
-<div class="row">
-  <div class="col my-3">
-      <div class="alert alert-danger, alert">
-        <% errors.forEach(erro => {  %>
-            <%= erro %><br>
-        <% }); %>
-      </div>
-  </div>
-</div>
-<% } %>
+<% if (errors && errors.length > 0) { %>
+    <div class="tl-messages">
+        <div class="tl-alert tl-alert--error" role="alert">
 
-<% if(success.length > 0) { %>
-  <div class="row">
-    <div class="col my-3">
-        <div class="alert alert-success, sucess">
-          <% success.forEach(success => {  %>
-              <%= success %><br>
-          <% }); %>
+            <div class="tl-alert__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
+                    <path d="M12 7.5V12.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <circle cx="12" cy="16" r="1" fill="currentColor"/>
+                </svg>
+            </div>
+
+            <div class="tl-alert__content">
+                <p class="tl-alert__title">Não foi possível continuar</p>
+
+                <ul class="tl-alert__list">
+                    <% errors.forEach(erro => { %>
+                        <li><%= erro %></li>
+                    <% }); %>
+                </ul>
+            </div>
+
         </div>
     </div>
-  </div>
-  <% } %>
+<% } %>
 
+
+<% if (success && success.length > 0) { %>
+    <div class="tl-messages">
+        <div class="tl-alert tl-alert--success" role="status">
+
+            <div class="tl-alert__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
+                    <path d="M8 12.5L10.5 15L16 9.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+
+            <div class="tl-alert__content">
+                <p class="tl-alert__title">Tudo certo!</p>
+
+                <ul class="tl-alert__list">
+                    <% success.forEach(mensagem => { %>
+                        <li><%= mensagem %></li>
+                    <% }); %>
+                </ul>
+            </div>
+
+        </div>
+    </div>
+<% } %>

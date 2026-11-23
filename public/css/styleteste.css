@@ -1908,3 +1908,139 @@ html.vt-tema::view-transition-old(root), html.vt-tema::view-transition-new(root)
   .com-pilula .ciclo-opcao[aria-checked="true"],
   .com-pilula .ciclo-opcao[aria-pressed="true"] { background:Highlight; color:HighlightText; forced-color-adjust:none; }
 }
+
+/* =========================================
+   TRADULIBRAS - SISTEMA DE ALERTAS
+========================================= */
+
+.tl-messages {
+    width: 100%;
+    margin: 0 0 22px;
+    box-sizing: border-box;
+}
+
+.tl-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 13px;
+
+    width: 100%;
+    padding: 15px 17px;
+
+    border: 1px solid;
+    border-radius: 14px;
+
+    box-sizing: border-box;
+
+    font-family: 'DM Sans', sans-serif;
+
+    animation: tl-alert-appear 0.3s ease;
+}
+
+/* Ícone */
+
+.tl-alert__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+
+    border-radius: 50%;
+}
+
+.tl-alert__icon svg {
+    width: 21px;
+    height: 21px;
+}
+
+/* Conteúdo */
+
+.tl-alert__content {
+    flex: 1;
+    min-width: 0;
+}
+
+.tl-alert__title {
+    margin: 0 0 4px;
+
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.4;
+}
+
+.tl-alert__list {
+    margin: 0;
+    padding-left: 17px;
+
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.6;
+}
+
+.tl-alert__list li + li {
+    margin-top: 3px;
+}
+
+/* ERRO */
+
+.tl-alert--error {
+    background: #FFF3F1;
+    border-color: #F2D0CA;
+    color: #A43D32;
+}
+
+.tl-alert--error .tl-alert__icon {
+    background: #FCE1DC;
+}
+
+/* SUCESSO */
+
+.tl-alert--success {
+    background: #EFF8F1;
+    border-color: #CBE5D0;
+    color: #287344;
+}
+
+.tl-alert--success .tl-alert__icon {
+    background: #DCEFE0;
+}
+
+/* Animação */
+
+@keyframes tl-alert-appear {
+    from {
+        opacity: 0;
+        transform: translateY(-7px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsividade */
+
+@media (max-width: 480px) {
+    .tl-alert {
+        padding: 13px;
+        gap: 10px;
+    }
+
+    .tl-alert__title {
+        font-size: 13px;
+    }
+
+    .tl-alert__list {
+        font-size: 12px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tl-alert {
+        animation: none;
+    }
+}
