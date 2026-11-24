@@ -1,11 +1,16 @@
 const crypto = require('crypto');
 const rateLimit = require('express-rate-limit');
+const { EMAIL_COMERCIAL } = require('../data/planos');
 
 exports.middlewareGlobal = (req, res, next) => {
   res.locals.errors = req.flash('errors');
   res.locals.success = req.flash('success');
   // Usado pela navbar ("Sair" e "Histórico") e pela home para saber se há alguém logado
   res.locals.user = req.session.user || null;
+  // Cabeçalho, rodapé e prévia de links (og:image precisa do endereço completo)
+  res.locals.urlSite = (process.env.APP_URL || '').replace(/\/+$/, '');
+  res.locals.emailSite = EMAIL_COMERCIAL;
+  res.locals.caminhoAtual = req.path;
   next();
 };
 

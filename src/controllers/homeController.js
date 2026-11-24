@@ -1,6 +1,7 @@
 const { exclusoesDoUsuario } = require('../models/FeedbackModel');
 const { paginaCursos } = require('../services/cursosService');
 const { paginaPlanos, EMAIL_COMERCIAL } = require('../services/planosService');
+const { numerosDoSite } = require('../services/numerosService');
 
 // Rota para a página home (tradutor).
 // Usuário logado recebe os sinais que marcou como incorretos, para a tradução evitá-los.
@@ -14,7 +15,7 @@ exports.home = async (req, res) => {
       console.error('Erro ao carregar sinais ocultados:', e);
     }
   }
-  res.render('home', { exclusoes });
+  res.render('home', { exclusoes, numeros: await numerosDoSite() });
 };
 
 // Rota para a página de ajuda

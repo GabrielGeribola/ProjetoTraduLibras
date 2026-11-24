@@ -1,2 +1,54 @@
+<%# Rodapé do site. A área de administração não usa (semRodape); no login/cadastro aparece só a última linha
+    (CSS: body.page-centered) e na conversa do tradutor ele some (body.em-conversa). %>
+<% if (typeof semRodape === 'undefined' || !semRodape) { %>
+  <% const emailRodape = typeof emailSite !== 'undefined' && emailSite ? emailSite : 'tradulibras.fam@gmail.com'; %>
+  <footer class="rodape-site">
+    <div class="rodape-conteudo">
+      <div class="rodape-marca">
+        <a href="/home" class="rodape-logo-link" aria-label="TraduLibras: ir para o tradutor">
+          <img src="https://assetstradulibras.s3.us-east-1.amazonaws.com/imgs/logo-clara.png" alt="" class="rodape-logo" width="141" height="40" loading="lazy">
+        </a>
+        <p>Tradução de português para Libras, sinal por sinal. Um projeto acadêmico da FAM – Faculdade das Américas.</p>
+        <a class="rodape-email" href="mailto:<%= emailRodape %>">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+          <%= emailRodape %>
+        </a>
+      </div>
+
+      <nav class="rodape-colunas" aria-label="Rodapé">
+        <div class="rodape-coluna">
+          <h2>Produto</h2>
+          <ul>
+            <li><a href="/home">Tradutor</a></li>
+            <li><a href="/sugestoes">Glossário</a></li>
+            <li><a href="/cursos">Cursos</a></li>
+            <li><a href="/planos">Planos</a></li>
+          </ul>
+        </div>
+        <div class="rodape-coluna">
+          <h2>Suporte</h2>
+          <ul>
+            <li><a href="/ajuda">Central de ajuda</a></li>
+            <li><a href="/home?tutorial=1">Vídeo tutorial</a></li>
+            <li><a href="mailto:<%= emailRodape %>">Fale com a equipe</a></li>
+          </ul>
+        </div>
+        <div class="rodape-coluna">
+          <h2>Projeto</h2>
+          <ul>
+            <li><a href="/sobre">Sobre o TraduLibras</a></li>
+            <li><a href="/sobre#equipeTitulo">Equipe</a></li>
+            <li><a href="/planos#ongTitulo">Desconto para ONGs</a></li>
+          </ul>
+        </div>
+      </nav>
+    </div>
+
+    <div class="rodape-base">
+      <p>© <%= new Date().getFullYear() %> TraduLibras. Todos os direitos reservados.</p>
+      <p>Feito por estudantes da FAM, com acessibilidade em primeiro lugar.</p>
+    </div>
+  </footer>
+<% } %>
   </body>
 </html>

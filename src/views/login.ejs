@@ -1,54 +1,59 @@
-<%- include('includes/head', { bodyClass: 'page-centered' }); %>
+<%- include('includes/head', { bodyClass: 'page-centered pagina-auth' }); %>
 <%- include('includes/navbar'); %>
 
-  <div class="container">
+  <div class="container auth-split">
+    <%- include('includes/auth-vitrine'); %>
 
-    <div class="logo-boasvindas-login">
-      <a href="/home" aria-label="Voltar para o tradutor">
-        <img src="https://assetstradulibras.s3.us-east-1.amazonaws.com/imgs/logo-clara.png" alt="Logo TraduLibras" class="img-fluid" />
-      </a>
-    </div>
+    <div class="auth-formulario">
+      <%- include('includes/messages'); %>
 
-    <%- include('includes/messages'); %>
+      <div class="titulo-entrar">
+        <h1 class="entrar">Bem-vindo de volta</h1>
+        <p class="auth-subtitulo">Entre para acessar seu histórico de traduções e continuar de onde parou.</p>
 
-    <div class="titulo-entrar">
-      <h1 class="entrar">Entrar</h1>
-
-      <form action="/login" method="POST">
-        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-        <% if (typeof voltar !== 'undefined' && voltar) { %>
-          <input type="hidden" name="voltar" value="<%= voltar %>">
-        <% } %>
-        <div class="form-group">
-          <label class="diminutivo" for="login_email">Digite seu email</label>
-          <input type="email" class="form-control" id="login_email" name="email" placeholder="Email" autocomplete="email" required>
-        </div>
-
-        <div class="form-group">
-          <label class="diminutivo" for="login_senha">Digite sua senha</label>
-          <input type="password" class="form-control" id="login_senha" name="password" placeholder="Senha" autocomplete="current-password" required>
-        </div>
-
-        <p class="esqueci-link"><a href="/esqueci-senha">Esqueceu a senha?</a></p>
-
-        <button type="submit" class="btn-btn-primary botaoacessar">Acessar</button>
-      </form>
-
-      <%# Reenviar o link de confirmação do cadastro (aberto quando o login foi barrado por e-mail não confirmado) %>
-      <details class="reenviar-confirmacao" <%= (typeof reenviar !== 'undefined' && reenviar) ? 'open' : '' %>>
-        <summary>Não recebeu o e-mail de confirmação?</summary>
-        <form action="/confirmar-email/reenviar" method="POST">
+        <form action="/login" method="POST">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-          <label class="diminutivo" for="reenvio_email">Seu e-mail</label>
-          <input type="email" class="form-control" id="reenvio_email" name="email" placeholder="Email" autocomplete="email" required
-                 value="<%= typeof emailReenvio !== 'undefined' ? emailReenvio : '' %>">
-          <button type="submit" class="btn-btn-primary botaoacessar">Reenviar link de confirmação</button>
-        </form>
-      </details>
+          <% if (typeof voltar !== 'undefined' && voltar) { %>
+            <input type="hidden" name="voltar" value="<%= voltar %>">
+          <% } %>
+          <div class="form-group">
+            <label class="diminutivo" for="login_email">E-mail</label>
+            <input type="email" class="form-control" id="login_email" name="email" placeholder="voce@exemplo.com" autocomplete="email" required>
+          </div>
 
-      <div class="linha"></div>
-      <p class="tem-conta">Ainda não tem conta?</p>
-      <a class="linkp-register" href="/register">Crie uma agora</a>
+          <div class="form-group">
+            <div class="rotulo-linha">
+              <label class="diminutivo" for="login_senha">Senha</label>
+              <a class="esqueci-inline" href="/esqueci-senha">Esqueceu a senha?</a>
+            </div>
+            <input type="password" class="form-control" id="login_senha" name="password" placeholder="Sua senha" autocomplete="current-password" required>
+          </div>
+
+          <button type="submit" class="btn-btn-primary botaoacessar">Entrar</button>
+        </form>
+
+        <p class="auth-seguranca">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+          Sua senha é protegida com criptografia.
+        </p>
+
+        <%# Reenviar o link de confirmação do cadastro (aberto quando o login foi barrado por e-mail não confirmado) %>
+        <details class="reenviar-confirmacao" <%= (typeof reenviar !== 'undefined' && reenviar) ? 'open' : '' %>>
+          <summary>Não recebeu o e-mail de confirmação?</summary>
+          <form action="/confirmar-email/reenviar" method="POST">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <label class="diminutivo" for="reenvio_email">Seu e-mail</label>
+            <input type="email" class="form-control" id="reenvio_email" name="email" placeholder="voce@exemplo.com" autocomplete="email" required
+                   value="<%= typeof emailReenvio !== 'undefined' ? emailReenvio : '' %>">
+            <button type="submit" class="btn-btn-primary botaoacessar botao-secundario">Reenviar link de confirmação</button>
+          </form>
+        </details>
+
+        <div class="auth-troca">
+          <span>Ainda não tem conta?</span>
+          <a href="/register">Criar conta grátis</a>
+        </div>
+      </div>
     </div>
   </div>
 

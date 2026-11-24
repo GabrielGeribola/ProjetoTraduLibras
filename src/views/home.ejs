@@ -68,23 +68,77 @@
     </div>
   </section>
 
-  <div class="buttons-cards">
-    <a href="#input_text" class="card-traduzir" id="cardTraduzir">
-      <p class="icon-traduzir" aria-hidden="true">🔁</p>
-      <h2 class="title-card">Traduzir</h2>
-      <p class="descricao-card">Converta palavras em Libras de forma rápida e intuitiva.</p>
-    </a>
-    <a href="/cursos" class="card-aprender">
-      <p class="icon-aprender" aria-hidden="true">📖</p>
-      <h2 class="title-card">Aprender</h2>
-      <p class="descricao-card">Descubra novos sinais e amplie seu conhecimento em Libras.</p>
-    </a>
-    <a href="/sugestoes" class="card-incluir">
-      <p class="icon-incluir" aria-hidden="true">🤗</p>
-      <h2 class="title-card">Incluir</h2>
-      <p class="descricao-card">Facilite a comunicação e torne o diálogo mais acessível.</p>
-    </a>
-  </div>
+  <%# Como funciona: três passos, do texto (ou voz) ao vídeo %>
+  <section class="home-secao" aria-labelledby="comoFuncionaTitulo">
+    <h2 class="secao-titulo" id="comoFuncionaTitulo">Como funciona</h2>
+    <ol class="passos">
+      <li class="passo">
+        <span class="passo-icone" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/></svg>
+        </span>
+        <span class="passo-numero">Passo 1</span>
+        <h3>Escreva ou fale</h3>
+        <p>Digite uma frase em português ou grave um áudio curto pelo microfone.</p>
+      </li>
+      <li class="passo">
+        <span class="passo-icone" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h11M4 12h7M4 17h11"/><path d="m15 10 4 4-4 4"/><path d="M19 14H11"/></svg>
+        </span>
+        <span class="passo-numero">Passo 2</span>
+        <h3>A frase vira Libras</h3>
+        <p>O TraduLibras organiza a frase na ordem da Libras e escolhe o sinal de cada palavra.</p>
+      </li>
+      <li class="passo">
+        <span class="passo-icone" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="m10 9 5 3-5 3z" fill="currentColor"/></svg>
+        </span>
+        <span class="passo-numero">Passo 3</span>
+        <h3>Assista sinal por sinal</h3>
+        <p>Os vídeos tocam em sequência. Dá para repetir, desacelerar e soletrar nomes.</p>
+      </li>
+    </ol>
+  </section>
+
+  <%# Atalhos com números reais do banco (somem se o banco não responder) %>
+  <section class="home-secao" aria-labelledby="exploreTitulo">
+    <h2 class="secao-titulo" id="exploreTitulo">Explore o TraduLibras</h2>
+    <div class="explorar">
+      <a href="/sugestoes" class="explorar-card">
+        <span class="explorar-icone" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        </span>
+        <% if (typeof numeros !== 'undefined' && numeros && numeros.palavras) { %>
+          <strong class="explorar-numero"><span data-contar="<%= numeros.palavras %>"><%= numeros.palavras.toLocaleString('pt-BR') %></span>+</strong>
+          <span class="explorar-legenda">palavras e expressões com sinal</span>
+        <% } %>
+        <h3>Glossário</h3>
+        <p>Procure uma palavra ou navegue por categoria e veja o sinal na hora.</p>
+        <span class="explorar-seta" aria-hidden="true">Abrir o glossário →</span>
+      </a>
+      <a href="/cursos" class="explorar-card">
+        <span class="explorar-icone" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.5C4.5 5 7.5 5 10 6.5V20c-2.5-1.5-5.5-1.5-8 0z"/><path d="M22 6.5C19.5 5 16.5 5 14 6.5V20c2.5-1.5 5.5-1.5 8 0z"/></svg>
+        </span>
+        <% if (typeof numeros !== 'undefined' && numeros && numeros.conteudos) { %>
+          <strong class="explorar-numero"><span data-contar="<%= numeros.conteudos %>"><%= numeros.conteudos %></span></strong>
+          <span class="explorar-legenda">vídeos e artigos selecionados</span>
+        <% } %>
+        <h3>Cursos</h3>
+        <p>Aprenda Libras e conheça a cultura surda com conteúdos gratuitos.</p>
+        <span class="explorar-seta" aria-hidden="true">Ver os cursos →</span>
+      </a>
+      <a href="/planos" class="explorar-card">
+        <span class="explorar-icone" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V8l7-4 7 4v13"/><path d="M9 21v-6h6v6M9 10h.01M15 10h.01"/></svg>
+        </span>
+        <strong class="explorar-numero">Grátis</strong>
+        <span class="explorar-legenda">para começar, sem cadastro</span>
+        <h3>Planos</h3>
+        <p>Para escolas, empresas e ONGs que traduzem textos maiores todos os dias.</p>
+        <span class="explorar-seta" aria-hidden="true">Conhecer os planos →</span>
+      </a>
+    </div>
+  </section>
 </main>
 
 <!-- Conversa (estilo WhatsApp): abre na primeira tradução -->
@@ -415,13 +469,6 @@
   document.getElementById('btnLimpar').addEventListener('click', () => {
     if (lista.querySelector('.msg') && !window.confirm('Apagar esta conversa e voltar ao início?')) return;
     limparConversa();
-  });
-
-  // "Traduzir" nos atalhos leva ao campo, em vez de recarregar a página
-  document.getElementById('cardTraduzir').addEventListener('click', (e) => {
-    e.preventDefault();
-    searchInput.focus();
-    searchInput.scrollIntoView({ block: 'center' });
   });
 
   // ── Chamada à API com tempo limite ────────────────────────

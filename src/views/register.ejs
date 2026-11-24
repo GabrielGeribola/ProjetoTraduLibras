@@ -1,37 +1,42 @@
-<%- include('includes/head', { bodyClass: 'page-centered' }); %>
+<%- include('includes/head', { bodyClass: 'page-centered pagina-auth' }); %>
 <%- include('includes/navbar'); %>
 
-  <div class="container">
+  <div class="container auth-split">
+    <%- include('includes/auth-vitrine'); %>
 
-    <div class="logo-boasvindas-login">
-      <a href="/home" aria-label="Voltar para o tradutor">
-        <img src="https://assetstradulibras.s3.us-east-1.amazonaws.com/imgs/logo-clara.png" alt="Logo TraduLibras" class="img-fluid" />
-      </a>
-    </div>
+    <div class="auth-formulario">
+      <%- include('includes/messages'); %>
 
-    <%- include('includes/messages'); %>
+      <div class="titulo-entrar">
+        <h1 class="entrar">Crie sua conta</h1>
+        <p class="auth-subtitulo">É grátis e leva menos de um minuto. Sem cartão de crédito.</p>
 
-    <div class="titulo-entrar">
-      <h1 class="entrar">Cadastro</h1>
+        <form action="/register" method="post">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <div class="form-group">
+            <label class="diminutivo" for="cadastro_email">E-mail</label>
+            <input type="email" class="form-control" id="cadastro_email" name="email" placeholder="voce@exemplo.com" autocomplete="email" required>
+          </div>
 
-      <form action="/register" method="post">
-        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-        <div class="form-group">
-          <label class="diminutivo" for="cadastro_email">Digite seu e-mail</label>
-          <input type="email" class="form-control" id="cadastro_email" name="email" placeholder="Email" autocomplete="email" required>
+          <div class="form-group">
+            <label class="diminutivo" for="cadastro_senha">Senha</label>
+            <input type="password" class="form-control" id="cadastro_senha" name="password" placeholder="Crie uma senha" autocomplete="new-password" minlength="10" required aria-describedby="dicaSenhaCadastro">
+            <p class="campo-dica" id="dicaSenhaCadastro">Mínimo de 10 caracteres.</p>
+          </div>
+
+          <button type="submit" class="btn-criar-conta">Criar minha conta</button>
+        </form>
+
+        <p class="auth-seguranca">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v12H4z"/><path d="m4 7 8 6 8-6"/></svg>
+          Enviaremos um link para confirmar seu e-mail.
+        </p>
+
+        <div class="auth-troca">
+          <span>Já tem conta?</span>
+          <a href="/login">Entrar</a>
         </div>
-
-        <div class="form-group">
-          <label class="diminutivo" for="cadastro_senha">Digite sua senha (mínimo de 10 caracteres)</label>
-          <input type="password" class="form-control" id="cadastro_senha" name="password" placeholder="Senha" autocomplete="new-password" minlength="10" required>
-        </div>
-
-        <button type="submit" class="btn-criar-conta">Criar minha conta</button>
-      </form>
-
-      <div class="linha"></div>
-      <p class="tem-conta">Já tem conta?</p>
-      <a class="linkp-register" href="/login">Faça login</a>
+      </div>
     </div>
   </div>
 

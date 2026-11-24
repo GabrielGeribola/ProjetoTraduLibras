@@ -171,4 +171,118 @@
       card.style.setProperty('--ry', '0deg');
     });
   });
+
+  // ── 4.1 Cabeçalho: ganha borda e sombra quando a página rola ──
+  const topo = document.getElementById('topoSite');
+  if (topo) {
+    let agendado = false;
+    const atualizarTopo = () => { agendado = false; topo.classList.toggle('rolou', window.scrollY > 8); };
+    window.addEventListener('scroll', () => {
+      if (!agendado) { agendado = true; requestAnimationFrame(atualizarTopo); }
+    }, { passive: true });
+    atualizarTopo();
+  }
+
+  // ── 4.2 "Pular para o conteúdo" leva ao conteúdo principal da página ──
+  const pular = document.querySelector('.pular-conteudo');
+  const principal = document.querySelector('main:not([hidden]), body.page-centered > .container');
+  if (pular && principal) {
+    if (!principal.id) principal.id = 'conteudo';
+    pular.setAttribute('href', `#${principal.id}`);
+    if (!principal.hasAttribute('tabindex')) principal.setAttribute('tabindex', '-1');
+  }
+
+  // ── 4.3 Entrada ao rolar ──
+  // O que está abaixo da dobra sobe e aparece ao chegar na tela; o que entra junto vem em cascata.
+  // O que já está visível ao abrir a página não é escondido (nada pisca). Movimento reduzido: nada muda.
+  const REVELAR = [
+    '.home-secao .secao-titulo', '.passo', '.explorar-card',
+    '.plano-card', '.planos-tokens', '.planos-ong', '.planos-contato',
+    '.sobre-secao-titulo', '.sobre-cartao', '.sobre-recurso', '.dev-card', '.sobre-cta',
+    '.ajuda-item', '.curso-card',
+    '.rodape-marca', '.rodape-coluna',
+  ].join(', ');
+  if (!reduzido() && 'IntersectionObserver' in window) {
+    const limpar = (el) => { el.classList.remove('revelar', 'revelado'); el.style.removeProperty('--ordem'); };
+    const observador = new IntersectionObserver((entradas) => {
+      const chegando = entradas.filter((e) => e.isIntersecting).map((e) => e.target);
+      // Cascata pela posição na tela: de cima para baixo, da esquerda para a direita
+      chegando.sort((a, b) => {
+        const ra = a.getBoundingClientRect();
+        const rb = b.getBoundingClientRect();
+        return Math.abs(ra.top - rb.top) > 8 ? ra.top - rb.top : ra.left - rb.left;
+      });
+      chegando.forEach((el, i) => {
+        observador.unobserve(el);
+        el.style.setProperty('--ordem', String(Math.min(i, 6)));
+        el.classList.add('revelado');
+        // Terminada a entrada, o elemento volta às transições dele (hover etc.)
+        el.addEventListener('transitionend', function fim(e) {
+          if (e.target !== el || e.propertyName !== 'opacity') return;
+          el.removeEventListener('transitionend', fim);
+          limpar(el);
+        });
+        setTimeout(() => limpar(el), 700 + Math.min(i, 6) * 90 + 400);
+      });
+    }, { rootMargin: '0px 0px -6% 0px', threshold: 0.1 });
+
+    const dobra = window.innerHeight * 0.94;
+    document.querySelectorAll(REVELAR).forEach((el) => {
+      const caixa = el.getBoundingClientRect();
+      if (!caixa.height || caixa.top < dobra) return; // escondido ou já visível
+      el.classList.add('revelar');
+      observador.observe(el);
+    });
+  }
+
+  // ── 4.4 Números que contam até o valor (tela inicial) ──
+  const contadores = document.querySelectorAll('[data-contar]');
+  if (contadores.length && !reduzido() && 'IntersectionObserver' in window) {
+    const formatar = new Intl.NumberFormat('pt-BR');
+    const contar = (el) => {
+      const fim = Number(el.dataset.contar);
+      if (!Number.isFinite(fim) || fim <= 0) return;
+      // Largura do valor final reservada: o "+" ao lado não fica dançando
+      el.style.display = 'inline-block';
+      el.style.minWidth = `${el.getBoundingClientRect().width}px`;
+      const inicio = performance.now();
+      const DURACAO = 1400;
+      const quadro = (agora) => {
+        const t = Math.min(1, (agora - inicio) / DURACAO);
+        el.textContent = formatar.format(Math.round(fim * (1 - (1 - t) ** 3)));
+        if (t < 1) requestAnimationFrame(quadro);
+      };
+      requestAnimationFrame(quadro);
+    };
+    const observarNumeros = new IntersectionObserver((entradas) => entradas.forEach((e) => {
+      if (!e.isIntersecting) return;
+      observarNumeros.unobserve(e.target);
+      contar(e.target);
+    }), { threshold: 0.6 });
+    contadores.forEach((el) => observarNumeros.observe(el));
+  }
+
+  // ── 4.5 Mostrar/ocultar senha (entrar, criar conta, nova senha) ──
+  const OLHO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+  const OLHO_RISCADO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 5.1A10.4 10.4 0 0 1 12 5c6.5 0 10 7 10 7a17.6 17.6 0 0 1-3.2 4.2M6.6 6.6C3.9 8.4 2 12 2 12s3.5 7 10 7a9.8 9.8 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>';
+  document.querySelectorAll('.page-centered input[type="password"]').forEach((campo) => {
+    const caixa = document.createElement('div');
+    caixa.className = 'campo-senha';
+    campo.before(caixa);
+    caixa.append(campo);
+    const botao = document.createElement('button');
+    botao.type = 'button';
+    botao.className = 'mostrar-senha';
+    botao.setAttribute('aria-label', 'Mostrar senha');
+    botao.setAttribute('aria-pressed', 'false');
+    botao.innerHTML = OLHO;
+    botao.addEventListener('click', () => {
+      const mostrar = campo.type === 'password';
+      campo.type = mostrar ? 'text' : 'password';
+      botao.setAttribute('aria-pressed', String(mostrar));
+      botao.innerHTML = mostrar ? OLHO_RISCADO : OLHO;
+      campo.focus();
+    });
+    caixa.append(botao);
+  });
 })();

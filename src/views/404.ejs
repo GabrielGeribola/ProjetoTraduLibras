@@ -1,8 +1,11 @@
 <%- include('includes/head'); %>
 <%- include('includes/navbar'); %>
 
+<main class="planos-container pagina-estreita">
+<div class="planos-cabecalho">
+  <h1 class="planos-titulo"><%= typeof titulo !== 'undefined' ? titulo : 'Página não encontrada' %></h1>
+</div>
 <div class="faq-container erro-pagina">
-  <div class="faq-title"><%= typeof titulo !== 'undefined' ? titulo : 'Página não encontrada' %></div>
 
   <% if (typeof sinal !== 'undefined' && sinal) { %>
     <%# O sinal vem do próprio tradutor (POST /traduzir), sempre com o vídeo atual do banco.
@@ -20,9 +23,10 @@
     <%= typeof mensagem !== 'undefined' ? mensagem : 'A página que você procura não existe ou mudou de endereço.' %>
   </p>
   <p class="erro-acoes">
-    <a href="/home" class="btn-topic">Voltar para o tradutor</a>
+    <a href="/home" class="plano-botao">Voltar para o tradutor</a>
   </p>
 </div>
+</main>
 
 <script>
   (() => {

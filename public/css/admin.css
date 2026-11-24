@@ -16,7 +16,7 @@
   --adm-alerta: #ffd27a;    --adm-alerta-fundo: rgba(255,210,122,.14);
 }
 
-.admin { max-width: 1280px; margin: 0 auto; padding: 84px 24px 72px; }
+.admin { max-width: 1280px; margin: 0 auto; padding: 96px 24px 72px; } /* 96px: abaixo do cabeçalho fixo do site */
 /* O site usa serifada nos títulos e no <header>; aqui só o título da página fica assim */
 .admin h2, .admin h3 { font-family: 'DM Sans', sans-serif; font-size: 1.08rem; font-weight: 700; color: var(--text-dark); margin-bottom: 8px; line-height: 1.3; }
 .admin p { margin-bottom: 0; }

@@ -1,20 +1,25 @@
-<%- include('includes/head'); %>
+<%- include('includes/head', { bodyClass: 'page-centered' }); %>
 <%- include('includes/navbar'); %>
 
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-2"></div>
-
-        <div class="col-lg-8 my-3">
-              <h1 class="text-center">Olá <%= user.email %></h1>
-              <p class="text-center lead">Você precisa sair para criar outra conta.</p>
-
-              <%- include('includes/messages') %>
-
-        </div>
-
-        <div class="col-lg-2"></div>
-      </div>
+  <%# Quem já entrou e abre /login ou /register %>
+  <div class="container">
+    <div class="logo-boasvindas-login">
+      <a href="/home" aria-label="Voltar para o tradutor">
+        <img src="https://assetstradulibras.s3.us-east-1.amazonaws.com/imgs/logo-clara.png" alt="Logo TraduLibras" class="img-fluid" />
+      </a>
     </div>
+
+    <%- include('includes/messages') %>
+
+    <div class="titulo-entrar">
+      <h1 class="entrar">Você já entrou</h1>
+      <p class="auth-subtitulo">Conectado como <strong><%= user.email %></strong>. Para entrar com outra conta ou criar uma nova, saia primeiro.</p>
+      <a href="/home" class="btn-criar-conta">Ir para o tradutor</a>
+      <form method="POST" action="/logout">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button type="submit" class="link-sair">Sair desta conta</button>
+      </form>
+    </div>
+  </div>
 
 <%- include('includes/footer'); %>

@@ -1,8 +1,12 @@
 <%- include('includes/head') %>
 <%- include('includes/navbar') %>
 
+<main class="planos-container pagina-estreita">
+<div class="planos-cabecalho">
+  <h1 class="planos-titulo" id="historicoTitulo" tabindex="-1">Histórico</h1>
+  <p class="planos-subtitulo"><%= bloqueado ? 'Suas traduções e feedbacks, guardados na sua conta.' : 'Suas traduções, da mais recente para a mais antiga.' %></p>
+</div>
 <div class="historico-container">
-  <h1 class="historico-title">Histórico</h1>
 
   <% if (bloqueado) { %>
     <%# Visitante: a página existe e explica o que ganha ao entrar %>
@@ -26,7 +30,6 @@
     </div>
 
   <% } else { %>
-    <p class="historico-subtitulo">Suas traduções, da mais recente para a mais antiga.</p>
 
     <%- include('includes/messages') %>
 
@@ -131,6 +134,7 @@
     </section>
   <% } %>
 </div>
+</main>
 
 <script>
   // Excluir sem recarregar: o item sai e os de baixo sobem (movimento.js: tlReorganizar).
@@ -171,7 +175,7 @@
         if (window.tlReorganizar) window.tlReorganizar(tudo, remover); else remover();
         if (aviso) aviso.textContent = 'Tradução removida do histórico.';
         if (!document.querySelector('.historico-item')) { window.location.reload(); return; } // mostra o "ainda não fez nenhuma tradução"
-        (vizinho?.querySelector('.btn-topic') || document.querySelector('.historico-title')).focus();
+        (vizinho?.querySelector('.btn-topic') || document.getElementById('historicoTitulo')).focus();
       });
     });
   })();

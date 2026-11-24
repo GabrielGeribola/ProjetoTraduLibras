@@ -1,8 +1,11 @@
 <%- include('includes/head') %>
 <%- include('includes/navbar') %>
+<main class="planos-container pagina-estreita">
+<div class="planos-cabecalho">
+  <h1 class="planos-titulo">Glossário</h1>
+  <p class="planos-subtitulo">Palavras e expressões com sinal disponível. Clique em uma para ver a tradução.</p>
+</div>
 <div class="sugestoes-container">
-  <h1 class="sugestoes-title">Glossário</h1>
-  <p class="glossario-subtitle">Palavras e expressões com sinal disponível. Clique em uma para ver a tradução.</p>
 
   <label for="glossario-busca" class="sr-only">Buscar palavra no glossário</label>
   <input type="search" id="glossario-busca" class="input-home glossario-busca"
@@ -14,6 +17,7 @@
     <div id="glossario-container"></div>
   </div>
 </div>
+</main>
 
 <script src="/assets/js/glossario.js"></script>
 <%- include('includes/footer') %>

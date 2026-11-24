@@ -11,6 +11,46 @@
   </filter>
 </svg>
 
+<%# ── Cabeçalho do site ─────────────────────────────────────
+    No computador: logo, navegação principal e conta. No celular e no tablet, a navegação fica no menu
+    lateral (hambúrguer) e o cabeçalho mostra só o logo. A engrenagem das configurações fica no canto. %>
+<%
+  const rotaAtual = typeof caminhoAtual !== 'undefined' ? caminhoAtual : '';
+  const marcarAtual = (prefixo) => {
+    const atual = prefixo === '/home' ? (rotaAtual === '/' || rotaAtual.startsWith('/home')) : rotaAtual.startsWith(prefixo);
+    return atual ? 'aria-current="page"' : '';
+  };
+%>
+<a class="pular-conteudo" href="#conteudo">Pular para o conteúdo</a>
+<header class="topo-site" id="topoSite">
+  <a href="/home" class="topo-marca" aria-label="TraduLibras: ir para o tradutor">
+    <img src="https://assetstradulibras.s3.us-east-1.amazonaws.com/imgs/logo-clara.png" alt="" class="topo-logo" width="120" height="34">
+  </a>
+  <nav class="topo-nav" aria-label="Principal">
+    <a href="/home" class="topo-link" <%- marcarAtual('/home') %>>Tradutor</a>
+    <a href="/sugestoes" class="topo-link" <%- marcarAtual('/sugestoes') %>>Glossário</a>
+    <a href="/cursos" class="topo-link" <%- marcarAtual('/cursos') %>>Cursos</a>
+    <a href="/planos" class="topo-link" <%- marcarAtual('/planos') %>>Planos</a>
+    <a href="/ajuda" class="topo-link" <%- marcarAtual('/ajuda') %>>Ajuda</a>
+    <a href="/sobre" class="topo-link" <%- marcarAtual('/sobre') %>>Sobre</a>
+  </nav>
+  <div class="topo-acoes">
+    <% if (user) { %>
+      <% if (user.papel === 'admin') { %>
+        <a href="/admin" class="topo-link" <%- marcarAtual('/admin') %>>Administração</a>
+      <% } %>
+      <a href="/historico" class="topo-link" <%- marcarAtual('/historico') %>>Histórico</a>
+      <form method="POST" action="/logout" class="topo-sair">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button type="submit" class="topo-botao topo-botao-contorno">Sair</button>
+      </form>
+    <% } else { %>
+      <a href="/login" class="topo-botao topo-botao-texto" <%- marcarAtual('/login') %>>Entrar</a>
+      <a href="/register" class="topo-botao" <%- marcarAtual('/register') %>>Criar conta</a>
+    <% } %>
+  </div>
+</header>
+
 <!-- Overlay -->
 <div class="overlay" id="overlay"></div>
 

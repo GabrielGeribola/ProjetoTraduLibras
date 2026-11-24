@@ -4,9 +4,32 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="csrf-token" content="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
-  <title><%= typeof tituloAba !== 'undefined' && tituloAba ? tituloAba + ' · ' : '' %>Tradulibras</title>
+  <% const descricaoSite = 'Tradutor de português para Libras: escreva ou fale uma frase e veja os sinais em vídeo, um por um. Glossário, cursos e planos para escolas, empresas e ONGs.'; %>
+  <title><%= typeof tituloAba !== 'undefined' && tituloAba ? tituloAba + ' · ' : '' %>TraduLibras</title>
+  <meta name="description" content="<%= descricaoSite %>">
+  <meta name="theme-color" content="#eae8e1" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#030303" media="(prefers-color-scheme: dark)">
+
+  <%# Ícones (a mão do logo sobre o grafite da marca) %>
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+
+  <%# Prévia do link ao compartilhar (WhatsApp, redes sociais) %>
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="pt_BR">
+  <meta property="og:site_name" content="TraduLibras">
+  <meta property="og:title" content="<%= typeof tituloAba !== 'undefined' && tituloAba ? tituloAba + ' · TraduLibras' : 'TraduLibras · Português para Libras' %>">
+  <meta property="og:description" content="<%= descricaoSite %>">
+  <% if (typeof urlSite !== 'undefined' && urlSite) { %>
+    <meta property="og:image" content="<%= urlSite %>/favicon-512.png">
+  <% } %>
+  <meta name="twitter:card" content="summary">
 
   <script>
+    // Com JavaScript: as animações de entrada ao rolar podem esconder o conteúdo até ele aparecer
+    document.documentElement.classList.add('js');
     // Aplica tema e tamanho de fonte salvos antes de pintar a página (evita o "piscar" do modo escuro)
     (function () {
       try {
